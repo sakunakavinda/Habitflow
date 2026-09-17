@@ -216,6 +216,13 @@ export function useUserHabits() {
 
   // Toggle habit on a specific dateKey
   const toggleHabitForDay = useCallback(async (habitId, dateKey) => {
+    const todayKey = getTodayKey();
+    // Strictly restrict logging for future dates
+    if (dateKey > todayKey) {
+      console.warn('Restricted: Cannot log habits for future dates.');
+      return;
+    }
+
     const isCurrentlyDone = !!(logs[dateKey] && logs[dateKey][habitId]);
 
     // Optimistic / Local update
@@ -263,6 +270,13 @@ export function useUserHabits() {
 
   // Toggle All habits for a dateKey
   const toggleAllForDay = useCallback(async (dateKey) => {
+    const todayKey = getTodayKey();
+    // Strictly restrict logging for future dates
+    if (dateKey > todayKey) {
+      console.warn('Restricted: Cannot log habits for future dates.');
+      return;
+    }
+
     const allDone = habits.length > 0 && habits.every((h) => logs[dateKey] && logs[dateKey][h.id]);
 
     for (const habit of habits) {

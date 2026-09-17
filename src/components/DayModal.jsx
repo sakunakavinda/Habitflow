@@ -37,7 +37,10 @@ export function DayModal({
   const hasAnyHabitsCompleted =
     habits.some((h) => !!dayLogs[h.id]);
 
+  const isFuture = !!selectedDay.isFuture;
+
   const handleToggleAll = () => {
+    if (isFuture) return;
     onToggleAll(dateKey);
     if (!allHabitsCompleted) {
       try {
@@ -54,6 +57,7 @@ export function DayModal({
   };
 
   const handleSingleToggle = (habitId) => {
+    if (isFuture) return;
     onToggleHabit(habitId, dateKey);
     // Check if toggling this will make all complete
     const willBeComplete = !dayLogs[habitId];
@@ -94,6 +98,14 @@ export function DayModal({
           </button>
         </div>
 
+        {/* Future Day Restriction Banner */}
+        {isFuture && (
+          <div className="future-day-banner">
+            <span className="future-banner-dot" />
+            <span>Upcoming date: Habits can only be logged on or after this day.</span>
+          </div>
+        )}
+
         {/* Dynamic Habit Action Toggles */}
         <div className="modal-actions-list">
           {habits.map((habit) => {
@@ -101,18 +113,18 @@ export function DayModal({
             return (
               <div
                 key={habit.id}
-                className={`habit-toggle-card ${isCompleted ? 'active' : ''}`}
+                className={`habit-toggle-card ${isCompleted ? 'active' : ''} ${isFuture ? 'disabled' : ''}`}
                 style={
-                  isCompleted
+                  isCompleted && !isFuture
                     ? {
                         borderColor: habit.color,
                         boxShadow: `0 0 16px ${habit.color}25`
                       }
                     : {}
                 }
-                onClick={() => handleSingleToggle(habit.id)}
+                onClick={() => !isFuture && handleSingleToggle(habit.id)}
                 role="button"
-                tabIndex={0}
+                tabIndex={isFuture ? -1 : 0}
               >
                 <div className="habit-toggle-left">
                   <div
@@ -127,7 +139,9 @@ export function DayModal({
                   <div>
                     <div className="habit-card-title">{habit.name}</div>
                     <div className="habit-card-desc">
-                      {isCompleted
+                      {isFuture
+                        ? 'Upcoming date (locked)'
+                        : isCompleted
                         ? 'Completed for this day!'
                         : `Tap to mark ${habit.name.toLowerCase()} completed`}
                     </div>
@@ -147,36 +161,38 @@ export function DayModal({
           )}
         </div>
 
-        {/* Quick Multi-Action & Clear */}
-        <div style={{ display: 'flex', gap: '0.6rem', marginTop: '0.8rem' }}>
-          {habits.length > 0 && (
-            <button
-              type="button"
-              className={`btn btn-full ${allHabitsCompleted ? '' : 'btn-primary'}`}
-              onClick={handleToggleAll}
-              style={
-                allHabitsCompleted
-                  ? { background: 'rgba(255, 255, 255, 0.08)' }
-                  : { background: 'var(--gold-gradient)', color: '#032117' }
-              }
-            >
-              <Sparkles size={16} />
-              <span>{allHabitsCompleted ? 'Unmark All' : 'Achieved All Today!'}</span>
-            </button>
-          )}
+        {/* Quick Multi-Action & Clear (Hidden for future dates) */}
+        {!isFuture && (
+          <div style={{ display: 'flex', gap: '0.6rem', marginTop: '0.8rem' }}>
+            {habits.length > 0 && (
+              <button
+                type="button"
+                className={`btn btn-full ${allHabitsCompleted ? '' : 'btn-primary'}`}
+                onClick={handleToggleAll}
+                style={
+                  allHabitsCompleted
+                    ? { background: 'rgba(255, 255, 255, 0.08)' }
+                    : { background: 'var(--gold-gradient)', color: '#032117' }
+                }
+              >
+                <Sparkles size={16} />
+                <span>{allHabitsCompleted ? 'Unmark All' : 'Achieved All Today!'}</span>
+              </button>
+            )}
 
-          {hasAnyHabitsCompleted && (
-            <button
-              type="button"
-              className="btn btn-icon"
-              onClick={() => onClearDay(dateKey)}
-              title="Clear marks for this day"
-              aria-label="Clear Day"
-            >
-              <Trash2 size={18} color="#f87171" />
-            </button>
-          )}
-        </div>
+            {hasAnyHabitsCompleted && (
+              <button
+                type="button"
+                className="btn btn-icon"
+                onClick={() => onClearDay(dateKey)}
+                title="Clear marks for this day"
+                aria-label="Clear Day"
+              >
+                <Trash2 size={18} color="#f87171" />
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Footer */}
         <div className="modal-footer">

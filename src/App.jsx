@@ -297,6 +297,10 @@ export default function App() {
             activeMode={activeMode}
             onToggleHabit={toggleHabitForDay}
             onToggleAll={toggleAllForDay}
+            onFutureAttempt={() => {
+              setActionToast('⏳ Upcoming date: Habits cannot be logged ahead of time.');
+              setTimeout(() => setActionToast(null), 3000);
+            }}
           />
         </main>
 

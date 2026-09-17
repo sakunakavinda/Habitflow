@@ -21,7 +21,8 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
     onToggleAll,
     onToggleSmokeFree,
     onToggleWorkout,
-    onToggleBoth
+    onToggleBoth,
+    onFutureAttempt
   },
   ref
 ) {
@@ -251,6 +252,15 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
 
   const handleCellClick = (day) => {
     if (hasMovedRef.current) return;
+
+    if (day.isFuture) {
+      if (activeMode !== 'modal') {
+        onFutureAttempt?.(day);
+        return;
+      }
+      onSelectDay(day);
+      return;
+    }
 
     if (activeMode === 'modal') {
       onSelectDay(day);

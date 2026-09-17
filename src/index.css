@@ -1111,6 +1111,39 @@ h1, h2, h3, h4, .brand-title {
   border-color: var(--border-active);
 }
 
+.habit-toggle-card.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+}
+
+.habit-toggle-card.disabled:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--border-subtle);
+}
+
+/* Future Day Restriction Banner */
+.future-day-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: var(--radius-md);
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.future-banner-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #94a3b8;
+  flex-shrink: 0;
+}
+
 .habit-toggle-left {
   display: flex;
   align-items: center;
