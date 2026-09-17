@@ -9,98 +9,255 @@ import {
   ArrowRight,
   ArrowLeft,
   Sparkles,
-  BarChart3,
+  SlidersHorizontal,
+  MousePointer,
   Share2,
   PlusSquare,
-  Star
+  Star,
+  Trash2,
+  Plus
 } from 'lucide-react';
 import { getTodayKey, formatDateKey } from '../utils/calendarUtils';
 
-// ─── Step Illustrations ──────────────────────────────────────────────────────
+// ─── Reusable: Pulsing Tap Indicator ────────────────────────────────────────
+function TapIndicator({ style = {} }) {
+  return (
+    <div className="ob-tap-wrap" style={style}>
+      <div className="ob-tap-ripple" />
+      <div className="ob-tap-cursor">
+        <MousePointer size={14} color="#fff" />
+      </div>
+    </div>
+  );
+}
 
+// ─── Reusable: Callout label with arrow ─────────────────────────────────────
+function CalloutLabel({ children, align = 'left' }) {
+  return (
+    <div className={`ob-callout-label ob-callout-label--${align}`}>
+      <span className="ob-callout-arrow">↑</span>
+      <span className="ob-callout-text">{children}</span>
+    </div>
+  );
+}
+
+// ─── Step 1: Welcome ─────────────────────────────────────────────────────────
 function WelcomeIllustration({ userName }) {
   return (
     <div className="ob-illustration ob-welcome">
       <div className="ob-hero-ring">
         <div className="ob-hero-icon">
-          <CalendarHeart size={44} color="#10b981" />
+          <CalendarHeart size={42} color="#10b981" />
         </div>
         <div className="ob-orbit ob-orbit-1">
           <div className="ob-orbit-dot" style={{ background: '#f59e0b' }}>
-            <Dumbbell size={14} color="#fff" />
+            <Dumbbell size={13} color="#fff" />
           </div>
         </div>
         <div className="ob-orbit ob-orbit-2">
           <div className="ob-orbit-dot" style={{ background: '#3b82f6' }}>
-            <Flame size={14} color="#fff" />
+            <Flame size={13} color="#fff" />
           </div>
         </div>
         <div className="ob-orbit ob-orbit-3">
           <div className="ob-orbit-dot" style={{ background: '#a855f7' }}>
-            <Star size={14} color="#fff" />
+            <Star size={13} color="#fff" />
           </div>
         </div>
       </div>
+
       <h2 className="ob-slide-title">
         Welcome{userName ? `, ${userName.split(' ')[0]}` : ''}! 👋
       </h2>
       <p className="ob-slide-desc">
-        HabitWave helps you build lasting habits with a beautiful calendar, streak tracking, and daily insights — all in one place.
+        HabitWave is your personal habit calendar. Here's what you can do:
       </p>
-    </div>
-  );
-}
 
-function LogHabitsIllustration() {
-  return (
-    <div className="ob-illustration">
-      <div className="ob-demo-calendar">
-        {[1,2,3,4,5,6,7].map(d => (
-          <div
-            key={d}
-            className={`ob-demo-cell ${d <= 5 ? 'ob-demo-cell--done' : ''} ${d === 6 ? 'ob-demo-cell--today' : ''}`}
-          >
-            {d <= 5 && <CheckCircle2 size={14} color="#10b981" />}
-            {d === 6 && <span className="ob-today-dot" />}
+      <div className="ob-feature-list">
+        <div className="ob-feature-item">
+          <div className="ob-feature-icon" style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981' }}>
+            <Calendar size={15} />
           </div>
-        ))}
+          <div>
+            <div className="ob-feature-label">Calendar Logging</div>
+            <div className="ob-feature-sub">Tap any day to record your habits</div>
+          </div>
+        </div>
+        <div className="ob-feature-item">
+          <div className="ob-feature-icon" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
+            <Flame size={15} />
+          </div>
+          <div>
+            <div className="ob-feature-label">Streak Tracking</div>
+            <div className="ob-feature-sub">Watch your consistency grow day by day</div>
+          </div>
+        </div>
+        <div className="ob-feature-item">
+          <div className="ob-feature-icon" style={{ background: 'rgba(168,85,247,0.15)', color: '#a855f7' }}>
+            <SlidersHorizontal size={15} />
+          </div>
+          <div>
+            <div className="ob-feature-label">Custom Habits</div>
+            <div className="ob-feature-sub">Add goals with your own icons and colors</div>
+          </div>
+        </div>
       </div>
-      <h2 className="ob-slide-title">Log Your Habits Daily</h2>
-      <p className="ob-slide-desc">
-        Tap any day on the calendar to log your habits. Use <strong>Quick Mode</strong> to tap cells directly on the grid for even faster logging.
-      </p>
     </div>
   );
 }
 
+// ─── Step 2: Log Habits ───────────────────────────────────────────────────────
+function LogHabitsIllustration() {
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+  return (
+    <div className="ob-illustration ob-log">
+      {/* Quick Mode bar replica */}
+      <div className="ob-ui-section">
+        <div className="ob-section-label">① Select your tap mode</div>
+        <div className="ob-ui-quickmode">
+          <div className="ob-ui-mode-btn">
+            <MousePointer size={12} /> Detail View
+          </div>
+          <div className="ob-ui-mode-btn ob-ui-mode-btn--active">
+            <Dumbbell size={12} color="#f59e0b" /> Worked Out
+          </div>
+          <div className="ob-ui-mode-btn">
+            <Sparkles size={12} /> All Habits
+          </div>
+        </div>
+        <div className="ob-hint-text">Choose a mode — "Detail View" opens a day panel, habit tabs toggle directly on the calendar.</div>
+      </div>
+
+      {/* Calendar row replica */}
+      <div className="ob-ui-section">
+        <div className="ob-section-label">② Tap a day cell to log</div>
+        <div className="ob-mini-calendar">
+          {days.map((day, i) => (
+            <div key={day} className={`ob-mini-cell ${i < 3 ? 'ob-mini-cell--done' : ''} ${i === 4 ? 'ob-mini-cell--pulse' : ''}`}>
+              <div className="ob-mini-cell-day">{day}</div>
+              {i < 3 && <CheckCircle2 size={13} color="#10b981" />}
+              {i === 3 && <div className="ob-mini-cell-empty" />}
+              {i === 4 && (
+                <div className="ob-mini-cell-empty" />
+              )}
+              {i === 4 && <TapIndicator style={{ position: 'absolute', bottom: -8, right: -8 }} />}
+            </div>
+          ))}
+        </div>
+        <CalloutLabel align="right">Tap to log today</CalloutLabel>
+      </div>
+    </div>
+  );
+}
+
+// ─── Step 3: Manage Habits ────────────────────────────────────────────────────
+function ManageHabitsIllustration() {
+  return (
+    <div className="ob-illustration ob-habits">
+      {/* Header button replica */}
+      <div className="ob-ui-section">
+        <div className="ob-section-label">① Find the Habits button in the top bar</div>
+        <div className="ob-ui-header-bar">
+          <div className="ob-ui-brand">
+            <CalendarHeart size={16} color="#10b981" />
+            <span>HabitWave</span>
+          </div>
+          <div className="ob-ui-header-btns">
+            <div className="ob-ui-header-btn ob-ui-header-btn--pulse">
+              <SlidersHorizontal size={12} />
+              <span>Habits</span>
+              <TapIndicator style={{ top: -10, right: -10 }} />
+            </div>
+            <div className="ob-ui-header-btn">
+              <Smartphone size={12} />
+              <span>Widgets</span>
+            </div>
+          </div>
+        </div>
+        <CalloutLabel align="right">Tap "Habits" to manage</CalloutLabel>
+      </div>
+
+      {/* Habit panel replica */}
+      <div className="ob-ui-section">
+        <div className="ob-section-label">② Manage habits in the panel</div>
+        <div className="ob-ui-habits-panel">
+          <div className="ob-ui-habit-item">
+            <div className="ob-ui-habit-dot" style={{ background: '#f59e0b' }}>
+              <Dumbbell size={13} color="#fff" />
+            </div>
+            <span className="ob-ui-habit-name">Worked Out</span>
+            <div className="ob-ui-habit-del"><Trash2 size={12} /></div>
+          </div>
+          <div className="ob-ui-add-habit-btn">
+            <Plus size={13} /> Add New Habit
+          </div>
+        </div>
+        <div className="ob-hint-text">Add custom habits with unique colors, icons, and names.</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Step 4: Track Streaks ────────────────────────────────────────────────────
 function TrackStreaksIllustration() {
   return (
-    <div className="ob-illustration">
-      <div className="ob-stats-preview">
-        <div className="ob-stat-card">
-          <Flame size={22} color="#f59e0b" />
-          <div className="ob-stat-num">12</div>
-          <div className="ob-stat-label">Day Streak</div>
-        </div>
-        <div className="ob-stat-card ob-stat-card--accent">
-          <BarChart3 size={22} color="#10b981" />
-          <div className="ob-stat-num">87%</div>
-          <div className="ob-stat-label">This Month</div>
-        </div>
-        <div className="ob-stat-card">
-          <Star size={22} color="#a855f7" />
-          <div className="ob-stat-num">34</div>
-          <div className="ob-stat-label">Total Days</div>
+    <div className="ob-illustration ob-streaks">
+      <div className="ob-ui-section">
+        <div className="ob-section-label">Your stats appear at the top of the app</div>
+        {/* Stat card replica — uses real CSS classes */}
+        <div className="ob-stat-replica">
+          <div className="glass-card stat-card" style={{ borderLeft: '3px solid #f59e0b', margin: 0 }}>
+            <div className="stat-top">
+              <span className="stat-label">Worked Out</span>
+              <div className="stat-icon" style={{ backgroundColor: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
+                <Dumbbell size={16} color="#f59e0b" />
+              </div>
+            </div>
+            <div className="stat-number-row">
+              <span className="stat-number" style={{ color: '#f59e0b' }}>14</span>
+              <span className="stat-subtext">/ 30 days</span>
+            </div>
+            <div className="stat-progress-bar">
+              <div className="stat-progress-fill" style={{ width: '47%', backgroundColor: '#f59e0b' }} />
+            </div>
+            <div className="stat-bottom-row">
+              <span className="stat-subtext">47% consistency</span>
+              <span className="stat-streak-badge" style={{ color: '#f59e0b' }}>🔥 14d</span>
+            </div>
+          </div>
         </div>
       </div>
-      <h2 className="ob-slide-title">Watch Your Progress Grow</h2>
-      <p className="ob-slide-desc">
-        HabitWave automatically tracks streaks and monthly consistency. The longer your streak, the more satisfying it gets — don't break the chain! 🔥
-      </p>
+
+      <div className="ob-ui-section">
+        <div className="ob-section-label">Plus summary cards for perfect days &amp; streaks</div>
+        <div className="ob-mini-stat-row">
+          <div className="glass-card stat-card double-win" style={{ flex: 1, margin: 0, padding: '0.65rem' }}>
+            <div className="stat-top">
+              <span className="stat-label" style={{ fontSize: '0.7rem' }}>All Habits</span>
+              <Sparkles size={14} />
+            </div>
+            <div className="stat-number-row">
+              <span className="stat-number" style={{ fontSize: '1.35rem' }}>8</span>
+              <span className="stat-subtext">perfect days</span>
+            </div>
+          </div>
+          <div className="glass-card stat-card streak" style={{ flex: 1, margin: 0, padding: '0.65rem' }}>
+            <div className="stat-top">
+              <span className="stat-label" style={{ fontSize: '0.7rem' }}>Top Streak</span>
+              <Flame size={14} />
+            </div>
+            <div className="stat-number-row">
+              <span className="stat-number" style={{ fontSize: '1.35rem' }}>14</span>
+              <span className="stat-subtext">consecutive</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
+// ─── Step 5: Set Start Date ───────────────────────────────────────────────────
 function StartDateStep({ selectedDate, setSelectedDate }) {
   const todayKey = getTodayKey();
   const now = new Date();
@@ -171,77 +328,84 @@ function StartDateStep({ selectedDate, setSelectedDate }) {
   );
 }
 
+// ─── Step 6: Add to Home Screen ───────────────────────────────────────────────
 function AddToHomeStep() {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const isAndroid = /Android/.test(navigator.userAgent);
 
   return (
     <div className="ob-illustration ob-pwa">
-      <div className="ob-pwa-icon-wrap">
-        <div className="ob-pwa-phone">
-          <Smartphone size={40} color="#3b82f6" />
-          <div className="ob-pwa-badge-dot" />
+      {/* Header Widgets button replica */}
+      <div className="ob-ui-section">
+        <div className="ob-section-label">① Tap the Widgets button in the top bar</div>
+        <div className="ob-ui-header-bar">
+          <div className="ob-ui-brand">
+            <CalendarHeart size={16} color="#10b981" />
+            <span>HabitWave</span>
+          </div>
+          <div className="ob-ui-header-btns">
+            <div className="ob-ui-header-btn">
+              <SlidersHorizontal size={12} />
+              <span>Habits</span>
+            </div>
+            <div className="ob-ui-header-btn ob-ui-header-btn--pulse">
+              <Smartphone size={12} />
+              <span>Widgets</span>
+              <TapIndicator style={{ top: -10, right: -10 }} />
+            </div>
+          </div>
         </div>
+        <CalloutLabel align="right">Tap "Widgets" for install guide</CalloutLabel>
       </div>
-      <h2 className="ob-slide-title">Add to Home Screen</h2>
-      <p className="ob-slide-desc">
-        Install HabitWave for one-tap access, offline support, and live streak badges on your app icon.
-      </p>
 
-      {isIOS && (
-        <div className="ob-pwa-steps">
-          <div className="ob-pwa-step">
-            <div className="ob-pwa-step-num">1</div>
-            <div>Tap the <strong>Share</strong> button <Share2 size={13} style={{ verticalAlign: 'middle' }} /> in Safari</div>
+      {/* Platform steps */}
+      <div className="ob-ui-section">
+        <div className="ob-section-label">② Follow the steps shown in the panel</div>
+        {isIOS && (
+          <div className="ob-pwa-steps">
+            <div className="ob-pwa-step"><div className="ob-pwa-step-num">1</div><div>Tap the <Share2 size={12} style={{ verticalAlign: 'middle' }} /> <strong>Share</strong> button in Safari's toolbar</div></div>
+            <div className="ob-pwa-step"><div className="ob-pwa-step-num">2</div><div>Scroll down and tap <strong>"Add to Home Screen"</strong> <PlusSquare size={12} style={{ verticalAlign: 'middle' }} /></div></div>
+            <div className="ob-pwa-step"><div className="ob-pwa-step-num">3</div><div>Confirm the name and tap <strong>Add</strong> in the top-right corner</div></div>
           </div>
-          <div className="ob-pwa-step">
-            <div className="ob-pwa-step-num">2</div>
-            <div>Select <strong>"Add to Home Screen"</strong> <PlusSquare size={13} style={{ verticalAlign: 'middle' }} /></div>
+        )}
+        {isAndroid && (
+          <div className="ob-pwa-steps">
+            <div className="ob-pwa-step"><div className="ob-pwa-step-num">1</div><div>Tap the <strong>⋮ menu</strong> in Chrome's top-right corner</div></div>
+            <div className="ob-pwa-step"><div className="ob-pwa-step-num">2</div><div>Select <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong></div></div>
+            <div className="ob-pwa-step"><div className="ob-pwa-step-num">3</div><div>Tap <strong>Add</strong> to confirm</div></div>
           </div>
-          <div className="ob-pwa-step">
-            <div className="ob-pwa-step-num">3</div>
-            <div>Tap <strong>Add</strong> in the top right corner</div>
+        )}
+        {!isIOS && !isAndroid && (
+          <div className="ob-pwa-steps">
+            <div className="ob-pwa-step"><div className="ob-pwa-step-num">💡</div><div>Open HabitWave on your mobile browser and use the browser's menu to install it to your home screen.</div></div>
+            <div className="ob-pwa-step"><div className="ob-pwa-step-num">✨</div><div>You'll get live streak badges on your home screen icon and full offline support!</div></div>
           </div>
-        </div>
-      )}
-
-      {isAndroid && (
-        <div className="ob-pwa-steps">
-          <div className="ob-pwa-step">
-            <div className="ob-pwa-step-num">1</div>
-            <div>Tap the <strong>⋮ menu</strong> in Chrome</div>
-          </div>
-          <div className="ob-pwa-step">
-            <div className="ob-pwa-step-num">2</div>
-            <div>Tap <strong>"Add to Home screen"</strong></div>
-          </div>
-        </div>
-      )}
-
-      {!isIOS && !isAndroid && (
-        <div className="ob-pwa-steps">
-          <div className="ob-pwa-step">
-            <div className="ob-pwa-step-num">💡</div>
-            <div>On mobile, open HabitWave in your browser and use the browser menu to install it to your home screen.</div>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
 
-// ─── Step Config ─────────────────────────────────────────────────────────────
-
+// ─── Step Config ──────────────────────────────────────────────────────────────
 const STEPS = [
   { id: 'welcome',    skippable: true  },
   { id: 'log',       skippable: true  },
+  { id: 'habits',    skippable: true  },
   { id: 'streaks',   skippable: true  },
   { id: 'startdate', skippable: false },
   { id: 'pwa',       skippable: true  },
 ];
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+const STEP_TITLES = {
+  welcome:   'Welcome to HabitWave',
+  log:       'Log Habits Daily',
+  habits:    'Manage Your Habits',
+  streaks:   'Track Your Streaks',
+  startdate: 'Set Your Start Date',
+  pwa:       'Add to Home Screen',
+};
 
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function OnboardingModal({ isOpen, userName, onComplete }) {
   const todayKey = getTodayKey();
   const [step, setStep] = useState(0);
@@ -303,6 +467,7 @@ export default function OnboardingModal({ isOpen, userName, onComplete }) {
     switch (currentStep.id) {
       case 'welcome':   return <WelcomeIllustration userName={userName} />;
       case 'log':       return <LogHabitsIllustration />;
+      case 'habits':    return <ManageHabitsIllustration />;
       case 'streaks':   return <TrackStreaksIllustration />;
       case 'startdate': return <StartDateStep selectedDate={startDate} setSelectedDate={setStartDate} />;
       case 'pwa':       return <AddToHomeStep />;
@@ -316,15 +481,18 @@ export default function OnboardingModal({ isOpen, userName, onComplete }) {
         className="modal-content onboarding-modal"
         onClick={e => e.stopPropagation()}
       >
-        {/* Top bar — step dots + skip */}
+        {/* Top bar: dots + step title + skip */}
         <div className="ob-topbar">
-          <div className="ob-dots">
-            {STEPS.map((s, i) => (
-              <div
-                key={s.id}
-                className={`ob-dot ${i === step ? 'ob-dot--active' : ''} ${i < step ? 'ob-dot--done' : ''}`}
-              />
-            ))}
+          <div className="ob-topbar-left">
+            <div className="ob-dots">
+              {STEPS.map((s, i) => (
+                <div
+                  key={s.id}
+                  className={`ob-dot ${i === step ? 'ob-dot--active' : ''} ${i < step ? 'ob-dot--done' : ''}`}
+                />
+              ))}
+            </div>
+            <span className="ob-step-counter">{step + 1} / {STEPS.length}</span>
           </div>
           {currentStep.skippable && !isLast && (
             <button type="button" className="ob-skip-btn" onClick={handleSkip}>
@@ -338,16 +506,16 @@ export default function OnboardingModal({ isOpen, userName, onComplete }) {
           {renderSlide()}
         </div>
 
-        {/* Start date validation error */}
+        {/* Start date error */}
         {startDateError && (
           <div className="ob-error">{startDateError}</div>
         )}
 
-        {/* Footer navigation */}
+        {/* Footer */}
         <div className="ob-footer">
           {!isFirst ? (
             <button type="button" className="ob-back-btn" onClick={goPrev}>
-              <ArrowLeft size={16} /> Back
+              <ArrowLeft size={15} /> Back
             </button>
           ) : (
             <div />
@@ -359,11 +527,11 @@ export default function OnboardingModal({ isOpen, userName, onComplete }) {
             onClick={goNext}
           >
             {isLast ? (
-              <>Done! <CheckCircle2 size={16} /></>
+              <>All Done! <CheckCircle2 size={15} /></>
             ) : isStartDateStep ? (
-              <>Set Date & Continue <ArrowRight size={16} /></>
+              <>Set Date & Continue <ArrowRight size={15} /></>
             ) : (
-              <>Next <ArrowRight size={16} /></>
+              <>Next <ArrowRight size={15} /></>
             )}
           </button>
         </div>
