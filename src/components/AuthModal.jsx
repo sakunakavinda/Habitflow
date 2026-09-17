@@ -116,13 +116,13 @@ export function AuthModal({ onClose }) {
 
     try {
       if (isSignUp) {
-        if (!email || !password) {
+        if (!displayName.trim() || !email || !password) {
           throw new Error('Please fill in all required fields.');
         }
         if (password.length < 6) {
           throw new Error('Password must be at least 6 characters.');
         }
-        await signUpWithEmail(email, password, displayName);
+        await signUpWithEmail(email, password, displayName.trim());
       } else {
         await signInWithEmail(email, password);
       }
@@ -779,6 +779,7 @@ export function AuthModal({ onClose }) {
                     <input
                       id="auth-name"
                       type="text"
+                      required
                       placeholder="e.g. Alex"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}

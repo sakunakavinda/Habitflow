@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -50,6 +50,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const pendingDisplayNameRef = useRef(null);
   const isConfigured = isFirebaseConfigured();
 
   // Helper to ensure user document exists in users collection
@@ -59,11 +60,16 @@ export function AuthProvider({ children }) {
       const userDocRef = doc(db, 'users', firebaseUser.uid);
       const userSnap = await getDoc(userDocRef);
 
-      const name = customName || firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User';
+      const trimmedCustom = customName && typeof customName === 'string' ? customName.trim() : null;
+      const effectiveName =
+        trimmedCustom ||
+        firebaseUser.displayName ||
+        firebaseUser.email?.split('@')[0] ||
+        'User';
 
       if (!userSnap.exists()) {
         const initialData = {
-          name,
+          name: effectiveName,
           joinedAt: serverTimestamp(),
           hasSeenAddToHome: false,
           hasSeenOnboarding: false,
@@ -87,7 +93,19 @@ export function AuthProvider({ children }) {
         }
         return { ...initialData, isNewRegistration: true };
       }
+
       const data = userSnap.data();
+      const emailPrefix = firebaseUser.email?.split('@')[0];
+      const shouldUpdateName =
+        (trimmedCustom && data.name !== trimmedCustom) ||
+        (firebaseUser.displayName && data.name === emailPrefix && firebaseUser.displayName !== emailPrefix);
+
+      if (shouldUpdateName) {
+        const newName = trimmedCustom || firebaseUser.displayName;
+        await updateDoc(userDocRef, { name: newName });
+        data.name = newName;
+      }
+
       const localCachedStart = localStorage.getItem(`habitwave_start_date_${firebaseUser.uid}`);
       if (!data.startDate && localCachedStart) {
         data.startDate = localCachedStart;
@@ -108,7 +126,8 @@ export function AuthProvider({ children }) {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        const profile = await syncUserProfile(currentUser);
+        const pendingName = pendingDisplayNameRef.current;
+        const profile = await syncUserProfile(currentUser, pendingName);
         setUserData(profile);
       } else {
         setUserData(null);
@@ -129,17 +148,21 @@ export function AuthProvider({ children }) {
 
   const signUpWithEmail = async (email, password, displayName) => {
     if (!auth) throw new Error('Firebase Authentication is not configured yet.');
+    const trimmedName = displayName?.trim() || '';
+    pendingDisplayNameRef.current = trimmedName || null;
+
     const cred = await createUserWithEmailAndPassword(auth, email, password);
-    if (displayName) {
+    if (trimmedName) {
       try {
-        await updateProfile(cred.user, { displayName });
+        await updateProfile(cred.user, { displayName: trimmedName });
       } catch (e) {
         console.warn('Could not update profile name', e);
       }
     }
-    const profile = await syncUserProfile(cred.user, displayName);
+    const profile = await syncUserProfile(cred.user, trimmedName);
     setUserData(profile);
     setUser(cred.user);
+    pendingDisplayNameRef.current = null;
     return cred.user;
   };
 
