@@ -14,30 +14,25 @@ import { db } from '../firebase/firebaseConfig';
 import { useAuth } from '../context/AuthContext';
 import { getTodayKey, dateToKey } from '../utils/calendarUtils';
 
-const LOCAL_HABITS_KEY = 'habitwave_local_habits_v4';
-const LOCAL_LOGS_KEY = 'habitwave_local_logs_v4';
+const LOCAL_HABITS_KEY = 'habitwave_local_habits_v5';
+const LOCAL_LOGS_KEY = 'habitwave_local_logs_v5';
 
 export const DEFAULT_HABITS = [
-  { id: 'smoke-free', name: 'Smoke-Free', frequency: 'daily', color: '#10b981', icon: 'cigarette-off' },
-  { id: 'workout', name: 'Workout', frequency: 'daily', color: '#f59e0b', icon: 'dumbbell' }
+  { id: 'workout', name: 'Worked Out', frequency: 'daily', color: '#f59e0b', icon: 'dumbbell' }
 ];
 
 function generateInitialLocalLogs() {
   const logs = {};
   const today = new Date();
 
-  // Populate last 14 days with realistic completions
+  // Populate last 14 days with realistic completions for Worked Out
   for (let i = 14; i >= 1; i--) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
     const key = dateToKey(d);
 
-    const isSmokeFree = i !== 8 && i !== 12;
     const isWorkout = (i % 2 === 0) || i === 3;
-
     logs[key] = {
-      'smoke-free': isSmokeFree,
-      smokeFree: isSmokeFree,
       workout: isWorkout
     };
   }
@@ -45,8 +40,6 @@ function generateInitialLocalLogs() {
   // Today
   const todayKey = getTodayKey();
   logs[todayKey] = {
-    'smoke-free': true,
-    smokeFree: true,
     workout: false
   };
 
@@ -98,8 +91,10 @@ export function useUserHabits() {
         });
       });
 
-      // If user has no habits yet, seed starter habits
-      if (fetchedHabits.length === 0 && !snapshot.metadata.hasPendingWrites) {
+      // If user has no habits yet and has never initialized in this session, seed starter habit
+      const hasSeeded = localStorage.getItem(`habitwave_seeded_habits_${user.uid}`);
+      if (fetchedHabits.length === 0 && !snapshot.metadata.hasPendingWrites && !hasSeeded) {
+        localStorage.setItem(`habitwave_seeded_habits_${user.uid}`, 'true');
         DEFAULT_HABITS.forEach(async (h) => {
           try {
             await addDoc(habitsColRef, {
@@ -114,6 +109,7 @@ export function useUserHabits() {
           }
         });
       } else {
+        localStorage.setItem(`habitwave_seeded_habits_${user.uid}`, 'true');
         setHabits(fetchedHabits);
       }
       setLoading(false);
@@ -355,8 +351,25 @@ export function useUserHabits() {
 
   // Delete habit
   const deleteHabit = useCallback(async (habitId) => {
+    // Immediately clean up logs for deleted habit across both modes
+    setLogs((prev) => {
+      const next = {};
+      Object.entries(prev).forEach(([dKey, dRecord]) => {
+        const updatedRecord = { ...dRecord };
+        delete updatedRecord[habitId];
+        if (habitId === 'workout') delete updatedRecord.workout;
+        if (habitId === 'smoke-free') delete updatedRecord.smokeFree;
+        if (Object.keys(updatedRecord).length > 0) {
+          next[dKey] = updatedRecord;
+        }
+      });
+      return next;
+    });
+
     if (isConfigured && user && db) {
       try {
+        // Mark as seeded so when habit count drops to 0, onSnapshot does not recreate starter habit
+        localStorage.setItem(`habitwave_seeded_habits_${user.uid}`, 'true');
         const habitDocRef = doc(db, 'users', user.uid, 'habits', habitId);
         await deleteDoc(habitDocRef);
       } catch (err) {
@@ -365,18 +378,6 @@ export function useUserHabits() {
       }
     } else {
       setHabits((prev) => prev.filter((h) => h.id !== habitId));
-      // Cleanup logs for deleted habit
-      setLogs((prev) => {
-        const next = {};
-        Object.entries(prev).forEach(([dKey, dRecord]) => {
-          const updatedRecord = { ...dRecord };
-          delete updatedRecord[habitId];
-          if (Object.keys(updatedRecord).length > 0) {
-            next[dKey] = updatedRecord;
-          }
-        });
-        return next;
-      });
     }
   }, [isConfigured, user]);
 

@@ -63,8 +63,7 @@ export function AuthProvider({ children }) {
         const habitsSnap = await getDocs(habitsColRef);
         if (habitsSnap.empty) {
           const defaultHabits = [
-            { name: 'Smoke-Free', frequency: 'daily', color: '#10b981', icon: 'cigarette-off' },
-            { name: 'Workout', frequency: 'daily', color: '#f59e0b', icon: 'dumbbell' }
+            { name: 'Worked Out', frequency: 'daily', color: '#f59e0b', icon: 'dumbbell' }
           ];
           for (const habit of defaultHabits) {
             await addDoc(habitsColRef, {

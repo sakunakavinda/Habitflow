@@ -3,7 +3,7 @@ import { CalendarHeart, Sparkles } from 'lucide-react';
 
 const MOTIVATIONAL_QUOTES = [
   "Building habits that last...",
-  "Every smoke-free day is a victory.",
+  "Every workout completed is a victory.",
   "Consistency beats intensity.",
   "Small wins create monumental changes.",
   "Your journey, one day at a time."

@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Smartphone, Sparkles, CigaretteOff, Dumbbell, Share2, PlusSquare, Flame, Check } from 'lucide-react';
+import { X, Smartphone, Sparkles, Dumbbell, Share2, PlusSquare, Flame, Check } from 'lucide-react';
 
 export function WidgetsModal({ onClose, onTriggerShortcut, currentStreak, onOpenAddToHomeGuide }) {
   return (
@@ -42,35 +42,16 @@ export function WidgetsModal({ onClose, onTriggerShortcut, currentStreak, onOpen
           </div>
         </div>
 
-        {/* 3 Quick Action Shortcuts */}
+        {/* Quick Action Shortcuts */}
         <div>
           <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.5rem' }}>
             Home Screen Long-Press Shortcuts
           </div>
           <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>
-            When added to your home screen, press and hold the app icon to instantly access these 3 actions:
+            When added to your home screen, press and hold the app icon to instantly access quick actions:
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <div className="shortcut-item" onClick={() => onTriggerShortcut('smoke-free')}>
-              <div className="shortcut-left">
-                <span className="badge-tag smoke" style={{ width: 26, height: 26 }}>
-                  <CigaretteOff size={14} />
-                </span>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.88rem', color: '#ffffff' }}>
-                    Log Smoke-Free
-                  </div>
-                  <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                    Mark today clean with 1 tap
-                  </div>
-                </div>
-              </div>
-              <button type="button" className="btn" style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}>
-                Test
-              </button>
-            </div>
-
             <div className="shortcut-item" onClick={() => onTriggerShortcut('workout')}>
               <div className="shortcut-left">
                 <span className="badge-tag workout" style={{ width: 26, height: 26 }}>
@@ -81,7 +62,7 @@ export function WidgetsModal({ onClose, onTriggerShortcut, currentStreak, onOpen
                     Log Workout
                   </div>
                   <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                    Mark today's training done
+                    Mark today's workout completed
                   </div>
                 </div>
               </div>
@@ -90,17 +71,17 @@ export function WidgetsModal({ onClose, onTriggerShortcut, currentStreak, onOpen
               </button>
             </div>
 
-            <div className="shortcut-item" onClick={() => onTriggerShortcut('both')}>
+            <div className="shortcut-item" onClick={() => onTriggerShortcut('all')}>
               <div className="shortcut-left">
                 <span className="badge-tag" style={{ width: 26, height: 26, background: 'var(--gold-gradient)', color: '#000' }}>
                   <Sparkles size={14} />
                 </span>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: '0.88rem', color: '#ffffff' }}>
-                    Log Both Habits
+                    Log All Habits
                   </div>
                   <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                    Double Win celebration
+                    Mark all daily habits completed
                   </div>
                 </div>
               </div>

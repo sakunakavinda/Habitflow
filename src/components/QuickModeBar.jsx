@@ -16,19 +16,14 @@ export function QuickModeBar({ activeMode, setActiveMode, habits = [] }) {
         color: h.color
       });
     });
-    modes.push({
-      id: 'all',
-      label: 'All Habits',
-      iconName: 'sparkles',
-      isAll: true
-    });
-  } else {
-    modes = [
-      { id: 'modal', label: 'Detail View', iconName: null, isDefaultModal: true },
-      { id: 'smokeFree', label: 'Smoke Free', iconName: 'cigarette-off', color: '#10b981' },
-      { id: 'workout', label: 'Workout', iconName: 'dumbbell', color: '#f59e0b' },
-      { id: 'both', label: 'Both Habits', iconName: 'sparkles', isAll: true }
-    ];
+    if (habits.length > 1) {
+      modes.push({
+        id: 'all',
+        label: 'All Habits',
+        iconName: 'sparkles',
+        isAll: true
+      });
+    }
   }
 
   // Active mode hint text

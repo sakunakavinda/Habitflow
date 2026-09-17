@@ -336,15 +336,13 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
             const isSF = !!(record.smokeFree || record['smoke-free']);
             const isWO = !!record.workout;
             const hasAllDone =
-              habits.length > 0
-                ? completedHabits.length === habits.length && habits.length > 0
-                : isSF && isWO;
+              habits.length > 0 && completedHabits.length === habits.length;
 
             const tooltipTitle = day.isBeforeStart
               ? `${day.dateKey} • Prior to Start Date (${startDate})`
               : habits.length > 0
               ? `${day.dateKey}${completedHabits.map((h) => ` • ${h.name}`).join('')}`
-              : `${day.dateKey}${isSF ? ' • Smoke-Free' : ''}${isWO ? ' • Worked Out' : ''}`;
+              : day.dateKey;
 
             return (
               <div
@@ -361,25 +359,16 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
                 </div>
 
                 <div className="day-lines-row">
-                  {habits.length > 0 ? (
-                    completedHabits.map((h) => (
-                      <span
-                        key={h.id}
-                        className="habit-line"
-                        style={{ backgroundColor: h.color || '#3b82f6' }}
-                        title={h.name}
-                      />
-                    ))
-                  ) : (
-                    <>
-                      {isSF && (
-                        <span className="habit-line smoke" title="Smoke-Free" />
-                      )}
-                      {isWO && (
-                        <span className="habit-line workout" title="Worked Out" />
-                      )}
-                    </>
-                  )}
+                  {habits.length > 0
+                    ? completedHabits.map((h) => (
+                        <span
+                          key={h.id}
+                          className="habit-line"
+                          style={{ backgroundColor: h.color || '#3b82f6' }}
+                          title={h.name}
+                        />
+                      ))
+                    : null}
                 </div>
               </div>
             );
@@ -460,37 +449,25 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
                   <span>{habit.name}</span>
                 </div>
               ))}
-              <div className="legend-item">
-                <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
-                  {habits.slice(0, 3).map((h) => (
-                    <span
-                      key={h.id}
-                      className="legend-line"
-                      style={{ width: 8, backgroundColor: h.color || '#3b82f6' }}
-                    />
-                  ))}
+              {habits.length > 1 && (
+                <div className="legend-item">
+                  <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+                    {habits.slice(0, 3).map((h) => (
+                      <span
+                        key={h.id}
+                        className="legend-line"
+                        style={{ width: 8, backgroundColor: h.color || '#3b82f6' }}
+                      />
+                    ))}
+                  </div>
+                  <span style={{ color: '#fbbf24', fontWeight: 600 }}>All Done</span>
                 </div>
-                <span style={{ color: '#fbbf24', fontWeight: 600 }}>All Done</span>
-              </div>
+              )}
             </>
           ) : (
-            <>
-              <div className="legend-item">
-                <span className="legend-line smoke" />
-                <span>Smoke-Free</span>
-              </div>
-              <div className="legend-item">
-                <span className="legend-line workout" />
-                <span>Worked Out</span>
-              </div>
-              <div className="legend-item">
-                <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
-                  <span className="legend-line smoke" style={{ width: 10 }} />
-                  <span className="legend-line workout" style={{ width: 10 }} />
-                </div>
-                <span style={{ color: '#fbbf24', fontWeight: 600 }}>Both Done</span>
-              </div>
-            </>
+            <div className="legend-item">
+              <span style={{ color: 'var(--text-muted)' }}>No active habits</span>
+            </div>
           )}
           <div className="legend-item">
             <span className="today-dot" style={{ position: 'static' }} />

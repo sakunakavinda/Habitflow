@@ -139,93 +139,16 @@ export function MonthStats({ totals, streaks, habits = [] }) {
     );
   }
 
-  // Fallback for default two habits
-  const doubleWinRate = totalMonthDays > 0 ? Math.round((doubleWinCount / totalMonthDays) * 100) : 0;
-
+  // Fallback if no habits exist (e.g. user deleted all habits)
   return (
-    <div className="stats-grid">
-      {/* Smoke Free Card */}
-      <div className="glass-card stat-card smoke-free">
-        <div className="stat-top">
-          <span className="stat-label">Smoke Free</span>
-          <div className="stat-icon">
-            <HabitIcon name="cigarette-off" color="#10b981" size={18} />
-          </div>
-        </div>
-        <div className="stat-number-row">
-          <span className="stat-number">{smokeFreeCount}</span>
-          <span className="stat-subtext">/ {totalMonthDays} days</span>
-        </div>
-        <div className="stat-progress-bar">
-          <div
-            className="stat-progress-fill"
-            style={{ width: `${Math.min(100, Math.round((smokeFreeCount / (totalMonthDays || 1)) * 100))}%` }}
-          />
-        </div>
-        <span className="stat-subtext">{smokeFreeRate}% of elapsed month</span>
-      </div>
-
-      {/* Workout Card */}
-      <div className="glass-card stat-card workout">
-        <div className="stat-top">
-          <span className="stat-label">Worked Out</span>
-          <div className="stat-icon">
-            <HabitIcon name="dumbbell" color="#f59e0b" size={18} />
-          </div>
-        </div>
-        <div className="stat-number-row">
-          <span className="stat-number">{workoutCount}</span>
-          <span className="stat-subtext">/ {totalMonthDays} days</span>
-        </div>
-        <div className="stat-progress-bar">
-          <div
-            className="stat-progress-fill"
-            style={{ width: `${Math.min(100, Math.round((workoutCount / (totalMonthDays || 1)) * 100))}%` }}
-          />
-        </div>
-        <span className="stat-subtext">{workoutRate}% consistency</span>
-      </div>
-
-      {/* Double Win Card */}
-      <div className="glass-card stat-card double-win">
-        <div className="stat-top">
-          <span className="stat-label">Double Wins</span>
-          <div className="stat-icon">
-            <Sparkles size={18} />
-          </div>
-        </div>
-        <div className="stat-number-row">
-          <span className="stat-number">{doubleWinCount}</span>
-          <span className="stat-subtext">perfect days</span>
-        </div>
-        <div className="stat-progress-bar">
-          <div
-            className="stat-progress-fill"
-            style={{ width: `${Math.min(100, doubleWinRate)}%` }}
-          />
-        </div>
-        <span className="stat-subtext">Both habits completed</span>
-      </div>
-
-      {/* Streaks Card */}
-      <div className="glass-card stat-card streak">
-        <div className="stat-top">
-          <span className="stat-label">Current Streak</span>
-          <div className="stat-icon">
-            <Flame size={18} />
-          </div>
-        </div>
-        <div className="stat-number-row">
-          <span className="stat-number">{smokeFreeStreak}</span>
-          <span className="stat-subtext">d smoke-free</span>
-        </div>
-        <div className="stat-progress-bar">
-          <div
-            className="stat-progress-fill"
-            style={{ width: `${Math.min(100, smokeFreeStreak * 10)}%` }}
-          />
-        </div>
-        <span className="stat-subtext">💪 {workoutStreak} day workout streak</span>
+    <div className="stats-grid" style={{ gridTemplateColumns: '1fr' }}>
+      <div className="glass-card stat-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+        <span className="stat-label" style={{ fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
+          No Active Habits
+        </span>
+        <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          Tap <strong>⚙️ Manage Habits</strong> to create a new habit or customize your daily routine.
+        </p>
       </div>
     </div>
   );

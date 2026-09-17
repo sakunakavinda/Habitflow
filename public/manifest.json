@@ -46,19 +46,6 @@
   ],
   "shortcuts": [
     {
-      "name": "Log Smoke-Free",
-      "short_name": "Smoke-Free",
-      "description": "Mark today as smoke-free",
-      "url": "/?action=smoke-free",
-      "icons": [
-        {
-          "src": "/pwa-192x192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    },
-    {
       "name": "Log Workout",
       "short_name": "Workout",
       "description": "Mark today's workout as completed",
@@ -72,10 +59,10 @@
       ]
     },
     {
-      "name": "Log Both Habits",
-      "short_name": "Both Habits",
-      "description": "Mark both smoke-free and workout completed today",
-      "url": "/?action=both",
+      "name": "Log All Habits",
+      "short_name": "All Habits",
+      "description": "Mark all daily habits completed today",
+      "url": "/?action=all",
       "icons": [
         {
           "src": "/pwa-192x192.png",
