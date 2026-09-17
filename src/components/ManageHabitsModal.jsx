@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Plus, Trash2, Check, Sparkles, AlertCircle } from 'lucide-react';
-import { AVAILABLE_ICONS, AVAILABLE_COLORS, HabitIcon } from '../utils/habitIcons';
+import { X, Plus, Trash2, Check, Sparkles, AlertCircle, Search } from 'lucide-react';
+import { AVAILABLE_ICONS, AVAILABLE_COLORS, POPULAR_ICON_IDS, HabitIcon } from '../utils/habitIcons';
+import { IconLibraryModal } from './IconLibraryModal';
 
 export function ManageHabitsModal({ habits, onAddHabit, onDeleteHabit, onClose }) {
   const [isAdding, setIsAdding] = useState(false);
@@ -8,6 +9,7 @@ export function ManageHabitsModal({ habits, onAddHabit, onDeleteHabit, onClose }
   const [frequency, setFrequency] = useState('daily');
   const [selectedColor, setSelectedColor] = useState(AVAILABLE_COLORS[0].hex);
   const [selectedIcon, setSelectedIcon] = useState(AVAILABLE_ICONS[0].id);
+  const [showIconLibrary, setShowIconLibrary] = useState(false);
   const [error, setError] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
@@ -211,25 +213,54 @@ export function ManageHabitsModal({ habits, onAddHabit, onDeleteHabit, onClose }
 
             {/* Icon Picker */}
             <div className="form-group">
-              <label>Habit Icon</label>
-              <div className="icon-picker-grid">
-                {AVAILABLE_ICONS.map((item) => {
-                  const Icon = item.icon;
-                  const isSelected = selectedIcon === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className={`icon-picker-btn ${isSelected ? 'selected' : ''}`}
-                      onClick={() => setSelectedIcon(item.id)}
-                      title={item.label}
-                      style={isSelected ? { borderColor: selectedColor, color: selectedColor } : {}}
-                    >
-                      <Icon size={18} />
-                    </button>
-                  );
-                })}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <label style={{ margin: 0 }}>Habit Icon</label>
+                <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                  Selected: <strong style={{ color: selectedColor }}>{AVAILABLE_ICONS.find(i => i.id === selectedIcon)?.label || selectedIcon}</strong>
+                </span>
               </div>
+
+              {/* Popular Quick Icons */}
+              <div className="icon-picker-grid">
+                {(() => {
+                  const popularItems = AVAILABLE_ICONS.filter((item) =>
+                    POPULAR_ICON_IDS.includes(item.id)
+                  );
+                  const isSelectedInPopular = popularItems.some((item) => item.id === selectedIcon);
+                  const selectedItem = AVAILABLE_ICONS.find((item) => item.id === selectedIcon);
+                  const displayedIcons = isSelectedInPopular
+                    ? popularItems
+                    : (selectedItem ? [selectedItem, ...popularItems.slice(0, 13)] : popularItems);
+
+                  return displayedIcons.filter(Boolean).map((item) => {
+                    const Icon = item.icon;
+                    const isSelected = selectedIcon === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={`icon-picker-btn ${isSelected ? 'selected' : ''}`}
+                        onClick={() => setSelectedIcon(item.id)}
+                        title={item.label}
+                        style={isSelected ? { borderColor: selectedColor, color: selectedColor } : {}}
+                      >
+                        <Icon size={18} />
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+
+              {/* Trigger Button to Open Full 85+ Icon Library */}
+              <button
+                type="button"
+                className="browse-icons-trigger-btn"
+                onClick={() => setShowIconLibrary(true)}
+              >
+                <Search size={15} />
+                <span>Browse Full Icon Library</span>
+                <span className="badge-count-tag">85+ Icons</span>
+              </button>
             </div>
 
             {/* Realtime Preview */}
@@ -273,6 +304,15 @@ export function ManageHabitsModal({ habits, onAddHabit, onDeleteHabit, onClose }
             </button>
           </div>
         )}
+
+        {/* Full Icon Library Browser Modal */}
+        <IconLibraryModal
+          isOpen={showIconLibrary}
+          selectedIcon={selectedIcon}
+          selectedColor={selectedColor}
+          onSelectIcon={(iconId) => setSelectedIcon(iconId)}
+          onClose={() => setShowIconLibrary(false)}
+        />
       </div>
     </div>
   );
