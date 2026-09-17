@@ -41,6 +41,8 @@ export function AuthModal({ onClose }) {
   const wasLoggedInOnOpen = useRef(!!user);
 
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [resetEmailLoading, setResetEmailLoading] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -98,8 +100,13 @@ export function AuthModal({ onClose }) {
     if (msg.includes('auth/popup-closed-by-user')) {
       return 'Google sign-in was closed before completing.';
     }
-    if (msg.includes('auth/invalid-credential') || msg.includes('auth/wrong-password') || msg.includes('auth/user-not-found')) {
+    if (msg.includes('auth/invalid-credential') || msg.includes('auth/wrong-password')) {
       return 'Incorrect email or password.';
+    }
+    if (msg.includes('auth/user-not-found')) {
+      return isForgotPassword
+        ? 'No account registered with this email address.'
+        : 'Incorrect email or password.';
     }
     if (msg.includes('auth/email-already-in-use')) {
       return 'This email is already registered. Please sign in instead.';
@@ -113,7 +120,30 @@ export function AuthModal({ onClose }) {
     if (msg.includes('auth/requires-recent-login')) {
       return 'Please re-authenticate with your recent credentials to perform this action.';
     }
+    if (msg.includes('auth/too-many-requests')) {
+      return 'Too many requests. Please wait a few minutes before trying again.';
+    }
     return msg || 'Action failed. Please try again.';
+  };
+
+  const handleForgotPasswordSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSuccessMsg(null);
+    if (!email || !email.trim()) {
+      setError('Please enter your email address to receive a password reset link.');
+      return;
+    }
+    setResetEmailLoading(true);
+    try {
+      await sendPasswordReset(email.trim());
+      setSuccessMsg(`Password reset link sent to ${email.trim()}. Please check your inbox (and spam folder)!`);
+    } catch (err) {
+      console.error('Forgot password error:', err);
+      setError(formatAuthError(err));
+    } finally {
+      setResetEmailLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -300,12 +330,20 @@ export function AuthModal({ onClose }) {
         <div className="modal-header">
           <div className="modal-title-wrap">
             <h2 className="modal-title">
-              {user && wasLoggedInOnOpen.current ? 'Account Settings' : isSignUp ? 'Create an Account' : 'Welcome Back'}
+              {user && wasLoggedInOnOpen.current
+                ? 'Account Settings'
+                : isForgotPassword
+                  ? 'Reset Password'
+                  : isSignUp
+                    ? 'Create an Account'
+                    : 'Welcome Back'}
             </h2>
             <p className="modal-subtitle">
               {user && wasLoggedInOnOpen.current
                 ? 'Manage your profile, password, and account data'
-                : 'Cloud sync with Firebase Authentication & Firestore'}
+                : isForgotPassword
+                  ? 'Enter your email to receive a password reset link'
+                  : 'Cloud sync with Firebase Authentication & Firestore'}
             </p>
           </div>
           <button
@@ -726,6 +764,76 @@ export function AuthModal({ onClose }) {
               <LogIn size={15} style={{ transform: 'rotate(180deg)' }} /> Sign Out
             </button>
           </div>
+        ) : isForgotPassword ? (
+          <>
+            {/* Error or Success notification */}
+            {error && (
+              <div className="auth-alert error">
+                <AlertCircle size={16} />
+                <span>{error}</span>
+              </div>
+            )}
+            {successMsg && (
+              <div className="auth-alert success">
+                <CheckCircle2 size={16} />
+                <span>{successMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleForgotPasswordSubmit} className="auth-form" style={{ marginTop: '0.5rem' }}>
+              <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '1rem', lineHeight: 1.5 }}>
+                Enter the email address associated with your account and we&apos;ll send you a link to reset your password.
+              </p>
+
+              <div className="form-group">
+                <label htmlFor="reset-email">Email Address</label>
+                <div className="input-icon-wrap">
+                  <Mail size={16} className="input-icon" />
+                  <input
+                    id="reset-email"
+                    type="email"
+                    required
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="form-input"
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-full btn-primary"
+                disabled={resetEmailLoading}
+                style={{ marginTop: '0.8rem' }}
+              >
+                {resetEmailLoading ? 'Sending Link...' : 'Send Password Reset Link'}
+              </button>
+
+              <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
+                <button
+                  type="button"
+                  className="auth-link-btn"
+                  onClick={() => {
+                    setIsForgotPassword(false);
+                    setError(null);
+                    setSuccessMsg(null);
+                  }}
+                  style={{
+                    fontSize: '0.82rem',
+                    color: '#94a3b8',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    textDecoration: 'none'
+                  }}
+                >
+                  ← Back to Sign In
+                </button>
+              </div>
+            </form>
+          </>
         ) : (
           <>
             {/* Firebase Config Notice if needed */}
@@ -745,6 +853,7 @@ export function AuthModal({ onClose }) {
                 className={`auth-tab ${!isSignUp ? 'active' : ''}`}
                 onClick={() => {
                   setIsSignUp(false);
+                  setIsForgotPassword(false);
                   setError(null);
                   setSuccessMsg(null);
                   setSignUpConfirmPassword('');
@@ -760,6 +869,7 @@ export function AuthModal({ onClose }) {
                 className={`auth-tab ${isSignUp ? 'active' : ''}`}
                 onClick={() => {
                   setIsSignUp(true);
+                  setIsForgotPassword(false);
                   setError(null);
                   setSuccessMsg(null);
                   setSignUpConfirmPassword('');
@@ -859,7 +969,23 @@ export function AuthModal({ onClose }) {
               </div>
 
               <div className="form-group">
-                <label htmlFor="auth-password">Password</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                  <label htmlFor="auth-password" style={{ margin: 0 }}>Password</label>
+                  {!isSignUp && (
+                    <button
+                      type="button"
+                      className="auth-link-btn"
+                      onClick={() => {
+                        setIsForgotPassword(true);
+                        setError(null);
+                        setSuccessMsg(null);
+                      }}
+                      style={{ fontSize: '0.78rem' }}
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
                 <div className="input-icon-wrap">
                   <Lock size={16} className="input-icon" />
                   <input

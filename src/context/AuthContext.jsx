@@ -246,9 +246,11 @@ export function AuthProvider({ children }) {
     await updatePassword(currentUser, newPassword);
   };
 
-  const sendPasswordReset = async () => {
-    if (!auth || !auth.currentUser?.email) throw new Error('No user email found.');
-    await sendPasswordResetEmail(auth, auth.currentUser.email);
+  const sendPasswordReset = async (targetEmail = null) => {
+    if (!auth) throw new Error('Firebase Authentication is not configured yet.');
+    const emailToSend = (targetEmail && typeof targetEmail === 'string' ? targetEmail.trim() : null) || auth.currentUser?.email;
+    if (!emailToSend) throw new Error('Please enter your email address to receive a password reset link.');
+    await sendPasswordResetEmail(auth, emailToSend);
   };
 
   const resetAccountData = async () => {
