@@ -49,7 +49,7 @@ export function LoadingScreen({ onFinished, minDuration = 800 }) {
         {/* Brand Name & Subtitle */}
         <div className="loading-text-group">
           <h1 className="loading-brand-title">HabitWave</h1>
-          <p className="loading-brand-subtitle">Smoke-Free & Workout Day Tracker</p>
+          <p className="loading-brand-subtitle">Your Personal Habits Tracker</p>
         </div>
 
         {/* Animated Progress Track */}
@@ -65,6 +65,11 @@ export function LoadingScreen({ onFinished, minDuration = 800 }) {
           <Sparkles size={13} className="loading-quote-icon" />
           <span>{MOTIVATIONAL_QUOTES[quoteIndex]}</span>
         </div>
+      </div>
+
+      {/* Bottom Creator Footer */}
+      <div className="loading-footer">
+        <span>created by dubLive technologies</span>
       </div>
     </div>
   );

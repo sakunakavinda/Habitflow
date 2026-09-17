@@ -122,6 +122,9 @@ export function AuthProvider({ children }) {
 
   const signInWithGoogle = async () => {
     if (!auth || !googleProvider) throw new Error('Firebase Authentication is not configured yet.');
+    googleProvider.setCustomParameters({
+      prompt: 'select_account'
+    });
     const cred = await signInWithPopup(auth, googleProvider);
     const profile = await syncUserProfile(cred.user);
     setUserData(profile);
