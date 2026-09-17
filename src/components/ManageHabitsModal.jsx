@@ -53,7 +53,7 @@ export function ManageHabitsModal({ habits, onAddHabit, onDeleteHabit, onClose }
           <div className="modal-title-wrap">
             <h2 className="modal-title">Manage Habits</h2>
             <p className="modal-subtitle">
-              Add, customize, or remove the habits displayed on your calendar
+              Add, customize, or remove the habits
             </p>
           </div>
           <button
