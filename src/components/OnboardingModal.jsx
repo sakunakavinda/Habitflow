@@ -576,6 +576,16 @@ export default function OnboardingModal({ isOpen, userName, onComplete }) {
       onComplete(startDate);
       return;
     }
+
+    const startDateIndex = STEPS.findIndex(s => s.id === 'startdate');
+    // If on slides 1, 2, 3, or 4 (index 0, 1, 2, 3), jump directly to the 5th slide (Set Your Start Date)
+    if (step < startDateIndex) {
+      setDirection('forward');
+      setAnimKey(k => k + 1);
+      setStep(startDateIndex);
+      return;
+    }
+
     setDirection('forward');
     setAnimKey(k => k + 1);
     setStep(s => s + 1);
