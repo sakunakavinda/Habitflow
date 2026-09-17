@@ -861,10 +861,13 @@ h1, h2, h3, h4, .brand-title {
   justify-content: center;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  will-change: transform, opacity;
+  pointer-events: none;
+  transform-style: preserve-3d;
 }
 
 .wheel-face.prev {
-  transform: rotateY(-65deg) translateZ(85px);
+  transform: rotateY(-90deg) translateZ(85px);
 }
 
 .wheel-face.current {
@@ -872,7 +875,7 @@ h1, h2, h3, h4, .brand-title {
 }
 
 .wheel-face.next {
-  transform: rotateY(65deg) translateZ(85px);
+  transform: rotateY(90deg) translateZ(85px);
 }
 
 .panel-month-text {
@@ -894,13 +897,13 @@ h1, h2, h3, h4, .brand-title {
     perspective: 420px;
   }
   .wheel-face.prev {
-    transform: rotateY(-65deg) translateZ(98px);
+    transform: rotateY(-90deg) translateZ(98px);
   }
   .wheel-face.current {
     transform: rotateY(0deg) translateZ(98px);
   }
   .wheel-face.next {
-    transform: rotateY(65deg) translateZ(98px);
+    transform: rotateY(90deg) translateZ(98px);
   }
   .panel-month-text {
     font-size: 1.15rem;

@@ -272,22 +272,27 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
       : 'none'
   };
 
-  // Rolling Wheel Angle calculation
+  // 3D Rolling Cylinder Wheel Angle calculation
   let wheelAngle = 0;
   if (isDragging) {
-    wheelAngle = (dragOffsetPx / 180) * 60;
+    wheelAngle = Math.max(-90, Math.min(90, (dragOffsetPx / 150) * 90));
   } else if (isAnimating) {
-    if (targetPanelIndex === 2) wheelAngle = -60;
-    else if (targetPanelIndex === 0) wheelAngle = 60;
+    if (targetPanelIndex === 2) wheelAngle = -90;
+    else if (targetPanelIndex === 0) wheelAngle = 90;
     else wheelAngle = 0;
   }
 
   const wheelCylinderStyle = {
     transform: `rotateY(${wheelAngle}deg)`,
     transition: isAnimating
-      ? 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)'
+      ? 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
       : 'none'
   };
+
+  // Selective face opacity prevents previous/next months from peeking or flickering at rest
+  const prevOpacity = wheelAngle > 0 ? 1 : 0;
+  const nextOpacity = wheelAngle < 0 ? 1 : 0;
+  const currentOpacity = 1;
 
   const renderDaysPanel = (panelDays, panelIdx, isCurrent) => {
     return (
@@ -376,13 +381,13 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
               className="wheel-cylinder"
               style={wheelCylinderStyle}
             >
-              <div className="wheel-face prev">
+              <div className="wheel-face prev" style={{ opacity: prevOpacity }}>
                 <span className="panel-month-text">{MONTH_NAMES[prevMonthDate.getMonth()]}</span>
               </div>
-              <div className="wheel-face current">
+              <div className="wheel-face current" style={{ opacity: currentOpacity }}>
                 <span className="panel-month-text">{MONTH_NAMES[currentDate.getMonth()]}</span>
               </div>
-              <div className="wheel-face next">
+              <div className="wheel-face next" style={{ opacity: nextOpacity }}>
                 <span className="panel-month-text">{MONTH_NAMES[nextMonthDate.getMonth()]}</span>
               </div>
             </div>
