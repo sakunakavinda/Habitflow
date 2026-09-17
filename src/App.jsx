@@ -1,17 +1,20 @@
-import React, { useState, useMemo, useRef } from 'react';
-import { CalendarHeart, RotateCcw, Sparkles } from 'lucide-react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { CalendarHeart, RotateCcw, Sparkles, Smartphone, Check } from 'lucide-react';
 import { useHabitData } from './hooks/useHabitData';
-import { calculateMonthTotals, calculateStreaks } from './utils/calendarUtils';
+import { calculateMonthTotals, calculateStreaks, getTodayKey } from './utils/calendarUtils';
 import { CalendarHeader } from './components/CalendarHeader';
 import { MonthStats } from './components/MonthStats';
 import { QuickModeBar } from './components/QuickModeBar';
 import { CalendarGrid } from './components/CalendarGrid';
 import { DayModal } from './components/DayModal';
+import { WidgetsModal } from './components/WidgetsModal';
 
 export default function App() {
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [selectedDay, setSelectedDay] = useState(null);
   const [activeMode, setActiveMode] = useState('modal'); // 'modal' | 'smokeFree' | 'workout' | 'both'
+  const [showWidgetsModal, setShowWidgetsModal] = useState(false);
+  const [actionToast, setActionToast] = useState(null);
   const calendarRef = useRef(null);
 
   const {
@@ -35,6 +38,56 @@ export default function App() {
   const streaks = useMemo(() => {
     return calculateStreaks(habitData);
   }, [habitData]);
+
+  // Handle Home Screen Quick Actions from URL (?action=smoke-free, etc.)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const action = params.get('action');
+    if (action) {
+      const todayKey = getTodayKey();
+      if (action === 'smoke-free') {
+        toggleSmokeFree(todayKey);
+        setActionToast('🚭 Logged Smoke-Free for Today via Quick Action!');
+      } else if (action === 'workout') {
+        toggleWorkout(todayKey);
+        setActionToast('💪 Logged Workout for Today via Quick Action!');
+      } else if (action === 'both') {
+        toggleBoth(todayKey);
+        setActionToast('✨ Logged Both Habits for Today via Quick Action!');
+      }
+      window.history.replaceState({}, '', window.location.pathname);
+      const timer = setTimeout(() => setActionToast(null), 4500);
+      return () => clearTimeout(timer);
+    }
+  }, [toggleSmokeFree, toggleWorkout, toggleBoth]);
+
+  // Update App Icon Badge with live streak count on supported mobile browsers
+  useEffect(() => {
+    if ('setAppBadge' in navigator) {
+      if (streaks.smokeFreeStreak > 0) {
+        navigator.setAppBadge(streaks.smokeFreeStreak).catch(() => {});
+      } else if ('clearAppBadge' in navigator) {
+        navigator.clearAppBadge().catch(() => {});
+      }
+    }
+  }, [streaks.smokeFreeStreak]);
+
+  // Trigger shortcuts directly from the modal
+  const handleTriggerShortcut = (actionType) => {
+    const todayKey = getTodayKey();
+    if (actionType === 'smoke-free') {
+      toggleSmokeFree(todayKey);
+      setActionToast('🚭 Logged Smoke-Free for Today!');
+    } else if (actionType === 'workout') {
+      toggleWorkout(todayKey);
+      setActionToast('💪 Logged Workout for Today!');
+    } else if (actionType === 'both') {
+      toggleBoth(todayKey);
+      setActionToast('✨ Logged Both Habits for Today!');
+    }
+    setShowWidgetsModal(false);
+    setTimeout(() => setActionToast(null), 4000);
+  };
 
   // State updates called when calendar animation or swipe completes
   const handlePrevMonthDateUpdate = () => {
@@ -95,6 +148,16 @@ export default function App() {
           <button
             type="button"
             className="btn"
+            onClick={() => setShowWidgetsModal(true)}
+            title="Mobile Widgets, Shortcuts, and Install Guide"
+          >
+            <Smartphone size={15} />
+            <span>Widgets</span>
+          </button>
+
+          <button
+            type="button"
+            className="btn"
             onClick={restoreSampleData}
             title="Populate demo data to see features"
           >
@@ -103,6 +166,13 @@ export default function App() {
           </button>
         </div>
       </header>
+
+      {/* Action Toast for Shortcuts */}
+      {actionToast && (
+        <div className="action-toast" role="alert">
+          <span>{actionToast}</span>
+        </div>
+      )}
 
       {/* Monthly Statistics & Totals */}
       <section aria-label="Monthly Totals">
@@ -154,6 +224,15 @@ export default function App() {
           onToggleWorkout={toggleWorkout}
           onToggleBoth={toggleBoth}
           onClearDay={clearDay}
+        />
+      )}
+
+      {/* Mobile Widgets & PWA Shortcuts Modal */}
+      {showWidgetsModal && (
+        <WidgetsModal
+          onClose={() => setShowWidgetsModal(false)}
+          onTriggerShortcut={handleTriggerShortcut}
+          currentStreak={streaks.smokeFreeStreak}
         />
       )}
     </div>

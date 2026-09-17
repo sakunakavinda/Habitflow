@@ -1,0 +1,62 @@
+{
+  "name": "HabitFlow • Calendar Tracker",
+  "short_name": "HabitFlow",
+  "description": "Mark and track your smoke-free days and workouts with intuitive month swiping and statistics.",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0a0e1a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "48x48",
+      "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Log Smoke-Free",
+      "short_name": "Smoke-Free",
+      "description": "Mark today as smoke-free",
+      "url": "/?action=smoke-free",
+      "icons": [
+        {
+          "src": "/pwa-icon.svg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Log Workout",
+      "short_name": "Workout",
+      "description": "Mark today's workout as completed",
+      "url": "/?action=workout",
+      "icons": [
+        {
+          "src": "/pwa-icon.svg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Log Both Habits",
+      "short_name": "Both Habits",
+      "description": "Mark both smoke-free and workout completed today",
+      "url": "/?action=both",
+      "icons": [
+        {
+          "src": "/pwa-icon.svg",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
