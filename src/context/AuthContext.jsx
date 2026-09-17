@@ -139,6 +139,7 @@ export function AuthProvider({ children }) {
     }
     const profile = await syncUserProfile(cred.user, displayName);
     setUserData(profile);
+    setUser(cred.user);
     return cred.user;
   };
 

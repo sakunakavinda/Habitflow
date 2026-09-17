@@ -4235,11 +4235,25 @@ h1, h2, h3, h4, .brand-title {
           drop-shadow(0 0 50px rgba(234, 88, 12, 0.9));
 }
 
+/* Full-screen backdrop for login animation when modal is hidden */
+.auth-loading-screen-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: fadeIn 0.25s ease forwards;
+}
+
 /* Auth Modal Loading Overlay with Neon Logo */
 .auth-loading-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(8, 12, 16, 0.96);
+  background: transparent;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-radius: inherit;

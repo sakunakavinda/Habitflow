@@ -47,12 +47,12 @@ export function AuthModal({ onClose }) {
   const [successMsg, setSuccessMsg] = useState(null);
 
   // If the modal was opened while not logged in, close immediately upon authentication
-  // once loading completes, so the profile/account settings modal does not flash for a glance.
+  // so the profile/account settings modal does not flash for a glance.
   useEffect(() => {
-    if (!wasLoggedInOnOpen.current && user && !loading) {
+    if (!wasLoggedInOnOpen.current && user && (!loading || isSignUp)) {
       onClose();
     }
-  }, [user, loading, onClose]);
+  }, [user, loading, isSignUp, onClose]);
 
   // Account Settings Accordions: null | 'password' | 'reset' | 'delete'
   const [activeSetting, setActiveSetting] = useState(null);
@@ -123,9 +123,13 @@ export function AuthModal({ onClose }) {
           throw new Error('Password must be at least 6 characters.');
         }
         await signUpWithEmail(email, password, displayName);
-      } else {
-        await signInWithEmail(email, password);
+        // Take user directly home with no animation overlay or delay
+        setLoading(false);
+        onClose();
+        return;
       }
+
+      await signInWithEmail(email, password);
       const elapsed = Date.now() - startTime;
       const remaining = Math.max(0, 1100 - elapsed);
       setTimeout(() => {
@@ -255,9 +259,24 @@ export function AuthModal({ onClose }) {
     }
   };
 
+  // If user is logging in, completely hide the login modal and display only the floating animation
+  if (loading && !isSignUp) {
+    return (
+      <div className="auth-loading-screen-overlay">
+        <div className="auth-loading-card">
+          <NeonLogo size={200} />
+          <div className="auth-loading-info">
+            <h3 className="auth-loading-title">Logging In...</h3>
+            <p className="auth-loading-subtitle">Syncing your habits & streaks to the cloud</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // If the modal was opened while unauthenticated and the user has just logged in,
-  // do not render the profile / account settings view once loading finishes.
-  if (!wasLoggedInOnOpen.current && user && !loading) {
+  // do not render the profile / account settings view.
+  if (!wasLoggedInOnOpen.current && user && (!loading || isSignUp)) {
     return null;
   }
 
@@ -267,28 +286,14 @@ export function AuthModal({ onClose }) {
         className="modal-content auth-modal"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Animated Neon Logo Overlay while logging in */}
-        {loading && (
-          <div className="auth-loading-overlay">
-            <div className="auth-loading-card">
-              <NeonLogo size={190} />
-              <div className="auth-loading-info">
-                <h3 className="auth-loading-title">
-                  {isSignUp ? 'Creating Your Account...' : 'Logging In...'}
-                </h3>
-                <p className="auth-loading-subtitle">Syncing your habits & streaks to the cloud</p>
-              </div>
-            </div>
-          </div>
-        )}
         {/* Header */}
         <div className="modal-header">
           <div className="modal-title-wrap">
             <h2 className="modal-title">
-              {user ? 'Account Settings' : isSignUp ? 'Create an Account' : 'Welcome Back'}
+              {user && wasLoggedInOnOpen.current ? 'Account Settings' : isSignUp ? 'Create an Account' : 'Welcome Back'}
             </h2>
             <p className="modal-subtitle">
-              {user
+              {user && wasLoggedInOnOpen.current
                 ? 'Manage your profile, password, and account data'
                 : 'Cloud sync with Firebase Authentication & Firestore'}
             </p>
@@ -303,8 +308,8 @@ export function AuthModal({ onClose }) {
           </button>
         </div>
 
-        {/* If user is already logged in */}
-        {user ? (
+        {/* If user was already logged in on open */}
+        {user && wasLoggedInOnOpen.current ? (
           <div className="auth-profile-view">
             {/* Profile Info Card */}
             <div className="profile-badge-card">
@@ -696,6 +701,7 @@ export function AuthModal({ onClose }) {
                 onClick={() => {
                   setIsSignUp(false);
                   setError(null);
+                  setSuccessMsg(null);
                 }}
               >
                 <LogIn size={15} />
@@ -707,6 +713,7 @@ export function AuthModal({ onClose }) {
                 onClick={() => {
                   setIsSignUp(true);
                   setError(null);
+                  setSuccessMsg(null);
                 }}
               >
                 <UserPlus size={15} />
@@ -821,7 +828,9 @@ export function AuthModal({ onClose }) {
                 disabled={loading}
                 style={{ marginTop: '0.8rem' }}
               >
-                {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
+                {loading
+                  ? (isSignUp ? 'Creating Account...' : 'Signing In...')
+                  : (isSignUp ? 'Create Account' : 'Sign In')}
               </button>
             </form>
           </>
