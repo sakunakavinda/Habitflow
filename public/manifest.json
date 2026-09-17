@@ -1,7 +1,7 @@
 {
   "name": "HabitWave • Calendar Tracker",
   "short_name": "HabitWave",
-  "description": "Mark and track your smoke-free days and workouts with intuitive month swiping and statistics.",
+  "description": "Mark and track your daily habits with ease.",
   "start_url": "/",
   "id": "/",
   "display": "standalone",
