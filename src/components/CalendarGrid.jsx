@@ -4,9 +4,8 @@ import React, {
   useImperativeHandle,
   forwardRef,
   useCallback,
-  useLayoutEffect
+  useEffect
 } from 'react';
-import { CigaretteOff, Dumbbell, Sparkles } from 'lucide-react';
 import { WEEK_DAYS, MONTH_NAMES, getMonthGrid } from '../utils/calendarUtils';
 
 export const CalendarGrid = forwardRef(function CalendarGrid(
@@ -33,99 +32,105 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
   const currentDays = getMonthGrid(year, month);
   const nextDays = getMonthGrid(nextMonthDate.getFullYear(), nextMonthDate.getMonth());
 
-  // Carousel track state:
-  // Default offset is -33.3333% (showing panel 1, current month)
-  // When sliding to next, animates to -66.6666%
-  // When sliding to prev, animates to 0%
+  // Carousel track state
+  // Panel 0 = Prev month (0%), Panel 1 = Current month (-33.333333%), Panel 2 = Next month (-66.666667%)
+  const [targetPanelIndex, setTargetPanelIndex] = useState(1);
   const [dragOffsetPx, setDragOffsetPx] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [targetPanelIndex, setTargetPanelIndex] = useState(1); // 0 = prev, 1 = current, 2 = next
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Gesture refs
+  // Gesture tracking refs
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const currentDiffX = useRef(0);
+  const isHorizontalSwipe = useRef(false);
   const hasMovedRef = useRef(false);
+
   const trackRef = useRef(null);
+  const wheelCylinderRef = useRef(null);
+  const animTimerRef = useRef(null);
 
-  const animTimeoutRef = useRef(null);
+  // Complete slide transition and reset track seamlessly
+  const completeSlide = useCallback(
+    (destPanel) => {
+      if (animTimerRef.current) {
+        clearTimeout(animTimerRef.current);
+        animTimerRef.current = null;
+      }
 
-  // Called when transition or drag completion triggers month change
-  const completeAnimation = useCallback((destPanel) => {
-    if (animTimeoutRef.current) {
-      clearTimeout(animTimeoutRef.current);
-      animTimeoutRef.current = null;
-    }
-
-    // Call parent month update while leaving the track at destPanel (showing the new month!).
-    // We DO NOT snap back to panel 1 yet because panel 1 still has the old month.
-    // By waiting until currentDate updates, panel 1 will already contain the new month,
-    // completely eliminating any flashback or glimpse of the previous month!
-    if (destPanel === 2) {
-      onNextMonth();
-    } else if (destPanel === 0) {
-      onPrevMonth();
-    } else {
-      setIsAnimating(false);
-      setDragOffsetPx(0);
-      setTargetPanelIndex(1);
-    }
-  }, [onNextMonth, onPrevMonth]);
-
-  // Synchronously reset track back to center Panel 1 with NO transition
-  // ONLY AFTER React has re-rendered the new month into Panel 1 (before paint)!
-  useLayoutEffect(() => {
-    if (targetPanelIndex !== 1) {
+      // Immediately lock transform to center with transition none to prevent any visual backtrack
       if (trackRef.current) {
         trackRef.current.style.transition = 'none';
         trackRef.current.style.transform = 'translate3d(-33.333333%, 0, 0)';
-        void trackRef.current.offsetHeight; // commit without paint
       }
-      setTargetPanelIndex(1);
-      setDragOffsetPx(0);
-      setIsAnimating(false);
-    }
-  }, [currentDate]);
+      if (wheelCylinderRef.current) {
+        wheelCylinderRef.current.style.transition = 'none';
+        wheelCylinderRef.current.style.transform = 'rotateY(0deg)';
+      }
 
-  // Smooth slide to next month (swipe left or next button)
+      setDragOffsetPx(0);
+      setIsDragging(false);
+      setIsAnimating(false);
+      setTargetPanelIndex(1);
+
+      if (destPanel === 2) {
+        onNextMonth();
+      } else if (destPanel === 0) {
+        onPrevMonth();
+      }
+    },
+    [onNextMonth, onPrevMonth]
+  );
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (animTimerRef.current) clearTimeout(animTimerRef.current);
+    };
+  }, []);
+
+  // Programmatic Next (Chevrons / Keyboard)
   const slideNext = useCallback(() => {
     if (isAnimating) return;
     setIsAnimating(true);
     setIsDragging(false);
     setDragOffsetPx(0);
-    setTargetPanelIndex(2); // animate forward to panel 2
+    setTargetPanelIndex(2);
 
-    animTimeoutRef.current = setTimeout(() => {
-      completeAnimation(2);
-    }, 320);
-  }, [isAnimating, completeAnimation]);
+    animTimerRef.current = setTimeout(() => {
+      completeSlide(2);
+    }, 280);
+  }, [isAnimating, completeSlide]);
 
-  // Smooth slide to prev month (swipe right or prev button)
+  // Programmatic Prev (Chevrons / Keyboard)
   const slidePrev = useCallback(() => {
     if (isAnimating) return;
     setIsAnimating(true);
     setIsDragging(false);
     setDragOffsetPx(0);
-    setTargetPanelIndex(0); // animate backward to panel 0
+    setTargetPanelIndex(0);
 
-    animTimeoutRef.current = setTimeout(() => {
-      completeAnimation(0);
-    }, 320);
-  }, [isAnimating, completeAnimation]);
+    animTimerRef.current = setTimeout(() => {
+      completeSlide(0);
+    }, 280);
+  }, [isAnimating, completeSlide]);
 
-  // Expose slideNext and slidePrev to parent
-  useImperativeHandle(ref, () => ({
-    slideNext,
-    slidePrev
-  }), [slideNext, slidePrev]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      slideNext,
+      slidePrev
+    }),
+    [slideNext, slidePrev]
+  );
 
-  // Touch handlers
+  // Touch Event Handlers
   const handleTouchStart = (e) => {
     if (isAnimating) return;
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
     currentDiffX.current = 0;
+    isHorizontalSwipe.current = false;
     hasMovedRef.current = false;
     setIsDragging(true);
   };
@@ -135,13 +140,22 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
     const diffX = e.touches[0].clientX - touchStartX.current;
     const diffY = e.touches[0].clientY - touchStartY.current;
 
-    // Detect if movement is primarily horizontal
-    if (Math.abs(diffX) > 8 || hasMovedRef.current) {
-      if (Math.abs(diffX) > Math.abs(diffY)) {
+    if (!isHorizontalSwipe.current) {
+      // Determine swipe intent
+      if (Math.abs(diffX) > 6 && Math.abs(diffX) > Math.abs(diffY)) {
+        isHorizontalSwipe.current = true;
         hasMovedRef.current = true;
-        currentDiffX.current = diffX;
-        setDragOffsetPx(diffX);
+      } else if (Math.abs(diffY) > 8) {
+        // Vertical scroll, stop drag
+        setIsDragging(false);
+        return;
       }
+    }
+
+    if (isHorizontalSwipe.current) {
+      hasMovedRef.current = true;
+      currentDiffX.current = diffX;
+      setDragOffsetPx(diffX);
     }
   };
 
@@ -149,40 +163,43 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
     if (!isDragging || isAnimating) return;
     setIsDragging(false);
 
-    const threshold = 45; // px threshold to trigger month change
-    if (currentDiffX.current < -threshold) {
-      // Swiped left -> Go to Next month
+    const diff = currentDiffX.current;
+    const threshold = 40; // px to trigger month slide
+
+    if (diff < -threshold) {
+      // Swiped Left -> Next Month
       setIsAnimating(true);
       setDragOffsetPx(0);
       setTargetPanelIndex(2);
-      animTimeoutRef.current = setTimeout(() => {
-        completeAnimation(2);
-      }, 320);
-    } else if (currentDiffX.current > threshold) {
-      // Swiped right -> Go to Prev month
+      animTimerRef.current = setTimeout(() => {
+        completeSlide(2);
+      }, 280);
+    } else if (diff > threshold) {
+      // Swiped Right -> Prev Month
       setIsAnimating(true);
       setDragOffsetPx(0);
       setTargetPanelIndex(0);
-      animTimeoutRef.current = setTimeout(() => {
-        completeAnimation(0);
-      }, 320);
+      animTimerRef.current = setTimeout(() => {
+        completeSlide(0);
+      }, 280);
     } else {
-      // Snap smoothly back to center
+      // Snap back to current
       setIsAnimating(true);
       setDragOffsetPx(0);
       setTargetPanelIndex(1);
-      animTimeoutRef.current = setTimeout(() => {
+      animTimerRef.current = setTimeout(() => {
         setIsAnimating(false);
-      }, 320);
+      }, 280);
     }
   };
 
-  // Desktop Mouse Drag handlers
+  // Mouse drag handlers for desktop
   const handleMouseDown = (e) => {
     if (e.button !== 0 || isAnimating) return;
     touchStartX.current = e.clientX;
     touchStartY.current = e.clientY;
     currentDiffX.current = 0;
+    isHorizontalSwipe.current = false;
     hasMovedRef.current = false;
     setIsDragging(true);
   };
@@ -192,12 +209,10 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
     const diffX = e.clientX - touchStartX.current;
     const diffY = e.clientY - touchStartY.current;
 
-    if (Math.abs(diffX) > 8 || hasMovedRef.current) {
-      if (Math.abs(diffX) > Math.abs(diffY)) {
-        hasMovedRef.current = true;
-        currentDiffX.current = diffX;
-        setDragOffsetPx(diffX);
-      }
+    if (Math.abs(diffX) > 5) {
+      hasMovedRef.current = true;
+      currentDiffX.current = diffX;
+      setDragOffsetPx(diffX);
     }
   };
 
@@ -205,46 +220,31 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
     if (!isDragging || isAnimating) return;
     setIsDragging(false);
 
-    const threshold = 45;
-    if (currentDiffX.current < -threshold) {
+    const diff = currentDiffX.current;
+    const threshold = 40;
+
+    if (diff < -threshold) {
       setIsAnimating(true);
       setDragOffsetPx(0);
       setTargetPanelIndex(2);
-      animTimeoutRef.current = setTimeout(() => {
-        completeAnimation(2);
-      }, 320);
-    } else if (currentDiffX.current > threshold) {
+      animTimerRef.current = setTimeout(() => {
+        completeSlide(2);
+      }, 280);
+    } else if (diff > threshold) {
       setIsAnimating(true);
       setDragOffsetPx(0);
       setTargetPanelIndex(0);
-      animTimeoutRef.current = setTimeout(() => {
-        completeAnimation(0);
-      }, 320);
+      animTimerRef.current = setTimeout(() => {
+        completeSlide(0);
+      }, 280);
     } else {
       setIsAnimating(true);
       setDragOffsetPx(0);
       setTargetPanelIndex(1);
-      animTimeoutRef.current = setTimeout(() => {
+      animTimerRef.current = setTimeout(() => {
         setIsAnimating(false);
-      }, 320);
+      }, 280);
     }
-  };
-
-  // Called when CSS transition completes
-  const handleTransitionEnd = (e) => {
-    if (e.target !== trackRef.current) return;
-    if (!isAnimating) return;
-
-    if (targetPanelIndex === 1) {
-      setIsAnimating(false);
-      if (animTimeoutRef.current) {
-        clearTimeout(animTimeoutRef.current);
-        animTimeoutRef.current = null;
-      }
-      return;
-    }
-
-    completeAnimation(targetPanelIndex);
   };
 
   const handleCellClick = (day) => {
@@ -261,35 +261,35 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
     }
   };
 
-  // Calculate transform for the 3-panel track
-  // Base offset for panel 0 is 0%, panel 1 is -33.333333%, panel 2 is -66.666666%
+  // Base transform percentage: Panel 0 = 0%, Panel 1 = -33.333333%, Panel 2 = -66.666667%
   const basePercent = -targetPanelIndex * (100 / 3);
   const trackStyle = {
     transform: isDragging
       ? `translate3d(calc(${basePercent}% + ${dragOffsetPx}px), 0, 0)`
       : `translate3d(${basePercent}%, 0, 0)`,
     transition: isAnimating
-      ? 'transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)'
+      ? 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)'
       : 'none'
   };
 
-    let wheelAngle = 0;
+  // Rolling Wheel Angle calculation
+  let wheelAngle = 0;
   if (isDragging) {
-    wheelAngle = (dragOffsetPx / 200) * 65;
+    wheelAngle = (dragOffsetPx / 180) * 60;
   } else if (isAnimating) {
-    if (targetPanelIndex === 2) wheelAngle = -65;
-    else if (targetPanelIndex === 0) wheelAngle = 65;
+    if (targetPanelIndex === 2) wheelAngle = -60;
+    else if (targetPanelIndex === 0) wheelAngle = 60;
     else wheelAngle = 0;
   }
 
   const wheelCylinderStyle = {
     transform: `rotateY(${wheelAngle}deg)`,
     transition: isAnimating
-      ? 'transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)'
+      ? 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)'
       : 'none'
   };
 
-  const renderDaysPanel = (panelDays, isCurrent) => {
+  const renderDaysPanel = (panelDays, panelIdx, isCurrent) => {
     return (
       <div className="calendar-panel">
         <div className="days-grid">
@@ -301,7 +301,7 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
 
             return (
               <div
-                key={day.dateKey}
+                key={`p${panelIdx}-${day.dateKey}`}
                 onClick={() => isCurrent && handleCellClick(day)}
                 className={`day-cell ${!day.isCurrentMonth ? 'other-month' : ''} ${
                   day.isToday ? 'today' : ''
@@ -361,18 +361,21 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
             ref={trackRef}
             className="calendar-track"
             style={trackStyle}
-            onTransitionEnd={handleTransitionEnd}
           >
-            {renderDaysPanel(prevDays, false)}
-            {renderDaysPanel(currentDays, true)}
-            {renderDaysPanel(nextDays, false)}
+            {renderDaysPanel(prevDays, 0, false)}
+            {renderDaysPanel(currentDays, 1, true)}
+            {renderDaysPanel(nextDays, 2, false)}
           </div>
         </div>
 
-        {/* Rolling Wheel Month Display - Confined strictly to the width of the badge */}
+        {/* Rolling Wheel Month Display - Confined strictly to badge width */}
         <div className="wheel-month-container">
           <div className="wheel-cylinder-viewport">
-            <div className="wheel-cylinder" style={wheelCylinderStyle}>
+            <div
+              ref={wheelCylinderRef}
+              className="wheel-cylinder"
+              style={wheelCylinderStyle}
+            >
               <div className="wheel-face prev">
                 <span className="panel-month-text">{MONTH_NAMES[prevMonthDate.getMonth()]}</span>
               </div>

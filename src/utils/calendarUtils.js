@@ -80,10 +80,9 @@ export function getMonthGrid(year, month) {
     });
   }
 
-  // Next month padding days to complete 35 or 42 grid slots
-  const remainingSlots = (7 - (days.length % 7)) % 7;
-  // Ensure we at least show a clean consistent grid (35 or 42 cells)
-  const totalSlots = (days.length + remainingSlots) <= 35 ? 35 : 42;
+  // Fixed 42-cell matrix (6 rows x 7 days) ensures every month has identical height
+  // and eliminates any vertical jumping or flickering during swiping between months.
+  const totalSlots = 42;
   const needToAdd = totalSlots - days.length;
 
   for (let i = 1; i <= needToAdd; i++) {

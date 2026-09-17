@@ -547,6 +547,9 @@ h1, h2, h3, h4, .brand-title {
   width: 300%;
   will-change: transform;
   touch-action: pan-y;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .calendar-panel {
@@ -555,6 +558,9 @@ h1, h2, h3, h4, .brand-title {
   padding: 0;
   box-sizing: border-box;
   overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 /* Weekday header - perfectly aligned with days grid */
@@ -629,7 +635,9 @@ h1, h2, h3, h4, .brand-title {
   cursor: pointer;
   box-sizing: border-box;
   overflow: hidden;
-  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 @media (min-width: 640px) {
