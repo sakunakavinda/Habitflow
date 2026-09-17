@@ -24,6 +24,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 import AddToHomeModal from './components/AddToHomeModal';
 import StartDateModal from './components/StartDateModal';
 import OnboardingModal from './components/OnboardingModal';
+import DigitalClock from './components/DigitalClock';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -312,64 +313,69 @@ export default function App() {
             </div>
           </div>
 
-          <div className={`header-actions ${user ? 'has-user' : 'is-guest'}`}>
-            {/* User Profile / Auth Button */}
-            <button
-              type="button"
-              className={`btn btn-sm btn-user ${user ? 'logged-in' : ''}`}
-              onClick={() => setShowAuthModal(true)}
-              title={user ? `Signed in as ${user.email}` : 'Sign in or create account'}
-            >
-              {user ? (
-                <>
-                  <span className="user-avatar-tiny">
-                    {displayName ? displayName.charAt(0).toUpperCase() : 'U'}
-                  </span>
-                  <span className="btn-label">{displayName || 'Profile'}</span>
-                  <span className="online-indicator" title="Cloud Synced" />
-                </>
-              ) : (
-                <>
-                  <LogIn size={13} />
-                  <span className="btn-label">Sign In</span>
-                </>
-              )}
-            </button>
+          <div className="header-right-group">
+            <div className={`header-actions ${user ? 'has-user' : 'is-guest'}`}>
+              {/* User Profile / Auth Button */}
+              <button
+                type="button"
+                className={`btn btn-sm btn-user ${user ? 'logged-in' : ''}`}
+                onClick={() => setShowAuthModal(true)}
+                title={user ? `Signed in as ${user.email}` : 'Sign in or create account'}
+              >
+                {user ? (
+                  <>
+                    <span className="user-avatar-tiny">
+                      {displayName ? displayName.charAt(0).toUpperCase() : 'U'}
+                    </span>
+                    <span className="btn-label">{displayName || 'Profile'}</span>
+                    <span className="online-indicator" title="Cloud Synced" />
+                  </>
+                ) : (
+                  <>
+                    <LogIn size={13} />
+                    <span className="btn-label">Sign In</span>
+                  </>
+                )}
+              </button>
 
-            {/* Manage Custom Habits Button */}
-            <button
-              type="button"
-              className="btn btn-sm"
-              onClick={() => setShowHabitsModal(true)}
-              title="Add, edit, or customize habits and colors"
-            >
-              <SlidersHorizontal size={13} />
-              <span className="btn-label">Habits</span>
-            </button>
-
-            {/* Widgets Button */}
-            <button
-              type="button"
-              className="btn btn-sm"
-              onClick={() => setShowWidgetsModal(true)}
-              title="Mobile Widgets, Shortcuts, and Install Guide"
-            >
-              <Smartphone size={13} />
-              <span className="btn-label">Widgets</span>
-            </button>
-
-            {/* Reset Demo button for Guest mode */}
-            {!user && (
+              {/* Manage Custom Habits Button */}
               <button
                 type="button"
                 className="btn btn-sm"
-                onClick={restoreSampleData}
-                title="Reset to sample demo data"
+                onClick={() => setShowHabitsModal(true)}
+                title="Add, edit, or customize habits and colors"
               >
-                <RotateCcw size={13} />
-                <span className="btn-label">Reset</span>
+                <SlidersHorizontal size={13} />
+                <span className="btn-label">Habits</span>
               </button>
-            )}
+
+              {/* Widgets Button */}
+              <button
+                type="button"
+                className="btn btn-sm"
+                onClick={() => setShowWidgetsModal(true)}
+                title="Mobile Widgets, Shortcuts, and Install Guide"
+              >
+                <Smartphone size={13} />
+                <span className="btn-label">Widgets</span>
+              </button>
+
+              {/* Reset Demo button for Guest mode */}
+              {!user && (
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  onClick={restoreSampleData}
+                  title="Reset to sample demo data"
+                >
+                  <RotateCcw size={13} />
+                  <span className="btn-label">Reset</span>
+                </button>
+              )}
+            </div>
+
+            {/* Digital Clock in top-right */}
+            <DigitalClock />
           </div>
         </header>
 

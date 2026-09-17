@@ -135,10 +135,143 @@ h1, h2, h3, h4, .brand-title {
   font-weight: 500;
 }
 
+.header-right-group {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
 .header-actions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+/* Digital Clock Widget — Top Right (24-Hour Fixed Width, Zero Jitter) */
+.digital-clock-widget {
+  position: relative;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.digital-clock-bezel {
+  position: relative;
+  min-width: 128px;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, rgba(8, 15, 23, 0.95), rgba(4, 9, 15, 0.98));
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 10px;
+  padding: 0.35rem 0.65rem 0.3rem;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 14px rgba(16, 185, 129, 0.12),
+    0 0 14px rgba(16, 185, 129, 0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.digital-clock-glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 50% 20%, rgba(16, 185, 129, 0.12), transparent 60%);
+  pointer-events: none;
+}
+
+.digital-clock-digits {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  width: 100%;
+  font-family: 'Orbitron', ui-monospace, 'SF Mono', 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 1.1rem;
+  line-height: 1.1;
+  color: #34d399;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  text-shadow:
+    0 0 8px rgba(16, 185, 129, 0.8),
+    0 0 18px rgba(16, 185, 129, 0.4);
+  white-space: nowrap;
+}
+
+.digital-part {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  text-align: center;
+  min-width: 1.42em;
+}
+
+.digital-part--sec {
+  font-size: 0.88em;
+  color: #6ee7b7;
+  min-width: 1.42em;
+}
+
+.digital-colon {
+  display: inline-block;
+  margin: 0 3px;
+  animation: digitalPulse 1s infinite ease-in-out;
+  color: #10b981;
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.9);
+}
+
+.digital-colon--sec {
+  font-size: 0.88em;
+  opacity: 0.85;
+}
+
+@keyframes digitalPulse {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.9);
+  }
+  50% {
+    opacity: 0.25;
+    text-shadow: none;
+  }
+}
+
+.digital-clock-sub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  margin-top: 2px;
+  padding-top: 2px;
+  border-top: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.digital-date-text {
+  font-family: 'Orbitron', ui-monospace, 'SF Mono', monospace;
+  font-size: 0.53rem;
+  font-weight: 600;
+  color: rgba(167, 243, 208, 0.75);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.digital-format-tag {
+  font-family: var(--font-heading);
+  font-size: 0.52rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 3px;
+  border-radius: 3px;
+  letter-spacing: 0.04em;
 }
 
 /* Buttons */
@@ -2176,14 +2309,47 @@ h1, h2, h3, h4, .brand-title {
 
   /* Top Navigation & Header */
   .app-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand clock"
+      "actions actions";
+    gap: 0.65rem 0.5rem;
+    align-items: center;
   }
 
   .brand-wrapper {
-    width: 100%;
+    grid-area: brand;
+    width: auto;
+    min-width: 0;
     justify-content: flex-start;
+  }
+
+  .header-right-group {
+    display: contents;
+  }
+
+  .digital-clock-widget {
+    grid-area: clock;
+    justify-self: end;
+  }
+
+  .digital-clock-bezel {
+    min-width: 114px;
+    padding: 0.25rem 0.45rem 0.22rem;
+    border-radius: 8px;
+  }
+
+  .digital-clock-digits {
+    font-size: 0.95rem;
+  }
+
+  .digital-date-text {
+    font-size: 0.48rem;
+  }
+
+  .digital-format-tag {
+    font-size: 0.46rem;
   }
 
   .brand-icon {
@@ -2192,15 +2358,16 @@ h1, h2, h3, h4, .brand-title {
   }
 
   .brand-title {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
   }
 
   .brand-subtitle {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
   }
 
   /* Single-row compact action buttons without scrolling */
   .header-actions {
+    grid-area: actions;
     width: 100%;
     display: grid;
     gap: 0.35rem;
