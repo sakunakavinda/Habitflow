@@ -3,7 +3,8 @@ import React, {
   useState,
   useImperativeHandle,
   forwardRef,
-  useCallback
+  useCallback,
+  useLayoutEffect
 } from 'react';
 import { CigaretteOff, Dumbbell, Sparkles } from 'lucide-react';
 import { WEEK_DAYS, MONTH_NAMES, getMonthGrid } from '../utils/calendarUtils';
@@ -50,32 +51,42 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
 
   const animTimeoutRef = useRef(null);
 
-  // Helper to cleanly settle and snap back to panel 1 with zero reverse transition
-  const resetAfterAnimation = useCallback((destPanel) => {
+  // Called when transition or drag completion triggers month change
+  const completeAnimation = useCallback((destPanel) => {
     if (animTimeoutRef.current) {
       clearTimeout(animTimeoutRef.current);
       animTimeoutRef.current = null;
     }
 
-    // First disable transition on the DOM element directly so no backwards animation can occur
-    if (trackRef.current) {
-      trackRef.current.style.transition = 'none';
-      trackRef.current.style.transform = 'translate3d(-33.333333%, 0, 0)';
-      void trackRef.current.offsetHeight; // force DOM reflow
-    }
-
-    // Update parent month state
+    // Call parent month update while leaving the track at destPanel (showing the new month!).
+    // We DO NOT snap back to panel 1 yet because panel 1 still has the old month.
+    // By waiting until currentDate updates, panel 1 will already contain the new month,
+    // completely eliminating any flashback or glimpse of the previous month!
     if (destPanel === 2) {
       onNextMonth();
     } else if (destPanel === 0) {
       onPrevMonth();
+    } else {
+      setIsAnimating(false);
+      setDragOffsetPx(0);
+      setTargetPanelIndex(1);
     }
-
-    // Reset React state
-    setTargetPanelIndex(1);
-    setDragOffsetPx(0);
-    setIsAnimating(false);
   }, [onNextMonth, onPrevMonth]);
+
+  // Synchronously reset track back to center Panel 1 with NO transition
+  // ONLY AFTER React has re-rendered the new month into Panel 1 (before paint)!
+  useLayoutEffect(() => {
+    if (targetPanelIndex !== 1) {
+      if (trackRef.current) {
+        trackRef.current.style.transition = 'none';
+        trackRef.current.style.transform = 'translate3d(-33.333333%, 0, 0)';
+        void trackRef.current.offsetHeight; // commit without paint
+      }
+      setTargetPanelIndex(1);
+      setDragOffsetPx(0);
+      setIsAnimating(false);
+    }
+  }, [currentDate]);
 
   // Smooth slide to next month (swipe left or next button)
   const slideNext = useCallback(() => {
@@ -86,9 +97,9 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
     setTargetPanelIndex(2); // animate forward to panel 2
 
     animTimeoutRef.current = setTimeout(() => {
-      resetAfterAnimation(2);
+      completeAnimation(2);
     }, 320);
-  }, [isAnimating, resetAfterAnimation]);
+  }, [isAnimating, completeAnimation]);
 
   // Smooth slide to prev month (swipe right or prev button)
   const slidePrev = useCallback(() => {
@@ -99,9 +110,9 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
     setTargetPanelIndex(0); // animate backward to panel 0
 
     animTimeoutRef.current = setTimeout(() => {
-      resetAfterAnimation(0);
+      completeAnimation(0);
     }, 320);
-  }, [isAnimating, resetAfterAnimation]);
+  }, [isAnimating, completeAnimation]);
 
   // Expose slideNext and slidePrev to parent
   useImperativeHandle(ref, () => ({
@@ -145,7 +156,7 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
       setDragOffsetPx(0);
       setTargetPanelIndex(2);
       animTimeoutRef.current = setTimeout(() => {
-        resetAfterAnimation(2);
+        completeAnimation(2);
       }, 320);
     } else if (currentDiffX.current > threshold) {
       // Swiped right -> Go to Prev month
@@ -153,7 +164,7 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
       setDragOffsetPx(0);
       setTargetPanelIndex(0);
       animTimeoutRef.current = setTimeout(() => {
-        resetAfterAnimation(0);
+        completeAnimation(0);
       }, 320);
     } else {
       // Snap smoothly back to center
@@ -200,14 +211,14 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
       setDragOffsetPx(0);
       setTargetPanelIndex(2);
       animTimeoutRef.current = setTimeout(() => {
-        resetAfterAnimation(2);
+        completeAnimation(2);
       }, 320);
     } else if (currentDiffX.current > threshold) {
       setIsAnimating(true);
       setDragOffsetPx(0);
       setTargetPanelIndex(0);
       animTimeoutRef.current = setTimeout(() => {
-        resetAfterAnimation(0);
+        completeAnimation(0);
       }, 320);
     } else {
       setIsAnimating(true);
@@ -233,7 +244,7 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
       return;
     }
 
-    resetAfterAnimation(targetPanelIndex);
+    completeAnimation(targetPanelIndex);
   };
 
   const handleCellClick = (day) => {
