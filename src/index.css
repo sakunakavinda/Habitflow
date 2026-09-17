@@ -2267,6 +2267,17 @@ h1, h2, h3, h4, .brand-title {
   color: #fca5a5;
 }
 
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #ffffff;
+  font-weight: 600;
+  border: none;
+}
+.btn-danger:hover {
+  background: linear-gradient(135deg, #f87171, #ef4444);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+
 .btn-subtle {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);

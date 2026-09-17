@@ -89,6 +89,10 @@ export function AuthModal({ onClose }) {
   const [deleteError, setDeleteError] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  // Sign Out Confirmation state
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
+
   const isPasswordUser = user?.providerData?.some(p => p.providerId === 'password');
   const isGoogleUser = user?.providerData?.some(p => p.providerId === 'google.com');
 
@@ -201,11 +205,15 @@ export function AuthModal({ onClose }) {
   };
 
   const handleLogout = async () => {
+    setLogoutLoading(true);
     try {
       await logout();
+      setShowLogoutConfirm(false);
       onClose();
     } catch (err) {
       console.error('Logout error:', err);
+    } finally {
+      setLogoutLoading(false);
     }
   };
 
@@ -411,6 +419,7 @@ export function AuthModal({ onClose }) {
                   className="auth-accordion-header"
                   onClick={() => {
                     setActiveSetting(prev => prev === 'password' ? null : 'password');
+                    setShowLogoutConfirm(false);
                     setPasswordError(null);
                     setPasswordSuccess(null);
                   }}
@@ -552,6 +561,7 @@ export function AuthModal({ onClose }) {
                   className="auth-accordion-header"
                   onClick={() => {
                     setActiveSetting(prev => prev === 'reset' ? null : 'reset');
+                    setShowLogoutConfirm(false);
                     setResetError(null);
                     setResetSuccess(null);
                     setShowResetConfirm(false);
@@ -634,6 +644,7 @@ export function AuthModal({ onClose }) {
                   className="auth-accordion-header"
                   onClick={() => {
                     setActiveSetting(prev => prev === 'delete' ? null : 'delete');
+                    setShowLogoutConfirm(false);
                     setDeleteError(null);
                     setShowDeleteConfirm(false);
                     setDeleteConfirmText('');
@@ -755,14 +766,45 @@ export function AuthModal({ onClose }) {
               <span>Your habits, logs, and streaks are securely stored in your personal Firestore collection.</span>
             </div>
 
-            <button
-              type="button"
-              className="btn btn-full btn-outline-danger"
-              onClick={handleLogout}
-              style={{ marginTop: '1rem' }}
-            >
-              <LogIn size={15} style={{ transform: 'rotate(180deg)' }} /> Sign Out
-            </button>
+            {!showLogoutConfirm ? (
+              <button
+                type="button"
+                className="btn btn-full btn-outline-danger"
+                onClick={() => setShowLogoutConfirm(true)}
+                style={{ marginTop: '1rem' }}
+              >
+                <LogIn size={15} style={{ transform: 'rotate(180deg)' }} /> Sign Out
+              </button>
+            ) : (
+              <div className="auth-confirm-dialog danger" style={{ marginTop: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <AlertTriangle size={16} color="#ef4444" />
+                  <span className="auth-confirm-title" style={{ margin: 0 }}>Confirm Sign Out</span>
+                </div>
+                <div className="auth-confirm-text">
+                  Are you sure you want to sign out of your account?
+                </div>
+                <div className="auth-confirm-actions">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-subtle"
+                    onClick={() => setShowLogoutConfirm(false)}
+                    disabled={logoutLoading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-danger"
+                    onClick={handleLogout}
+                    disabled={logoutLoading}
+                  >
+                    <LogIn size={14} style={{ transform: 'rotate(180deg)' }} />
+                    {logoutLoading ? 'Signing Out...' : 'Yes, Sign Out'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : isForgotPassword ? (
           <>
