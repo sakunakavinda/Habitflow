@@ -58,16 +58,15 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
         animTimerRef.current = null;
       }
 
-      // Immediately lock transform to center with transition none to prevent any visual backtrack
+      // Turn off CSS transition so that React's batched commit snaps to panel 1 with zero animation
       if (trackRef.current) {
         trackRef.current.style.transition = 'none';
-        trackRef.current.style.transform = 'translate3d(-33.333333%, 0, 0)';
       }
       if (wheelCylinderRef.current) {
         wheelCylinderRef.current.style.transition = 'none';
-        wheelCylinderRef.current.style.transform = 'rotateY(0deg)';
       }
 
+      // Batch state updates so new month and panel index 1 commit in the exact same DOM update
       setDragOffsetPx(0);
       setIsDragging(false);
       setIsAnimating(false);
@@ -285,7 +284,7 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
   const wheelCylinderStyle = {
     transform: `rotateY(${wheelAngle}deg)`,
     transition: isAnimating
-      ? 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+      ? 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)'
       : 'none'
   };
 
