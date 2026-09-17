@@ -29,7 +29,8 @@ const AuthContext = createContext({
   signInWithGoogle: async () => {},
   logout: async () => {},
   markAddToHomeSeen: async () => {},
-  setJourneyStartDate: async () => {}
+  setJourneyStartDate: async () => {},
+  markOnboardingComplete: async () => {}
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -54,6 +55,7 @@ export function AuthProvider({ children }) {
           name,
           joinedAt: serverTimestamp(),
           hasSeenAddToHome: false,
+          hasSeenOnboarding: false,
           startDate: null
         };
         await setDoc(userDocRef, initialData);
@@ -162,6 +164,22 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const markOnboardingComplete = async () => {
+    if (!user) return;
+    try {
+      localStorage.setItem(`habitwave_onboarding_done_${user.uid}`, 'true');
+      if (db) {
+        const userDocRef = doc(db, 'users', user.uid);
+        await updateDoc(userDocRef, { hasSeenOnboarding: true });
+      }
+      setUserData(prev => prev ? { ...prev, hasSeenOnboarding: true } : prev);
+    } catch (err) {
+      console.error('Error marking onboarding complete:', err);
+      // Still update local state so UI doesn't loop
+      setUserData(prev => prev ? { ...prev, hasSeenOnboarding: true } : prev);
+    }
+  };
+
   const setJourneyStartDate = async (startDateStr) => {
     if (!user) {
       localStorage.setItem('habitwave_guest_start_date', startDateStr);
@@ -193,7 +211,8 @@ export function AuthProvider({ children }) {
         signInWithGoogle,
         logout,
         markAddToHomeSeen,
-        setJourneyStartDate
+        setJourneyStartDate,
+        markOnboardingComplete
       }}
     >
       {children}

@@ -23,6 +23,7 @@ import { ManageHabitsModal } from './components/ManageHabitsModal';
 import { LoadingScreen } from './components/LoadingScreen';
 import AddToHomeModal from './components/AddToHomeModal';
 import StartDateModal from './components/StartDateModal';
+import OnboardingModal from './components/OnboardingModal';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -34,10 +35,11 @@ export default function App() {
   const [showHabitsModal, setShowHabitsModal] = useState(false);
   const [showAddToHomeModal, setShowAddToHomeModal] = useState(false);
   const [showStartDateModal, setShowStartDateModal] = useState(false);
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [actionToast, setActionToast] = useState(null);
   const calendarRef = useRef(null);
 
-  const { user, userData, markAddToHomeSeen, setJourneyStartDate } = useAuth();
+  const { user, userData, markAddToHomeSeen, setJourneyStartDate, markOnboardingComplete } = useAuth();
   const {
     habits,
     logs,
@@ -138,7 +140,7 @@ export default function App() {
       document.body.style.top = '';
       document.body.style.width = '';
     };
-  }, [selectedDay, showWidgetsModal, showAuthModal, showHabitsModal, showAddToHomeModal, showStartDateModal]);
+  }, [selectedDay, showWidgetsModal, showAuthModal, showHabitsModal, showAddToHomeModal, showStartDateModal, showOnboardingModal]);
 
   // Trigger shortcuts directly from the modal
   const handleTriggerShortcut = (actionType) => {
@@ -166,31 +168,41 @@ export default function App() {
     setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   };
 
-  // Automatically manage onboarding sequence for registered users:
-  // Step 1: Set Journey Start Date (if not yet configured)
-  // Step 2: Show Add to Home Screen guide (if on browser/mobile outside standalone)
+  // Onboarding sequence for registered users:
+  // — New users (hasSeenOnboarding !== true): show the full onboarding wizard
+  // — Returning users who skipped start date: fall back to StartDateModal
+  // — Users already onboarded: skip everything
   useEffect(() => {
-    if (user && userData) {
-      // Step 1: If user does not have a start date yet, open StartDateModal
-      if (!userData.startDate) {
-        const timer = setTimeout(() => {
-          setShowStartDateModal(true);
-        }, 700);
-        return () => clearTimeout(timer);
-      }
+    if (!user || !userData) return;
 
-      // Step 2: Once start date is configured, check if AddToHome guide should be shown
-      const isStandalone =
-        window.matchMedia('(display-mode: standalone)').matches ||
-        window.navigator.standalone === true;
-      const localSeen = user ? localStorage.getItem(`habitwave_seen_pwa_guide_${user.uid}`) : null;
+    // New user — show full onboarding wizard
+    const localOnboardingDone = localStorage.getItem(`habitwave_onboarding_done_${user.uid}`);
+    if (!localOnboardingDone && userData.hasSeenOnboarding !== true) {
+      const timer = setTimeout(() => {
+        setShowOnboardingModal(true);
+      }, 600);
+      return () => clearTimeout(timer);
+    }
 
-      if (!isStandalone && !localSeen && userData.hasSeenAddToHome !== true) {
-        const timer = setTimeout(() => {
-          setShowAddToHomeModal(true);
-        }, 800);
-        return () => clearTimeout(timer);
-      }
+    // Returning user who completed onboarding but somehow missed start date
+    if (!userData.startDate) {
+      const timer = setTimeout(() => {
+        setShowStartDateModal(true);
+      }, 700);
+      return () => clearTimeout(timer);
+    }
+
+    // Check if AddToHome guide should be shown (for users who completed onboarding)
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
+    const localSeen = localStorage.getItem(`habitwave_seen_pwa_guide_${user.uid}`);
+
+    if (!isStandalone && !localSeen && userData.hasSeenAddToHome !== true) {
+      const timer = setTimeout(() => {
+        setShowAddToHomeModal(true);
+      }, 800);
+      return () => clearTimeout(timer);
     }
   }, [user, userData]);
 
@@ -212,6 +224,28 @@ export default function App() {
         setShowAddToHomeModal(true);
       }, 500);
     }
+  };
+
+  const handleOnboardingComplete = async (startDateStr) => {
+    setShowOnboardingModal(false);
+
+    // Save start date
+    if (startDateStr && setJourneyStartDate) {
+      await setJourneyStartDate(startDateStr);
+    }
+
+    // Mark onboarding done in Firestore + localStorage
+    if (markOnboardingComplete) {
+      await markOnboardingComplete();
+    }
+
+    // Also mark PWA guide seen so it doesn't trigger separately
+    if (markAddToHomeSeen) {
+      await markAddToHomeSeen();
+    }
+
+    setActionToast('🎉 All set! Your journey starts today.');
+    setTimeout(() => setActionToast(null), 3500);
   };
 
   const handleDismissAddToHome = () => {
@@ -452,7 +486,14 @@ export default function App() {
           />
         )}
 
-        {/* Journey Start Date Onboarding Modal */}
+        {/* New User Onboarding Wizard (shown once on first login) */}
+        <OnboardingModal
+          isOpen={showOnboardingModal}
+          userName={userData?.name || user?.displayName}
+          onComplete={handleOnboardingComplete}
+        />
+
+        {/* Journey Start Date Modal (fallback for returning users without start date) */}
         <StartDateModal
           isOpen={showStartDateModal}
           initialDate={userData?.startDate}

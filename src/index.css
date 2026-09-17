@@ -3333,7 +3333,533 @@ h1, h2, h3, h4, .brand-title {
   border: 1px solid rgba(16, 185, 129, 0.4);
 }
 
+/* ==========================================================================
+   Onboarding Modal Wizard
+   ========================================================================== */
 
+/* Overlay: sits above all other modals */
+.ob-overlay {
+  z-index: 110000;
+}
 
+/* Modal card: wider than default on desktop */
+.onboarding-modal {
+  gap: 0;
+  padding: 1.35rem 1.25rem calc(env(safe-area-inset-bottom, 16px) + 1.35rem);
+}
 
+@media (min-width: 640px) {
+  .onboarding-modal {
+    max-width: 520px;
+    padding: 2rem;
+  }
+}
+
+/* ── Top bar: dots + skip ───────────────────────────────────── */
+.ob-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.1rem;
+  flex-shrink: 0;
+}
+
+.ob-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.ob-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  transition: all 0.3s ease;
+}
+
+.ob-dot--done {
+  background: rgba(16, 185, 129, 0.45);
+  width: 7px;
+}
+
+.ob-dot--active {
+  background: #10b981;
+  width: 22px;
+  border-radius: 999px;
+}
+
+.ob-skip-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0.25rem 0.4rem;
+  border-radius: 6px;
+  transition: color 0.15s ease;
+}
+
+.ob-skip-btn:hover {
+  color: var(--text-secondary);
+}
+
+/* ── Slide container + animation ────────────────────────────── */
+.ob-slide {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.ob-slide--forward {
+  animation: obSlideInRight 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ob-slide--back {
+  animation: obSlideInLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes obSlideInRight {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes obSlideInLeft {
+  from { opacity: 0; transform: translateX(-32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Illustration wrapper ───────────────────────────────────── */
+.ob-illustration {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+}
+
+/* ── Slide title & description ──────────────────────────────── */
+.ob-slide-title {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.ob-slide-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  max-width: 380px;
+  margin: 0;
+}
+
+/* ── Welcome: orbiting ring ─────────────────────────────────── */
+.ob-hero-ring {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin-bottom: 0.25rem;
+}
+
+.ob-hero-icon {
+  position: absolute;
+  inset: 50%;
+  transform: translate(-50%, -50%);
+  width: 72px;
+  height: 72px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1.5px solid rgba(16, 185, 129, 0.3);
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 28px rgba(16, 185, 129, 0.25);
+}
+
+.ob-orbit {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px dashed rgba(255,255,255,0.1);
+  animation: obOrbit linear infinite;
+}
+
+.ob-orbit-1 { animation-duration: 5s; }
+.ob-orbit-2 { animation-duration: 7.5s; animation-direction: reverse; }
+.ob-orbit-3 { animation-duration: 10s; }
+
+.ob-orbit-dot {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+}
+
+@keyframes obOrbit {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Log step: demo calendar row ────────────────────────────── */
+.ob-demo-calendar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.ob-demo-cell {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.ob-demo-cell--done {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.35);
+  animation: obCellPop 0.4s ease both;
+}
+
+.ob-demo-cell--today {
+  border-color: rgba(59, 130, 246, 0.6);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.ob-today-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3b82f6;
+}
+
+@keyframes obCellPop {
+  0%   { transform: scale(0.75); opacity: 0; }
+  70%  { transform: scale(1.08); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+.ob-demo-cell:nth-child(1) { animation-delay: 0.05s; }
+.ob-demo-cell:nth-child(2) { animation-delay: 0.12s; }
+.ob-demo-cell:nth-child(3) { animation-delay: 0.19s; }
+.ob-demo-cell:nth-child(4) { animation-delay: 0.26s; }
+.ob-demo-cell:nth-child(5) { animation-delay: 0.33s; }
+
+/* ── Streaks step: stats preview ────────────────────────────── */
+.ob-stats-preview {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 0.5rem;
+}
+
+.ob-stat-card {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 14px;
+  padding: 0.75rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.ob-stat-card--accent {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.22);
+}
+
+.ob-stat-num {
+  font-family: var(--font-heading);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.ob-stat-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+/* ── Start date step ─────────────────────────────────────────── */
+.ob-start-date {
+  align-items: stretch;
+  text-align: left;
+}
+
+.ob-start-date .ob-slide-title,
+.ob-start-date .ob-slide-desc {
+  text-align: left;
+}
+
+.ob-start-icon-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.25rem;
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.18);
+}
+
+.ob-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.79rem;
+  color: rgba(253, 230, 138, 0.9);
+  line-height: 1.45;
+}
+
+.ob-presets {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ob-preset-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.4rem 0.75rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 500;
+}
+
+.ob-preset-btn:hover {
+  background: rgba(255,255,255,0.09);
+  color: #fff;
+}
+
+.ob-preset-btn.active {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.45);
+  color: #34d399;
+}
+
+.ob-date-input-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ob-date-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ob-date-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(16, 185, 129, 0.07);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  gap: 0.5rem;
+}
+
+.ob-date-preview-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.ob-date-preview-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #34d399;
+  text-align: right;
+}
+
+/* ── PWA step ────────────────────────────────────────────────── */
+.ob-pwa {
+  align-items: stretch;
+  text-align: left;
+  gap: 0.85rem;
+}
+
+.ob-pwa-icon-wrap {
+  align-self: center;
+  margin-bottom: 0.1rem;
+}
+
+.ob-pwa-phone {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1.5px solid rgba(59, 130, 246, 0.3);
+  border-radius: 22px;
+  box-shadow: 0 0 28px rgba(59, 130, 246, 0.2);
+}
+
+.ob-pwa-badge-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 14px;
+  height: 14px;
+  background: #10b981;
+  border-radius: 50%;
+  border: 2px solid #111728;
+  animation: obPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes obPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.2); opacity: 0.8; }
+}
+
+.ob-pwa-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ob-pwa-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.ob-pwa-step-num {
+  min-width: 22px;
+  height: 22px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* ── Error message ───────────────────────────────────────────── */
+.ob-error {
+  font-size: 0.78rem;
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  flex-shrink: 0;
+}
+
+/* ── Footer navigation ───────────────────────────────────────── */
+.ob-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-shrink: 0;
+}
+
+.ob-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.6rem 1rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ob-back-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.ob-next-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0.65rem 1.35rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+  flex: 1;
+  justify-content: center;
+  max-width: 260px;
+  margin-left: auto;
+}
+
+.ob-next-btn:hover {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+  transform: translateY(-1px);
+}
+
+.ob-next-btn--required {
+  background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+}
+
+.ob-next-btn--required:hover {
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
+}
 
