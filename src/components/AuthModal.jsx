@@ -15,7 +15,9 @@ import {
   AlertTriangle,
   ChevronDown,
   ChevronUp,
-  ShieldCheck
+  ShieldCheck,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { NeonLogo } from './NeonLogo';
@@ -42,6 +44,9 @@ export function AuthModal({ onClose }) {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [signUpConfirmPassword, setSignUpConfirmPassword] = useState('');
+  const [showAuthPassword, setShowAuthPassword] = useState(false);
+  const [showSignUpConfirmPw, setShowSignUpConfirmPw] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState(null);
@@ -61,6 +66,9 @@ export function AuthModal({ onClose }) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmNewPw, setShowConfirmNewPw] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState(null);
   const [passwordSuccess, setPasswordSuccess] = useState(null);
@@ -73,6 +81,7 @@ export function AuthModal({ onClose }) {
 
   // Delete Account state
   const [deletePassword, setDeletePassword] = useState('');
+  const [showDeletePw, setShowDeletePw] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
@@ -116,11 +125,14 @@ export function AuthModal({ onClose }) {
 
     try {
       if (isSignUp) {
-        if (!displayName.trim() || !email || !password) {
+        if (!displayName.trim() || !email || !password || !signUpConfirmPassword) {
           throw new Error('Please fill in all required fields.');
         }
         if (password.length < 6) {
           throw new Error('Password must be at least 6 characters.');
+        }
+        if (password !== signUpConfirmPassword) {
+          throw new Error('Passwords do not match.');
         }
         await signUpWithEmail(email, password, displayName.trim());
       } else {
@@ -407,13 +419,21 @@ export function AuthModal({ onClose }) {
                             <Lock size={15} className="input-icon" />
                             <input
                               id="current-pw"
-                              type="password"
-                              className="form-input"
+                              type={showCurrentPw ? 'text' : 'password'}
+                              className="form-input with-toggle-pw"
                               placeholder="Enter current password"
                               value={currentPassword}
                               onChange={(e) => setCurrentPassword(e.target.value)}
                               required
                             />
+                            <button
+                              type="button"
+                              className="input-toggle-pw"
+                              onClick={() => setShowCurrentPw(prev => !prev)}
+                              aria-label={showCurrentPw ? 'Hide password' : 'Show password'}
+                            >
+                              {showCurrentPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                            </button>
                           </div>
                         </div>
 
@@ -423,13 +443,21 @@ export function AuthModal({ onClose }) {
                             <Lock size={15} className="input-icon" />
                             <input
                               id="new-pw"
-                              type="password"
-                              className="form-input"
+                              type={showNewPw ? 'text' : 'password'}
+                              className="form-input with-toggle-pw"
                               placeholder="Min. 6 characters"
                               value={newPassword}
                               onChange={(e) => setNewPassword(e.target.value)}
                               required
                             />
+                            <button
+                              type="button"
+                              className="input-toggle-pw"
+                              onClick={() => setShowNewPw(prev => !prev)}
+                              aria-label={showNewPw ? 'Hide password' : 'Show password'}
+                            >
+                              {showNewPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                            </button>
                           </div>
                         </div>
 
@@ -439,13 +467,21 @@ export function AuthModal({ onClose }) {
                             <Lock size={15} className="input-icon" />
                             <input
                               id="confirm-pw"
-                              type="password"
-                              className="form-input"
+                              type={showConfirmNewPw ? 'text' : 'password'}
+                              className="form-input with-toggle-pw"
                               placeholder="Repeat new password"
                               value={confirmPassword}
                               onChange={(e) => setConfirmPassword(e.target.value)}
                               required
                             />
+                            <button
+                              type="button"
+                              className="input-toggle-pw"
+                              onClick={() => setShowConfirmNewPw(prev => !prev)}
+                              aria-label={showConfirmNewPw ? 'Hide password' : 'Show password'}
+                            >
+                              {showConfirmNewPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                            </button>
                           </div>
                         </div>
 
@@ -624,14 +660,25 @@ export function AuthModal({ onClose }) {
                         {isPasswordUser && (
                           <div className="form-group" style={{ marginBottom: '8px' }}>
                             <label className="form-label" style={{ fontSize: '0.72rem' }}>Confirm Your Password</label>
-                            <input
-                              type="password"
-                              className="form-input"
-                              placeholder="Enter current password"
-                              value={deletePassword}
-                              onChange={(e) => setDeletePassword(e.target.value)}
-                              style={{ borderColor: 'rgba(239, 68, 68, 0.4)' }}
-                            />
+                            <div className="input-with-icon">
+                              <Lock size={14} className="input-icon" />
+                              <input
+                                type={showDeletePw ? 'text' : 'password'}
+                                className="form-input with-toggle-pw"
+                                placeholder="Enter current password"
+                                value={deletePassword}
+                                onChange={(e) => setDeletePassword(e.target.value)}
+                                style={{ borderColor: 'rgba(239, 68, 68, 0.4)' }}
+                              />
+                              <button
+                                type="button"
+                                className="input-toggle-pw"
+                                onClick={() => setShowDeletePw(prev => !prev)}
+                                aria-label={showDeletePw ? 'Hide password' : 'Show password'}
+                              >
+                                {showDeletePw ? <EyeOff size={15} /> : <Eye size={15} />}
+                              </button>
+                            </div>
                           </div>
                         )}
 
@@ -700,6 +747,9 @@ export function AuthModal({ onClose }) {
                   setIsSignUp(false);
                   setError(null);
                   setSuccessMsg(null);
+                  setSignUpConfirmPassword('');
+                  setShowAuthPassword(false);
+                  setShowSignUpConfirmPw(false);
                 }}
               >
                 <LogIn size={15} />
@@ -712,6 +762,9 @@ export function AuthModal({ onClose }) {
                   setIsSignUp(true);
                   setError(null);
                   setSuccessMsg(null);
+                  setSignUpConfirmPassword('');
+                  setShowAuthPassword(false);
+                  setShowSignUpConfirmPw(false);
                 }}
               >
                 <UserPlus size={15} />
@@ -811,15 +864,49 @@ export function AuthModal({ onClose }) {
                   <Lock size={16} className="input-icon" />
                   <input
                     id="auth-password"
-                    type="password"
+                    type={showAuthPassword ? 'text' : 'password'}
                     required
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="form-input"
+                    className="form-input with-toggle-pw"
                   />
+                  <button
+                    type="button"
+                    className="input-toggle-pw"
+                    onClick={() => setShowAuthPassword(prev => !prev)}
+                    aria-label={showAuthPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showAuthPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
               </div>
+
+              {isSignUp && (
+                <div className="form-group">
+                  <label htmlFor="auth-confirm-password">Confirm Password</label>
+                  <div className="input-icon-wrap">
+                    <Lock size={16} className="input-icon" />
+                    <input
+                      id="auth-confirm-password"
+                      type={showSignUpConfirmPw ? 'text' : 'password'}
+                      required
+                      placeholder="••••••••"
+                      value={signUpConfirmPassword}
+                      onChange={(e) => setSignUpConfirmPassword(e.target.value)}
+                      className="form-input with-toggle-pw"
+                    />
+                    <button
+                      type="button"
+                      className="input-toggle-pw"
+                      onClick={() => setShowSignUpConfirmPw(prev => !prev)}
+                      aria-label={showSignUpConfirmPw ? 'Hide password' : 'Show password'}
+                    >
+                      {showSignUpConfirmPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <button
                 type="submit"

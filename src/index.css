@@ -1902,6 +1902,40 @@ h1, h2, h3, h4, .brand-title {
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-toggle-pw {
+  position: absolute;
+  right: 0.75rem;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease, transform 0.1s ease;
+  z-index: 2;
+}
+
+.input-toggle-pw:hover {
+  color: #ffffff;
+}
+
+.input-toggle-pw:active {
+  transform: scale(0.92);
+}
+
+.form-input.with-toggle-pw {
+  padding-right: 2.5rem;
+}
+
 .form-select {
   padding-left: 0.85rem !important;
   appearance: none;
