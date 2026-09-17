@@ -266,11 +266,13 @@ export function ManageHabitsModal({ habits, onAddHabit, onDeleteHabit, onClose }
         )}
 
         {/* Footer */}
-        <div className="modal-footer">
-          <button type="button" className="btn btn-full" onClick={onClose}>
-            Done
-          </button>
-        </div>
+        {!isAdding && (
+          <div className="modal-footer">
+            <button type="button" className="btn btn-full" onClick={onClose}>
+              Done
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

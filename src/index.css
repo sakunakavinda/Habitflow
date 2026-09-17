@@ -1995,3 +1995,380 @@ h1, h2, h3, h4, .brand-title {
   align-items: center;
 }
 
+/* ==========================================================================
+   Comprehensive Mobile Responsive Enhancements (< 640px)
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  /* Safe Area container padding for mobile notches and home indicators */
+  .app-container {
+    padding-top: max(1rem, calc(env(safe-area-inset-top, 0px) + 0.65rem));
+    padding-bottom: max(2.5rem, calc(env(safe-area-inset-bottom, 0px) + 2rem));
+    padding-left: max(0.6rem, env(safe-area-inset-left, 0px));
+    padding-right: max(0.6rem, env(safe-area-inset-right, 0px));
+    gap: 0.85rem;
+  }
+
+  /* Top Navigation & Header */
+  .app-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .brand-wrapper {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .brand-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .brand-title {
+    font-size: 1.3rem;
+  }
+
+  .brand-subtitle {
+    font-size: 0.75rem;
+  }
+
+  /* Scrollable, touch-friendly action button bar */
+  .header-actions {
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+    gap: 0.4rem;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+
+  .header-actions::-webkit-scrollbar {
+    display: none;
+  }
+
+  .header-actions .btn,
+  .header-actions .btn-user {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: max-content;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.82rem;
+    min-height: 38px;
+    border-radius: 999px;
+  }
+
+  /* Compact single-row Calendar Header */
+  .calendar-header {
+    padding: 0.85rem 1rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .current-month-text {
+    font-size: 1.45rem;
+  }
+
+  .current-year-text {
+    font-size: 1.05rem;
+  }
+
+  .swipe-hint {
+    display: none; /* Hide on compact screens to free up space for Today & Chevrons */
+  }
+
+  .btn-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Monthly Stats Grid */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+  }
+
+  .stat-card {
+    padding: 0.8rem 0.85rem;
+    gap: 0.35rem;
+    border-radius: var(--radius-md);
+  }
+
+  .stat-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .stat-label {
+    font-size: 0.76rem;
+  }
+
+  .stat-number {
+    font-size: 1.35rem;
+  }
+
+  .stat-subtext {
+    font-size: 0.7rem;
+    line-height: 1.25;
+  }
+
+  .stat-progress-bar {
+    height: 4px;
+    margin-top: 0.15rem;
+  }
+
+  /* Tap Action Mode Bar */
+  .quick-mode-bar {
+    padding: 0.65rem 0.85rem;
+    gap: 0.45rem;
+  }
+
+  .quick-mode-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .mode-selector {
+    display: flex;
+    overflow-x: auto;
+    gap: 0.35rem;
+    padding: 0.25rem;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    border-radius: 999px;
+  }
+
+  .mode-selector::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mode-btn {
+    flex: 0 0 auto;
+    width: auto;
+    min-height: 36px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+    border-radius: 999px;
+  }
+
+  /* Calendar Grid */
+  .calendar-viewport {
+    border-radius: var(--radius-lg);
+  }
+
+  .calendar-inner-wrapper {
+    padding: 0.75rem 0.45rem;
+  }
+
+  .weekdays-grid {
+    padding: 0 0.15rem 0.4rem;
+  }
+
+  .weekday-label {
+    font-size: 0.74rem;
+  }
+
+  .days-grid {
+    gap: 3px;
+  }
+
+  .day-cell {
+    min-height: 46px;
+    padding: 0.25rem 0.2rem;
+    border-radius: 6px;
+  }
+
+  .day-number {
+    font-size: 0.78rem;
+  }
+
+  .today-dot {
+    width: 4px;
+    height: 4px;
+  }
+
+  .day-lines-row {
+    gap: 2px;
+    padding-bottom: 2px;
+    min-height: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .habit-line {
+    height: 3px;
+    max-width: 14px;
+    min-width: 6px;
+    flex: 1 1 8px;
+    border-radius: 999px;
+  }
+
+  /* Rolling Month Cylinder */
+  .wheel-month-container {
+    padding: 0.5rem 0 0.2rem;
+    margin-top: 0.4rem;
+  }
+
+  .wheel-cylinder-viewport {
+    width: 150px;
+    height: 36px;
+  }
+
+  .panel-month-text {
+    font-size: 0.95rem;
+  }
+
+  /* Legend */
+  .calendar-legend {
+    gap: 0.6rem 0.9rem;
+    padding: 0.6rem 0.4rem 0.2rem;
+    font-size: 0.75rem;
+  }
+
+  .legend-line {
+    width: 12px;
+    height: 3.5px;
+  }
+
+  /* Bottom Motivational Banner */
+  .banner-quote {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.78rem;
+    gap: 0.5rem;
+  }
+
+  /* Bottom Drawer Modal Dialogs */
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-content {
+    border-radius: 24px 24px 0 0;
+    max-height: 88vh;
+    max-height: 88dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1.25rem 1.15rem calc(env(safe-area-inset-bottom, 16px) + 1.25rem);
+    gap: 1rem;
+    border-bottom: none;
+  }
+
+  /* Visual Drawer Grabber on mobile */
+  .modal-content::before {
+    content: '';
+    width: 38px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25);
+    align-self: center;
+    margin-bottom: -0.35rem;
+    flex-shrink: 0;
+  }
+
+  .modal-title {
+    font-size: 1.2rem;
+  }
+
+  .modal-subtitle {
+    font-size: 0.78rem;
+  }
+
+  /* Mobile Habit Toggles */
+  .habit-toggle-card {
+    padding: 0.8rem 0.9rem;
+    min-height: 56px;
+  }
+
+  .habit-card-title {
+    font-size: 0.92rem;
+  }
+
+  .habit-card-desc {
+    font-size: 0.75rem;
+  }
+
+  .habit-card-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Mobile Manage Habits Modal */
+  .manage-habits-list {
+    max-height: 200px;
+  }
+
+  .icon-picker-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.45rem;
+    max-height: 140px;
+  }
+
+  .icon-picker-btn {
+    min-height: 42px;
+  }
+
+  .color-swatches-grid {
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0.4rem;
+  }
+
+  .color-swatch-btn {
+    min-height: 32px;
+  }
+
+  /* Mobile Auth Modal */
+  .auth-tabs {
+    margin-bottom: 1rem;
+  }
+
+  .auth-tab {
+    padding: 0.55rem 0.65rem;
+    font-size: 0.82rem;
+  }
+
+  .google-signin-btn {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.88rem;
+  }
+
+  .form-input {
+    padding: 0.65rem 0.75rem 0.65rem 2.3rem;
+    font-size: 0.88rem;
+  }
+}
+
+/* Extra small devices (e.g. iPhone SE 1st gen, 320px - 360px) */
+@media (max-width: 360px) {
+  .brand-title {
+    font-size: 1.15rem;
+  }
+
+  .current-month-text {
+    font-size: 1.25rem;
+  }
+
+  .day-cell {
+    min-height: 42px;
+    padding: 0.2rem 0.15rem;
+  }
+
+  .day-number {
+    font-size: 0.74rem;
+  }
+
+  .icon-picker-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .color-swatches-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+
