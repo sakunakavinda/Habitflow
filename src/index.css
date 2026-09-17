@@ -653,7 +653,23 @@ h1, h2, h3, h4, .brand-title {
 }
 
 .day-cell.other-month {
+  opacity: 0.16;
+  background: transparent;
+  border-color: transparent;
+}
+
+.day-cell.other-month .day-number {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.day-cell.other-month .habit-line {
   opacity: 0.25;
+}
+
+.day-cell.other-month:hover {
+  opacity: 0.35;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .day-cell.today {
@@ -701,53 +717,71 @@ h1, h2, h3, h4, .brand-title {
   box-shadow: 0 0 6px var(--accent-blue);
 }
 
-/* Badge Indicators inside day cells */
-.day-badges-row {
+/* Habit Line Indicators inside day cells */
+.day-lines-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   width: 100%;
-  margin-top: 0.15rem;
-  flex-wrap: nowrap;
+  margin-top: auto;
+  padding-bottom: 2px;
+  min-height: 4px;
 }
 
 @media (min-width: 640px) {
-  .day-badges-row {
-    gap: 4px;
-    margin-top: 0.25rem;
+  .day-lines-row {
+    gap: 5px;
+    padding-bottom: 4px;
+    min-height: 5px;
   }
 }
 
-.badge-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
+.habit-line {
+  display: inline-block;
+  height: 3.5px;
+  width: 14px;
+  max-width: calc(50% - 3px);
+  border-radius: 999px;
+  transition: all 0.2s ease;
   flex-shrink: 0;
-  transition: transform 0.15s ease;
 }
 
 @media (min-width: 640px) {
-  .badge-tag {
-    width: 24px;
-    height: 24px;
-    border-radius: 6px;
+  .habit-line {
+    height: 4px;
+    width: 20px;
+    max-width: calc(50% - 4px);
   }
 }
 
-.badge-tag.smoke {
-  background: var(--smoke-bg);
-  color: var(--smoke-light);
-  border: 1px solid var(--smoke-border);
+.habit-line.smoke {
+  background: var(--smoke-primary);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
 }
 
-.badge-tag.workout {
-  background: var(--workout-bg);
-  color: var(--workout-light);
-  border: 1px solid var(--workout-border);
+.habit-line.workout {
+  background: var(--workout-primary);
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+}
+
+/* Legend Line Indicators */
+.legend-line {
+  display: inline-block;
+  height: 4px;
+  width: 16px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.legend-line.smoke {
+  background: var(--smoke-primary);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.legend-line.workout {
+  background: var(--workout-primary);
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
 }
 
 /* Cell Double Win Highlight */

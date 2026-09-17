@@ -48,14 +48,47 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
   const hasMovedRef = useRef(false);
   const trackRef = useRef(null);
 
+  const animTimeoutRef = useRef(null);
+
+  // Helper to cleanly settle and snap back to panel 1 with zero reverse transition
+  const resetAfterAnimation = useCallback((destPanel) => {
+    if (animTimeoutRef.current) {
+      clearTimeout(animTimeoutRef.current);
+      animTimeoutRef.current = null;
+    }
+
+    // First disable transition on the DOM element directly so no backwards animation can occur
+    if (trackRef.current) {
+      trackRef.current.style.transition = 'none';
+      trackRef.current.style.transform = 'translate3d(-33.333333%, 0, 0)';
+      void trackRef.current.offsetHeight; // force DOM reflow
+    }
+
+    // Update parent month state
+    if (destPanel === 2) {
+      onNextMonth();
+    } else if (destPanel === 0) {
+      onPrevMonth();
+    }
+
+    // Reset React state
+    setTargetPanelIndex(1);
+    setDragOffsetPx(0);
+    setIsAnimating(false);
+  }, [onNextMonth, onPrevMonth]);
+
   // Smooth slide to next month (swipe left or next button)
   const slideNext = useCallback(() => {
     if (isAnimating) return;
     setIsAnimating(true);
     setIsDragging(false);
     setDragOffsetPx(0);
-    setTargetPanelIndex(2); // animate to panel 2
-  }, [isAnimating]);
+    setTargetPanelIndex(2); // animate forward to panel 2
+
+    animTimeoutRef.current = setTimeout(() => {
+      resetAfterAnimation(2);
+    }, 320);
+  }, [isAnimating, resetAfterAnimation]);
 
   // Smooth slide to prev month (swipe right or prev button)
   const slidePrev = useCallback(() => {
@@ -63,8 +96,12 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
     setIsAnimating(true);
     setIsDragging(false);
     setDragOffsetPx(0);
-    setTargetPanelIndex(0); // animate to panel 0
-  }, [isAnimating]);
+    setTargetPanelIndex(0); // animate backward to panel 0
+
+    animTimeoutRef.current = setTimeout(() => {
+      resetAfterAnimation(0);
+    }, 320);
+  }, [isAnimating, resetAfterAnimation]);
 
   // Expose slideNext and slidePrev to parent
   useImperativeHandle(ref, () => ({
@@ -101,21 +138,31 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
     if (!isDragging || isAnimating) return;
     setIsDragging(false);
 
-    const threshold = 50; // px threshold to trigger month change
+    const threshold = 45; // px threshold to trigger month change
     if (currentDiffX.current < -threshold) {
       // Swiped left -> Go to Next month
       setIsAnimating(true);
       setDragOffsetPx(0);
       setTargetPanelIndex(2);
+      animTimeoutRef.current = setTimeout(() => {
+        resetAfterAnimation(2);
+      }, 320);
     } else if (currentDiffX.current > threshold) {
       // Swiped right -> Go to Prev month
       setIsAnimating(true);
       setDragOffsetPx(0);
       setTargetPanelIndex(0);
+      animTimeoutRef.current = setTimeout(() => {
+        resetAfterAnimation(0);
+      }, 320);
     } else {
-      // Return to current month panel
+      // Snap smoothly back to center
+      setIsAnimating(true);
       setDragOffsetPx(0);
       setTargetPanelIndex(1);
+      animTimeoutRef.current = setTimeout(() => {
+        setIsAnimating(false);
+      }, 320);
     }
   };
 
@@ -144,41 +191,49 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
   };
 
   const handleMouseUp = () => {
-    if (!isDragging) return;
+    if (!isDragging || isAnimating) return;
     setIsDragging(false);
 
-    const threshold = 50;
+    const threshold = 45;
     if (currentDiffX.current < -threshold) {
       setIsAnimating(true);
       setDragOffsetPx(0);
       setTargetPanelIndex(2);
+      animTimeoutRef.current = setTimeout(() => {
+        resetAfterAnimation(2);
+      }, 320);
     } else if (currentDiffX.current > threshold) {
       setIsAnimating(true);
       setDragOffsetPx(0);
       setTargetPanelIndex(0);
+      animTimeoutRef.current = setTimeout(() => {
+        resetAfterAnimation(0);
+      }, 320);
     } else {
+      setIsAnimating(true);
       setDragOffsetPx(0);
       setTargetPanelIndex(1);
+      animTimeoutRef.current = setTimeout(() => {
+        setIsAnimating(false);
+      }, 320);
     }
   };
 
-  // Called when transition completes
+  // Called when CSS transition completes
   const handleTransitionEnd = (e) => {
     if (e.target !== trackRef.current) return;
     if (!isAnimating) return;
 
-    if (targetPanelIndex === 2) {
-      // Advanced to next month: update parent state
-      onNextMonth();
-    } else if (targetPanelIndex === 0) {
-      // Moved to prev month: update parent state
-      onPrevMonth();
+    if (targetPanelIndex === 1) {
+      setIsAnimating(false);
+      if (animTimeoutRef.current) {
+        clearTimeout(animTimeoutRef.current);
+        animTimeoutRef.current = null;
+      }
+      return;
     }
 
-    // Reset panel index back to center (current month) instantly without transition
-    setTargetPanelIndex(1);
-    setDragOffsetPx(0);
-    setIsAnimating(false);
+    resetAfterAnimation(targetPanelIndex);
   };
 
   const handleCellClick = (day) => {
@@ -202,9 +257,9 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
     transform: isDragging
       ? `translate3d(calc(${basePercent}% + ${dragOffsetPx}px), 0, 0)`
       : `translate3d(${basePercent}%, 0, 0)`,
-    transition: isDragging
-      ? 'none'
-      : 'transform 0.32s cubic-bezier(0.22, 1, 0.36, 1)'
+    transition: isAnimating
+      ? 'transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)'
+      : 'none'
   };
 
   const renderDaysPanel = (panelDays, isCurrent) => (
@@ -232,16 +287,12 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
                 {day.isToday && <span className="today-dot" title="Today" />}
               </div>
 
-              <div className="day-badges-row">
+              <div className="day-lines-row">
                 {isSmokeFree && (
-                  <span className="badge-tag smoke" title="Smoke Free">
-                    <CigaretteOff size={11} />
-                  </span>
+                  <span className="habit-line smoke" title="Smoke-Free" />
                 )}
                 {isWorkout && (
-                  <span className="badge-tag workout" title="Worked Out">
-                    <Dumbbell size={11} />
-                  </span>
+                  <span className="habit-line workout" title="Worked Out" />
                 )}
               </div>
             </div>
@@ -292,20 +343,19 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
         {/* Legend */}
         <div className="calendar-legend">
           <div className="legend-item">
-            <span className="badge-tag smoke" style={{ width: 18, height: 18 }}>
-              <CigaretteOff size={11} />
-            </span>
+            <span className="legend-line smoke" />
             <span>Smoke-Free</span>
           </div>
           <div className="legend-item">
-            <span className="badge-tag workout" style={{ width: 18, height: 18 }}>
-              <Dumbbell size={11} />
-            </span>
+            <span className="legend-line workout" />
             <span>Worked Out</span>
           </div>
           <div className="legend-item">
-            <Sparkles size={14} color="#f59e0b" />
-            <span style={{ color: '#fbbf24', fontWeight: 600 }}>Double Win</span>
+            <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+              <span className="legend-line smoke" style={{ width: 10 }} />
+              <span className="legend-line workout" style={{ width: 10 }} />
+            </div>
+            <span style={{ color: '#fbbf24', fontWeight: 600 }}>Both Done</span>
           </div>
           <div className="legend-item">
             <span className="today-dot" style={{ position: 'static' }} />
