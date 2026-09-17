@@ -1005,45 +1005,81 @@ h1, h2, h3, h4, .brand-title {
   gap: 0.45rem;
 }
 
-/* Modal / Bottom Drawer for Day Detail */
+/* ==========================================================================
+   Modal System — Responsive (Mobile Bottom Drawer + Desktop Centred Card)
+   ========================================================================== */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.78);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 100;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-end;       /* Bottom drawer on mobile */
   justify-content: center;
   animation: fadeIn 0.2s ease;
+  padding: 0;
+  /* Prevent touch scroll from leaking to body */
+  overscroll-behavior: contain;
 }
 
+/* Mobile: Bottom Drawer */
+.modal-content {
+  background: #111728;
+  border: 1px solid var(--border-active);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  border-bottom: none;
+  width: 100%;
+  max-width: 100%;
+  /* Capped height — uses dvh for dynamic viewport (mobile browser chrome aware) */
+  max-height: 92vh;
+  max-height: 92dvh;
+  padding: 1.35rem 1.15rem calc(env(safe-area-inset-bottom, 12px) + 1.35rem);
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.55);
+  animation: slideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Drag handle on mobile */
+.modal-content::before {
+  content: '';
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  align-self: center;
+  flex-shrink: 0;
+  margin-bottom: -0.25rem;
+}
+
+/* Desktop: Centred floating card */
 @media (min-width: 640px) {
   .modal-overlay {
     align-items: center;
     padding: 1.5rem;
   }
-}
 
-.modal-content {
-  background: #111728;
-  border: 1px solid var(--border-active);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  width: 100%;
-  max-width: 480px;
-  padding: 1.75rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-@media (min-width: 640px) {
   .modal-content {
     border-radius: var(--radius-xl);
+    border-bottom: 1px solid var(--border-active);
+    max-width: 480px;
+    max-height: 90vh;
+    max-height: 90dvh;
+    padding: 1.75rem;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
     animation: zoomIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Hide drag handle on desktop */
+  .modal-content::before {
+    display: none;
   }
 }
 
@@ -1859,9 +1895,15 @@ h1, h2, h3, h4, .brand-title {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  max-height: 240px;
+  max-height: clamp(180px, 40vh, 320px);
   overflow-y: auto;
   padding-right: 0.25rem;
+}
+
+@media (min-width: 640px) {
+  .manage-habits-list {
+    max-height: 380px;
+  }
 }
 
 .manage-habit-item {
@@ -2374,35 +2416,7 @@ h1, h2, h3, h4, .brand-title {
     gap: 0.5rem;
   }
 
-  /* Bottom Drawer Modal Dialogs */
-  .modal-overlay {
-    align-items: flex-end;
-    padding: 0;
-  }
-
-  .modal-content {
-    border-radius: 24px 24px 0 0;
-    max-height: 88vh;
-    max-height: 88dvh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 1.25rem 1.15rem calc(env(safe-area-inset-bottom, 16px) + 1.25rem);
-    gap: 1rem;
-    border-bottom: none;
-  }
-
-  /* Visual Drawer Grabber on mobile */
-  .modal-content::before {
-    content: '';
-    width: 38px;
-    height: 4px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.25);
-    align-self: center;
-    margin-bottom: -0.35rem;
-    flex-shrink: 0;
-  }
-
+  /* Modal title/subtitle size adjustments for mobile */
   .modal-title {
     font-size: 1.2rem;
   }
@@ -2507,19 +2521,19 @@ h1, h2, h3, h4, .brand-title {
    Add To Home Screen (PWA Onboarding Guide Modal)
    ========================================================================== */
 .add-to-home-modal {
-  max-width: 420px;
-  width: 92%;
-  padding: 1.25rem;
-  border-radius: 24px;
+  /* Mobile: inherits full-width bottom drawer from .modal-content */
   background: rgba(15, 23, 42, 0.94);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 35px rgba(16, 185, 129, 0.15);
-  max-height: 92vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.55), 0 0 35px rgba(16, 185, 129, 0.12);
+}
+
+@media (min-width: 640px) {
+  .add-to-home-modal {
+    max-width: 420px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 35px rgba(16, 185, 129, 0.15);
+  }
 }
 
 .ath-header {
@@ -2757,15 +2771,19 @@ h1, h2, h3, h4, .brand-title {
    Start Date Onboarding Modal
    ========================================================================== */
 .start-date-modal {
-  max-width: 440px;
-  width: 92%;
-  padding: 1.5rem;
-  border-radius: 24px;
+  /* Mobile: inherits full-width bottom drawer from .modal-content */
   background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 35px rgba(16, 185, 129, 0.18);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.55), 0 0 35px rgba(16, 185, 129, 0.15);
+}
+
+@media (min-width: 640px) {
+  .start-date-modal {
+    max-width: 440px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 35px rgba(16, 185, 129, 0.18);
+  }
 }
 
 .sdm-header {
@@ -2980,13 +2998,22 @@ h1, h2, h3, h4, .brand-title {
 }
 
 .icon-library-modal {
-  max-width: 600px;
-  max-height: 88vh;
+  /* Mobile: inherits .modal-content styles (full-width, bottom drawer, 92dvh) */
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 1.5rem;
-  gap: 0.75rem;
+  padding: 1.25rem 1rem calc(env(safe-area-inset-bottom, 12px) + 1.25rem);
+  gap: 0.7rem;
+}
+
+@media (min-width: 640px) {
+  .icon-library-modal {
+    max-width: 600px;
+    max-height: 88vh;
+    max-height: 88dvh;
+    padding: 1.5rem;
+    gap: 0.75rem;
+  }
 }
 
 .icon-search-box {
