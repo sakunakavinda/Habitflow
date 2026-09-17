@@ -58,9 +58,8 @@ export function AuthProvider({ children }) {
         const habitsSnap = await getDocs(habitsColRef);
         if (habitsSnap.empty) {
           const defaultHabits = [
-            { name: 'Drink 2L Water', frequency: 'daily', color: '#3b82f6', icon: 'droplets' },
-            { name: 'Workout', frequency: 'daily', color: '#f59e0b', icon: 'dumbbell' },
-            { name: 'Smoke-Free', frequency: 'daily', color: '#10b981', icon: 'cigarette-off' }
+            { name: 'Smoke-Free', frequency: 'daily', color: '#10b981', icon: 'cigarette-off' },
+            { name: 'Workout', frequency: 'daily', color: '#f59e0b', icon: 'dumbbell' }
           ];
           for (const habit of defaultHabits) {
             await addDoc(habitsColRef, {

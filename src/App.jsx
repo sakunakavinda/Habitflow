@@ -179,11 +179,11 @@ export default function App() {
             </div>
           </div>
 
-          <div className="header-actions">
+          <div className={`header-actions ${user ? 'has-user' : 'is-guest'}`}>
             {/* User Profile / Auth Button */}
             <button
               type="button"
-              className={`btn btn-user ${user ? 'logged-in' : ''}`}
+              className={`btn btn-sm btn-user ${user ? 'logged-in' : ''}`}
               onClick={() => setShowAuthModal(true)}
               title={user ? `Signed in as ${user.email}` : 'Sign in or create account'}
             >
@@ -192,13 +192,13 @@ export default function App() {
                   <span className="user-avatar-tiny">
                     {displayName ? displayName.charAt(0).toUpperCase() : 'U'}
                   </span>
-                  <span className="user-name-text">{displayName || 'Profile'}</span>
+                  <span className="btn-label">{displayName || 'Profile'}</span>
                   <span className="online-indicator" title="Cloud Synced" />
                 </>
               ) : (
                 <>
-                  <LogIn size={15} />
-                  <span>Sign In</span>
+                  <LogIn size={13} />
+                  <span className="btn-label">Sign In</span>
                 </>
               )}
             </button>
@@ -206,39 +206,56 @@ export default function App() {
             {/* Manage Custom Habits Button */}
             <button
               type="button"
-              className="btn"
+              className="btn btn-sm"
               onClick={() => setShowHabitsModal(true)}
               title="Add, edit, or customize habits and colors"
             >
-              <SlidersHorizontal size={15} />
-              <span>Habits</span>
+              <SlidersHorizontal size={13} />
+              <span className="btn-label">Habits</span>
             </button>
 
             {/* Widgets Button */}
             <button
               type="button"
-              className="btn"
+              className="btn btn-sm"
               onClick={() => setShowWidgetsModal(true)}
               title="Mobile Widgets, Shortcuts, and Install Guide"
             >
-              <Smartphone size={15} />
-              <span>Widgets</span>
+              <Smartphone size={13} />
+              <span className="btn-label">Widgets</span>
             </button>
 
             {/* Reset Demo button for Guest mode */}
             {!user && (
               <button
                 type="button"
-                className="btn"
+                className="btn btn-sm"
                 onClick={restoreSampleData}
-                title="Populate demo data to see features"
+                title="Reset to sample demo data"
               >
-                <RotateCcw size={15} />
-                <span>Reset Demo</span>
+                <RotateCcw size={13} />
+                <span className="btn-label">Reset</span>
               </button>
             )}
           </div>
         </header>
+
+        {/* Demo Mode Notice Banner for unauthenticated visitors */}
+        {!user && (
+          <div className="demo-mode-notice" role="status">
+            <div className="demo-notice-text">
+              <span className="demo-notice-badge">Demo</span>
+              <span>Preview counts only. Records reset on refresh.</span>
+            </div>
+            <button
+              type="button"
+              className="demo-notice-btn"
+              onClick={() => setShowAuthModal(true)}
+            >
+              Sign in to save →
+            </button>
+          </div>
+        )}
 
         {/* Action Toast for Shortcuts */}
         {actionToast && (

@@ -14,13 +14,12 @@ import { db } from '../firebase/firebaseConfig';
 import { useAuth } from '../context/AuthContext';
 import { getTodayKey, dateToKey } from '../utils/calendarUtils';
 
-const LOCAL_HABITS_KEY = 'habitwave_local_habits_v3';
-const LOCAL_LOGS_KEY = 'habitwave_local_logs_v3';
+const LOCAL_HABITS_KEY = 'habitwave_local_habits_v4';
+const LOCAL_LOGS_KEY = 'habitwave_local_logs_v4';
 
 export const DEFAULT_HABITS = [
   { id: 'smoke-free', name: 'Smoke-Free', frequency: 'daily', color: '#10b981', icon: 'cigarette-off' },
-  { id: 'workout', name: 'Workout', frequency: 'daily', color: '#f59e0b', icon: 'dumbbell' },
-  { id: 'drink-water', name: 'Drink 2L Water', frequency: 'daily', color: '#3b82f6', icon: 'droplets' }
+  { id: 'workout', name: 'Workout', frequency: 'daily', color: '#f59e0b', icon: 'dumbbell' }
 ];
 
 function generateInitialLocalLogs() {
@@ -35,13 +34,11 @@ function generateInitialLocalLogs() {
 
     const isSmokeFree = i !== 8 && i !== 12;
     const isWorkout = (i % 2 === 0) || i === 3;
-    const isWater = i % 3 !== 0;
 
     logs[key] = {
       'smoke-free': isSmokeFree,
       smokeFree: isSmokeFree,
-      workout: isWorkout,
-      'drink-water': isWater
+      workout: isWorkout
     };
   }
 
@@ -50,8 +47,7 @@ function generateInitialLocalLogs() {
   logs[todayKey] = {
     'smoke-free': true,
     smokeFree: true,
-    workout: false,
-    'drink-water': true
+    workout: false
   };
 
   return logs;
