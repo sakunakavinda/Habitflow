@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { CalendarHeart, RotateCcw, Sparkles } from 'lucide-react';
 import { useHabitData } from './hooks/useHabitData';
 import { calculateMonthTotals, calculateStreaks } from './utils/calendarUtils';
@@ -10,9 +10,9 @@ import { DayModal } from './components/DayModal';
 
 export default function App() {
   const [currentDate, setCurrentDate] = useState(() => new Date());
-  const [slideDirection, setSlideDirection] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
   const [activeMode, setActiveMode] = useState('modal'); // 'modal' | 'smokeFree' | 'workout' | 'both'
+  const calendarRef = useRef(null);
 
   const {
     habitData,
@@ -36,25 +36,45 @@ export default function App() {
     return calculateStreaks(habitData);
   }, [habitData]);
 
-  // Month navigation with animation
-  const handlePrevMonth = () => {
-    setSlideDirection('right');
+  // State updates called when calendar animation or swipe completes
+  const handlePrevMonthDateUpdate = () => {
     setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-    setTimeout(() => setSlideDirection(null), 280);
   };
 
-  const handleNextMonth = () => {
-    setSlideDirection('left');
+  const handleNextMonthDateUpdate = () => {
     setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-    setTimeout(() => setSlideDirection(null), 280);
+  };
+
+  // Triggered when user clicks header Chevron buttons
+  const handlePrevMonthClick = () => {
+    if (calendarRef.current?.slidePrev) {
+      calendarRef.current.slidePrev();
+    } else {
+      handlePrevMonthDateUpdate();
+    }
+  };
+
+  const handleNextMonthClick = () => {
+    if (calendarRef.current?.slideNext) {
+      calendarRef.current.slideNext();
+    } else {
+      handleNextMonthDateUpdate();
+    }
   };
 
   const handleToday = () => {
     const today = new Date();
-    const isFuture = today > currentDate;
-    setSlideDirection(isFuture ? 'left' : 'right');
-    setCurrentDate(new Date(today.getFullYear(), today.getMonth(), 1));
-    setTimeout(() => setSlideDirection(null), 280);
+    if (
+      today.getFullYear() === currentDate.getFullYear() &&
+      today.getMonth() === currentDate.getMonth()
+    ) {
+      return;
+    }
+    if (today > currentDate) {
+      handleNextMonthClick();
+    } else {
+      handlePrevMonthClick();
+    }
   };
 
   return (
@@ -92,8 +112,8 @@ export default function App() {
       {/* Calendar Header: Month & Navigation */}
       <CalendarHeader
         currentDate={currentDate}
-        onPrevMonth={handlePrevMonth}
-        onNextMonth={handleNextMonth}
+        onPrevMonth={handlePrevMonthClick}
+        onNextMonth={handleNextMonthClick}
         onToday={handleToday}
       />
 
@@ -103,11 +123,11 @@ export default function App() {
       {/* Swipable Calendar Grid */}
       <main>
         <CalendarGrid
+          ref={calendarRef}
           currentDate={currentDate}
           habitData={habitData}
-          slideDirection={slideDirection}
-          onPrevMonth={handlePrevMonth}
-          onNextMonth={handleNextMonth}
+          onPrevMonth={handlePrevMonthDateUpdate}
+          onNextMonth={handleNextMonthDateUpdate}
           onSelectDay={(day) => setSelectedDay(day)}
           activeMode={activeMode}
           onToggleSmokeFree={toggleSmokeFree}
