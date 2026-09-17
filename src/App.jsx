@@ -22,6 +22,7 @@ import { AuthModal } from './components/AuthModal';
 import { ManageHabitsModal } from './components/ManageHabitsModal';
 import { LoadingScreen } from './components/LoadingScreen';
 import AddToHomeModal from './components/AddToHomeModal';
+import StartDateModal from './components/StartDateModal';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -32,10 +33,11 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showHabitsModal, setShowHabitsModal] = useState(false);
   const [showAddToHomeModal, setShowAddToHomeModal] = useState(false);
+  const [showStartDateModal, setShowStartDateModal] = useState(false);
   const [actionToast, setActionToast] = useState(null);
   const calendarRef = useRef(null);
 
-  const { user, userData, markAddToHomeSeen } = useAuth();
+  const { user, userData, markAddToHomeSeen, setJourneyStartDate } = useAuth();
   const {
     habits,
     logs,
@@ -52,15 +54,15 @@ export default function App() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  // Calculated totals for active month with dynamic habits
+  // Calculated totals for active month scoped to user's journey startDate
   const totals = useMemo(() => {
-    return calculateMonthTotals(logs, year, month, habits);
-  }, [logs, year, month, habits]);
+    return calculateMonthTotals(logs, year, month, habits, userData?.startDate);
+  }, [logs, year, month, habits, userData?.startDate]);
 
-  // Streaks up to today with dynamic habits
+  // Streaks up to today scoped to user's journey startDate
   const streaks = useMemo(() => {
-    return calculateStreaks(logs, habits);
-  }, [logs, habits]);
+    return calculateStreaks(logs, habits, userData?.startDate);
+  }, [logs, habits, userData?.startDate]);
 
   // Handle Home Screen Quick Actions from URL (?action=smoke-free, etc.)
   useEffect(() => {
@@ -129,9 +131,20 @@ export default function App() {
     setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   };
 
-  // Automatically trigger Add to Home Screen onboarding guide for newly registered users outside standalone PWA
+  // Automatically manage onboarding sequence for registered users:
+  // Step 1: Set Journey Start Date (if not yet configured)
+  // Step 2: Show Add to Home Screen guide (if on browser/mobile outside standalone)
   useEffect(() => {
     if (user && userData) {
+      // Step 1: If user does not have a start date yet, open StartDateModal
+      if (!userData.startDate) {
+        const timer = setTimeout(() => {
+          setShowStartDateModal(true);
+        }, 700);
+        return () => clearTimeout(timer);
+      }
+
+      // Step 2: Once start date is configured, check if AddToHome guide should be shown
       const isStandalone =
         window.matchMedia('(display-mode: standalone)').matches ||
         window.navigator.standalone === true;
@@ -140,11 +153,34 @@ export default function App() {
       if (!isStandalone && !localSeen && (userData.hasSeenAddToHome === false || userData.isNewRegistration)) {
         const timer = setTimeout(() => {
           setShowAddToHomeModal(true);
-        }, 900);
+        }, 800);
         return () => clearTimeout(timer);
       }
     }
   }, [user, userData]);
+
+  const handleSaveStartDate = async (startDateStr) => {
+    setShowStartDateModal(false);
+    if (setJourneyStartDate) {
+      await setJourneyStartDate(startDateStr);
+    }
+    setActionToast(`🎉 Journey start date set to ${startDateStr}!`);
+    setTimeout(() => setActionToast(null), 3500);
+
+    // After setting start date, prompt AddToHome if user has not seen it and is not in standalone mode
+    if (user) {
+      const isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+      const localSeen = localStorage.getItem(`habitwave_seen_pwa_guide_${user.uid}`);
+
+      if (!isStandalone && !localSeen && (userData?.hasSeenAddToHome === false || userData?.isNewRegistration)) {
+        setTimeout(() => {
+          setShowAddToHomeModal(true);
+        }, 600);
+      }
+    }
+  };
 
   const handleDismissAddToHome = () => {
     setShowAddToHomeModal(false);
@@ -317,6 +353,7 @@ export default function App() {
             currentDate={currentDate}
             habitData={logs}
             habits={habits}
+            startDate={userData?.startDate}
             onPrevMonth={handlePrevMonthDateUpdate}
             onNextMonth={handleNextMonthDateUpdate}
             onSelectDay={(day) => setSelectedDay(day)}
@@ -325,6 +362,10 @@ export default function App() {
             onToggleAll={toggleAllForDay}
             onFutureAttempt={() => {
               setActionToast('⏳ Upcoming date: Habits cannot be logged ahead of time.');
+              setTimeout(() => setActionToast(null), 3000);
+            }}
+            onPastStartAttempt={() => {
+              setActionToast(`🚫 Prior to Start Date: Tracking begins on ${userData?.startDate || 'start date'}.`);
               setTimeout(() => setActionToast(null), 3000);
             }}
           />
@@ -378,6 +419,13 @@ export default function App() {
             }}
           />
         )}
+
+        {/* Journey Start Date Onboarding Modal */}
+        <StartDateModal
+          isOpen={showStartDateModal}
+          initialDate={userData?.startDate}
+          onSave={handleSaveStartDate}
+        />
 
         {/* Add to Home Screen Onboarding Guide Modal */}
         <AddToHomeModal

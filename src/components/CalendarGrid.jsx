@@ -13,6 +13,7 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
     currentDate,
     habitData,
     habits = [],
+    startDate = null,
     onPrevMonth,
     onNextMonth,
     onSelectDay,
@@ -22,7 +23,8 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
     onToggleSmokeFree,
     onToggleWorkout,
     onToggleBoth,
-    onFutureAttempt
+    onFutureAttempt,
+    onPastStartAttempt
   },
   ref
 ) {
@@ -32,9 +34,9 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
   const prevMonthDate = new Date(year, month - 1, 1);
   const nextMonthDate = new Date(year, month + 1, 1);
 
-  const prevDays = getMonthGrid(prevMonthDate.getFullYear(), prevMonthDate.getMonth());
-  const currentDays = getMonthGrid(year, month);
-  const nextDays = getMonthGrid(nextMonthDate.getFullYear(), nextMonthDate.getMonth());
+  const prevDays = getMonthGrid(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), startDate);
+  const currentDays = getMonthGrid(year, month, startDate);
+  const nextDays = getMonthGrid(nextMonthDate.getFullYear(), nextMonthDate.getMonth(), startDate);
 
   // Carousel track state
   // Panel 0 = Prev month (0%), Panel 1 = Current month (-33.333333%), Panel 2 = Next month (-66.666667%)
@@ -253,6 +255,15 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
   const handleCellClick = (day) => {
     if (hasMovedRef.current) return;
 
+    if (day.isBeforeStart) {
+      if (activeMode !== 'modal') {
+        onPastStartAttempt?.(day);
+        return;
+      }
+      onSelectDay(day);
+      return;
+    }
+
     if (day.isFuture) {
       if (activeMode !== 'modal') {
         onFutureAttempt?.(day);
@@ -329,10 +340,11 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
                 ? completedHabits.length === habits.length && habits.length > 0
                 : isSF && isWO;
 
-            const tooltipTitle =
-              habits.length > 0
-                ? `${day.dateKey}${completedHabits.map((h) => ` • ${h.name}`).join('')}`
-                : `${day.dateKey}${isSF ? ' • Smoke-Free' : ''}${isWO ? ' • Worked Out' : ''}`;
+            const tooltipTitle = day.isBeforeStart
+              ? `${day.dateKey} • Prior to Start Date (${startDate})`
+              : habits.length > 0
+              ? `${day.dateKey}${completedHabits.map((h) => ` • ${h.name}`).join('')}`
+              : `${day.dateKey}${isSF ? ' • Smoke-Free' : ''}${isWO ? ' • Worked Out' : ''}`;
 
             return (
               <div
@@ -340,7 +352,7 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
                 onClick={() => isCurrent && handleCellClick(day)}
                 className={`day-cell ${!day.isCurrentMonth ? 'other-month' : ''} ${
                   day.isToday ? 'today' : ''
-                } ${day.isFuture ? 'is-future' : ''} ${hasAllDone ? 'has-both' : ''}`}
+                } ${day.isFuture ? 'is-future' : ''} ${day.isBeforeStart ? 'before-start' : ''} ${hasAllDone ? 'has-both' : ''}`}
                 title={tooltipTitle}
               >
                 <div className="day-header-row">

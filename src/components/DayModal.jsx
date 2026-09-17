@@ -38,9 +38,11 @@ export function DayModal({
     habits.some((h) => !!dayLogs[h.id]);
 
   const isFuture = !!selectedDay.isFuture;
+  const isBeforeStart = !!selectedDay.isBeforeStart;
+  const isLocked = isFuture || isBeforeStart;
 
   const handleToggleAll = () => {
-    if (isFuture) return;
+    if (isLocked) return;
     onToggleAll(dateKey);
     if (!allHabitsCompleted) {
       try {
@@ -57,7 +59,7 @@ export function DayModal({
   };
 
   const handleSingleToggle = (habitId) => {
-    if (isFuture) return;
+    if (isLocked) return;
     onToggleHabit(habitId, dateKey);
     // Check if toggling this will make all complete
     const willBeComplete = !dayLogs[habitId];
@@ -106,6 +108,14 @@ export function DayModal({
           </div>
         )}
 
+        {/* Before Journey Start Date Banner */}
+        {isBeforeStart && (
+          <div className="future-day-banner" style={{ background: 'rgba(239, 68, 68, 0.12)', borderColor: 'rgba(239, 68, 68, 0.25)', color: '#fca5a5' }}>
+            <span className="future-banner-dot" style={{ background: '#ef4444' }} />
+            <span>Prior to Start Date: Habits cannot be logged for dates before your journey began.</span>
+          </div>
+        )}
+
         {/* Dynamic Habit Action Toggles */}
         <div className="modal-actions-list">
           {habits.map((habit) => {
@@ -113,18 +123,18 @@ export function DayModal({
             return (
               <div
                 key={habit.id}
-                className={`habit-toggle-card ${isCompleted ? 'active' : ''} ${isFuture ? 'disabled' : ''}`}
+                className={`habit-toggle-card ${isCompleted ? 'active' : ''} ${isLocked ? 'disabled' : ''}`}
                 style={
-                  isCompleted && !isFuture
+                  isCompleted && !isLocked
                     ? {
                         borderColor: habit.color,
                         boxShadow: `0 0 16px ${habit.color}25`
                       }
                     : {}
                 }
-                onClick={() => !isFuture && handleSingleToggle(habit.id)}
+                onClick={() => !isLocked && handleSingleToggle(habit.id)}
                 role="button"
-                tabIndex={isFuture ? -1 : 0}
+                tabIndex={isLocked ? -1 : 0}
               >
                 <div className="habit-toggle-left">
                   <div
@@ -161,8 +171,8 @@ export function DayModal({
           )}
         </div>
 
-        {/* Quick Multi-Action & Clear (Hidden for future dates) */}
-        {!isFuture && (
+        {/* Quick Multi-Action & Clear (Hidden for future and before-start dates) */}
+        {!isLocked && (
           <div style={{ display: 'flex', gap: '0.6rem', marginTop: '0.8rem' }}>
             {habits.length > 0 && (
               <button

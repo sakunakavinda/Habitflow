@@ -3,7 +3,7 @@ import { X, Mail, Lock, User, LogIn, UserPlus, AlertCircle, Sparkles, CheckCircl
 import { useAuth } from '../context/AuthContext';
 
 export function AuthModal({ onClose }) {
-  const { user, userData, isConfigured, signInWithEmail, signUpWithEmail, signInWithGoogle, logout } = useAuth();
+  const { user, userData, isConfigured, signInWithEmail, signUpWithEmail, signInWithGoogle, logout, setJourneyStartDate } = useAuth();
 
   const [isSignUp, setIsSignUp] = useState(false);
   const [displayName, setDisplayName] = useState('');
@@ -135,7 +135,31 @@ export function AuthModal({ onClose }) {
               </div>
             </div>
 
-            <div className="profile-meta-banner">
+            {/* Journey Start Date Config Card */}
+            <div style={{ marginTop: '0.85rem', padding: '0.8rem 0.95rem', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#94a3b8' }}>Tracking Start Date:</span>
+                <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#10b981' }}>
+                  {userData?.startDate || 'Not Set'}
+                </span>
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                All habit streaks and monthly statistics begin from this date.
+              </div>
+              <input
+                type="date"
+                className="form-input"
+                style={{ padding: '0.45rem 0.75rem', fontSize: '0.82rem' }}
+                value={userData?.startDate || ''}
+                onChange={async (e) => {
+                  if (e.target.value) {
+                    await setJourneyStartDate(e.target.value);
+                  }
+                }}
+              />
+            </div>
+
+            <div className="profile-meta-banner" style={{ marginTop: '0.85rem' }}>
               <Sparkles size={16} color="#fbbf24" />
               <span>Your habits, logs, and streaks are securely stored in your personal Firestore collection.</span>
             </div>
@@ -144,7 +168,7 @@ export function AuthModal({ onClose }) {
               type="button"
               className="btn btn-full btn-danger"
               onClick={handleLogout}
-              style={{ marginTop: '1.25rem' }}
+              style={{ marginTop: '1.15rem' }}
             >
               Sign Out
             </button>

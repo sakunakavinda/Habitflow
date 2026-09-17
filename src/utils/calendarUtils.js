@@ -33,7 +33,7 @@ export function getTodayKey() {
  * Returns a 42-day (or 35-day) matrix for a given year & month (0-indexed month)
  * Week starts on Monday (0 = Mon, 6 = Sun)
  */
-export function getMonthGrid(year, month) {
+export function getMonthGrid(year, month, startDate = null) {
   const firstDayOfMonth = new Date(year, month, 1);
   const lastDayOfMonth = new Date(year, month + 1, 0);
   const totalDaysInMonth = lastDayOfMonth.getDate();
@@ -61,6 +61,7 @@ export function getMonthGrid(year, month) {
       isCurrentMonth: false,
       isToday: key === todayKey,
       isFuture: prevDate > today,
+      isBeforeStart: !!(startDate && key < startDate),
       isPrevMonth: true
     });
   }
@@ -76,6 +77,7 @@ export function getMonthGrid(year, month) {
       isCurrentMonth: true,
       isToday: key === todayKey,
       isFuture: curDate > today,
+      isBeforeStart: !!(startDate && key < startDate),
       isPrevMonth: false
     });
   }
@@ -95,6 +97,7 @@ export function getMonthGrid(year, month) {
       isCurrentMonth: false,
       isToday: key === todayKey,
       isFuture: nextDate > today,
+      isBeforeStart: !!(startDate && key < startDate),
       isNextMonth: true
     });
   }
@@ -103,9 +106,9 @@ export function getMonthGrid(year, month) {
 }
 
 /**
- * Calculates monthly totals for all habits (and legacy smoke-free / workout compatibility)
+ * Calculates monthly totals for all habits scoped by user journey start date
  */
-export function calculateMonthTotals(habitData, year, month, habits = []) {
+export function calculateMonthTotals(habitData, year, month, habits = [], startDate = null) {
   const prefix = `${year}-${String(month + 1).padStart(2, '0')}-`;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -120,16 +123,30 @@ export function calculateMonthTotals(habitData, year, month, habits = []) {
   let perfectDaysCount = 0;
 
   const now = new Date();
-  const isCurrentMonth = now.getFullYear() === year && now.getMonth() === month;
-  const isFutureMonth = new Date(year, month, 1) > now;
-  const daysElapsed = isFutureMonth
-    ? 0
-    : isCurrentMonth
-    ? now.getDate()
-    : daysInMonth;
+  now.setHours(0, 0, 0, 0);
+
+  // Compute days elapsed strictly from startDate onward
+  let daysElapsed = 0;
+  for (let day = 1; day <= daysInMonth; day++) {
+    const key = `${prefix}${String(day).padStart(2, '0')}`;
+    const dayDate = new Date(year, month, day);
+    dayDate.setHours(0, 0, 0, 0);
+
+    const isFutureDay = dayDate > now;
+    const isBeforeStart = startDate ? key < startDate : false;
+
+    if (!isFutureDay && !isBeforeStart) {
+      daysElapsed++;
+    }
+  }
 
   for (let day = 1; day <= daysInMonth; day++) {
     const key = `${prefix}${String(day).padStart(2, '0')}`;
+    const isBeforeStart = startDate ? key < startDate : false;
+
+    // Do not count records before user's start date
+    if (isBeforeStart) continue;
+
     const record = habitData[key];
     if (record) {
       // Dynamic habit counts
@@ -177,9 +194,9 @@ export function calculateMonthTotals(habitData, year, month, habits = []) {
 }
 
 /**
- * Calculate current consecutive streaks for dynamic habits as well as legacy keys
+ * Calculate current consecutive streaks for dynamic habits scoped by user journey start date
  */
-export function calculateStreaks(habitData, habits = []) {
+export function calculateStreaks(habitData, habits = [], startDate = null) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -198,6 +215,12 @@ export function calculateStreaks(habitData, habits = []) {
 
     while (true) {
       const key = dateToKey(checkDate);
+
+      // Stop streak check if reaching earlier than user's start date
+      if (startDate && key < startDate) {
+        break;
+      }
+
       if (habitData[key] && (habitData[key][habitKey] || (habitKey === 'smokeFree' && habitData[key]['smoke-free']))) {
         streak++;
         checkDate.setDate(checkDate.getDate() - 1);

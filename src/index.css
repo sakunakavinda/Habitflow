@@ -2753,5 +2753,225 @@ h1, h2, h3, h4, .brand-title {
   text-decoration: underline;
 }
 
+/* ==========================================================================
+   Start Date Onboarding Modal
+   ========================================================================== */
+.start-date-modal {
+  max-width: 440px;
+  width: 92%;
+  padding: 1.5rem;
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 35px rgba(16, 185, 129, 0.18);
+}
+
+.sdm-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.sdm-icon-badge {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+}
+
+.sdm-title {
+  font-size: 1.28rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.sdm-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin: 0.35rem 0 0 0;
+  line-height: 1.45;
+}
+
+.sdm-callout {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  border-radius: 14px;
+  padding: 0.7rem 0.85rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.sdm-callout-icon {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.sdm-callout-text {
+  font-size: 0.78rem;
+  color: #fde68a;
+  line-height: 1.4;
+}
+
+.sdm-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.sdm-presets-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+}
+
+.sdm-presets-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.sdm-preset-btn {
+  padding: 0.42rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.sdm-preset-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.sdm-preset-btn.active {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: #10b981;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+}
+
+.sdm-input-group {
+  margin-bottom: 0.9rem;
+}
+
+.sdm-input-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.sdm-date-input-wrapper {
+  position: relative;
+}
+
+.sdm-date-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 0.65rem 0.85rem;
+  color: #ffffff;
+  font-size: 0.92rem;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.sdm-date-input:focus {
+  outline: none;
+  border-color: #10b981;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.sdm-preview-box {
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px dashed rgba(16, 185, 129, 0.28);
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sdm-preview-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.sdm-preview-value {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.sdm-submit-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 0.72rem 1.25rem;
+  border-radius: 13px;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sdm-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+}
+
+/* ==========================================================================
+   Calendar Day Cell: Prior to Start Date
+   ========================================================================== */
+.day-cell.before-start {
+  opacity: 0.34;
+  filter: grayscale(0.5);
+  cursor: not-allowed;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.008),
+    rgba(255, 255, 255, 0.008) 5px,
+    rgba(255, 255, 255, 0.02) 5px,
+    rgba(255, 255, 255, 0.02) 10px
+  );
+}
+
+.day-cell.before-start:hover {
+  transform: none;
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+}
+
+
 
 

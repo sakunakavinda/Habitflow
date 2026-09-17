@@ -28,7 +28,8 @@ const AuthContext = createContext({
   signUpWithEmail: async () => {},
   signInWithGoogle: async () => {},
   logout: async () => {},
-  markAddToHomeSeen: async () => {}
+  markAddToHomeSeen: async () => {},
+  setJourneyStartDate: async () => {}
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -52,7 +53,8 @@ export function AuthProvider({ children }) {
         const initialData = {
           name,
           joinedAt: serverTimestamp(),
-          hasSeenAddToHome: false
+          hasSeenAddToHome: false,
+          startDate: null
         };
         await setDoc(userDocRef, initialData);
 
@@ -73,7 +75,12 @@ export function AuthProvider({ children }) {
         }
         return { ...initialData, isNewRegistration: true };
       }
-      return userSnap.data();
+      const data = userSnap.data();
+      const localCachedStart = localStorage.getItem(`habitwave_start_date_${firebaseUser.uid}`);
+      if (!data.startDate && localCachedStart) {
+        data.startDate = localCachedStart;
+      }
+      return data;
     } catch (err) {
       console.error('Error syncing user profile:', err);
       return null;
@@ -156,6 +163,25 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const setJourneyStartDate = async (startDateStr) => {
+    if (!user) {
+      localStorage.setItem('habitwave_guest_start_date', startDateStr);
+      setUserData(prev => ({ ...(prev || {}), startDate: startDateStr }));
+      return;
+    }
+    try {
+      localStorage.setItem(`habitwave_start_date_${user.uid}`, startDateStr);
+      if (db) {
+        const userDocRef = doc(db, 'users', user.uid);
+        await updateDoc(userDocRef, { startDate: startDateStr });
+      }
+      setUserData(prev => prev ? { ...prev, startDate: startDateStr } : { startDate: startDateStr });
+    } catch (err) {
+      console.error('Error setting journey start date:', err);
+      setUserData(prev => prev ? { ...prev, startDate: startDateStr } : { startDate: startDateStr });
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -167,7 +193,8 @@ export function AuthProvider({ children }) {
         signUpWithEmail,
         signInWithGoogle,
         logout,
-        markAddToHomeSeen
+        markAddToHomeSeen,
+        setJourneyStartDate
       }}
     >
       {children}
