@@ -13,6 +13,30 @@ export function AuthModal({ onClose }) {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState(null);
 
+
+  const formatAuthError = (err) => {
+    const msg = err?.message || '';
+    if (msg.includes('auth/unauthorized-domain')) {
+      return `Domain not authorized. Please add "${window.location.hostname}" to Firebase Console -> Authentication -> Settings -> Authorized domains.`;
+    }
+    if (msg.includes('auth/popup-closed-by-user')) {
+      return 'Google sign-in was closed before completing.';
+    }
+    if (msg.includes('auth/invalid-credential') || msg.includes('auth/wrong-password') || msg.includes('auth/user-not-found')) {
+      return 'Invalid email or password.';
+    }
+    if (msg.includes('auth/email-already-in-use')) {
+      return 'This email is already registered. Please sign in instead.';
+    }
+    if (msg.includes('auth/invalid-email')) {
+      return 'Please enter a valid email address.';
+    }
+    if (msg.includes('auth/network-request-failed')) {
+      return 'Network connection error. Please check your internet connection.';
+    }
+    return msg || 'Authentication failed. Please try again.';
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -37,15 +61,7 @@ export function AuthModal({ onClose }) {
       }
     } catch (err) {
       console.error('Auth error:', err);
-      let message = err.message || 'Authentication failed. Please try again.';
-      if (message.includes('auth/invalid-credential') || message.includes('auth/wrong-password')) {
-        message = 'Invalid email or password.';
-      } else if (message.includes('auth/email-already-in-use')) {
-        message = 'This email is already registered. Please sign in instead.';
-      } else if (message.includes('auth/invalid-email')) {
-        message = 'Please enter a valid email address.';
-      }
-      setError(message);
+      setError(formatAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -60,7 +76,7 @@ export function AuthModal({ onClose }) {
       setTimeout(() => onClose(), 1000);
     } catch (err) {
       console.error('Google auth error:', err);
-      setError(err.message || 'Failed to sign in with Google.');
+      setError(formatAuthError(err));
     } finally {
       setLoading(false);
     }
