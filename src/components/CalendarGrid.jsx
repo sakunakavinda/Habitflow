@@ -262,10 +262,23 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
       : 'none'
   };
 
-  const renderDaysPanel = (panelDays, isCurrent, panelDate) => {
-    const pMonthName = MONTH_NAMES[panelDate.getMonth()];
-    const pYear = panelDate.getFullYear();
+    let wheelAngle = 0;
+  if (isDragging) {
+    wheelAngle = (dragOffsetPx / 200) * 65;
+  } else if (isAnimating) {
+    if (targetPanelIndex === 2) wheelAngle = -65;
+    else if (targetPanelIndex === 0) wheelAngle = 65;
+    else wheelAngle = 0;
+  }
 
+  const wheelCylinderStyle = {
+    transform: `rotateY(${wheelAngle}deg)`,
+    transition: isAnimating
+      ? 'transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)'
+      : 'none'
+  };
+
+  const renderDaysPanel = (panelDays, isCurrent) => {
     return (
       <div className="calendar-panel">
         <div className="days-grid">
@@ -303,14 +316,6 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
             );
           })}
         </div>
-
-        {/* Month & Year Display below the dates with synchronized swiping */}
-        <div className="panel-month-footer">
-          <div className="panel-month-badge">
-            <span className="panel-month-text">{pMonthName}</span>
-            <span className="panel-year-text">{pYear}</span>
-          </div>
-        </div>
       </div>
     );
   };
@@ -347,9 +352,26 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
             style={trackStyle}
             onTransitionEnd={handleTransitionEnd}
           >
-            {renderDaysPanel(prevDays, false, prevMonthDate)}
-            {renderDaysPanel(currentDays, true, currentDate)}
-            {renderDaysPanel(nextDays, false, nextMonthDate)}
+            {renderDaysPanel(prevDays, false)}
+            {renderDaysPanel(currentDays, true)}
+            {renderDaysPanel(nextDays, false)}
+          </div>
+        </div>
+
+        {/* Rolling Wheel Month Display - Confined strictly to the width of the badge */}
+        <div className="wheel-month-container">
+          <div className="wheel-cylinder-viewport">
+            <div className="wheel-cylinder" style={wheelCylinderStyle}>
+              <div className="wheel-face prev">
+                <span className="panel-month-text">{MONTH_NAMES[prevMonthDate.getMonth()]}</span>
+              </div>
+              <div className="wheel-face current">
+                <span className="panel-month-text">{MONTH_NAMES[currentDate.getMonth()]}</span>
+              </div>
+              <div className="wheel-face next">
+                <span className="panel-month-text">{MONTH_NAMES[nextMonthDate.getMonth()]}</span>
+              </div>
+            </div>
           </div>
         </div>
 
