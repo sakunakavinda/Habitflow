@@ -1,59 +1,42 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0e1726" />
-      <stop offset="100%" stop-color="#050811" />
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="45%" stop-color="#059669" />
+      <stop offset="75%" stop-color="#d97706" />
+      <stop offset="100%" stop-color="#f59e0b" />
     </linearGradient>
-    <linearGradient id="smokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#34d399" />
-      <stop offset="100%" stop-color="#059669" />
+    <linearGradient id="specular" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.28" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
     </linearGradient>
-    <linearGradient id="workoutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fbbf24" />
-      <stop offset="100%" stop-color="#d97706" />
+    <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#03120d" />
+      <stop offset="100%" stop-color="#0a1f18" />
     </linearGradient>
-    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1e293b" />
-      <stop offset="100%" stop-color="#0f172a" />
-    </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="16" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
   </defs>
 
-  <!-- Background App Icon -->
-  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
-  <rect x="24" y="24" width="464" height="464" rx="96" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4" />
+  <!-- Full bleed vibrant gradient background matching .brand-icon -->
+  <rect width="512" height="512" fill="url(#brandGrad)" />
+  
+  <!-- Subtle specular gloss curve for depth -->
+  <path d="M 0 0 L 512 0 L 512 200 C 350 240 160 220 0 200 Z" fill="url(#specular)" opacity="0.7" />
 
-  <!-- Calendar Outer Box -->
-  <rect x="88" y="110" width="336" height="300" rx="36" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.12)" stroke-width="4" />
-
-  <!-- Calendar Header Bar -->
-  <path d="M 88 146 Q 88 110 124 110 L 388 110 Q 424 110 424 146 L 424 180 L 88 180 Z" fill="#1e293b" />
-  <line x1="88" y1="180" x2="424" y2="180" stroke="rgba(255,255,255,0.1)" stroke-width="3" />
-
-  <!-- Calendar Binder Rings -->
-  <rect x="160" y="80" width="20" height="56" rx="10" fill="#64748b" />
-  <rect x="332" y="80" width="20" height="56" rx="10" fill="#64748b" />
-
-  <!-- Left Habit Badge: Smoke-Free (Leaf / Clean check) -->
-  <g transform="translate(136, 230)" filter="url(#glow)">
-    <circle cx="50" cy="50" r="42" fill="rgba(16, 185, 129, 0.15)" stroke="url(#smokeGrad)" stroke-width="4" />
-    <!-- Cigarette Off / Sprout -->
-    <path d="M 32 62 C 32 40 48 34 68 34 C 68 54 62 70 40 70 Z" fill="url(#smokeGrad)" />
-    <path d="M 40 70 L 62 48" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+  <!-- Centered CalendarHeart Lucide Icon -->
+  <g transform="translate(121, 121) scale(11.25)" 
+     stroke="#04130e" 
+     stroke-width="2.2" 
+     stroke-linecap="round" 
+     stroke-linejoin="round" 
+     fill="none">
+    <!-- Calendar Body Outline -->
+    <path d="M12.127 21H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v5.125" />
+    <!-- Heart Badge with subtle dark fill -->
+    <path d="M14.62 17.8A2.25 2.25 0 0118 14.836a2.25 2.25 0 013.38 2.966l-2.626 2.856a.998.998 0 01-1.507 0z" fill="url(#heartGrad)" />
+    <!-- Binder Rings -->
+    <path d="M16 2v3" />
+    <path d="M8 2v3" />
+    <!-- Header Line -->
+    <path d="M3 9h18" />
   </g>
-
-  <!-- Right Habit Badge: Workout (Flame / Dumbbell) -->
-  <g transform="translate(276, 230)" filter="url(#glow)">
-    <circle cx="50" cy="50" r="42" fill="rgba(245, 158, 11, 0.15)" stroke="url(#workoutGrad)" stroke-width="4" />
-    <!-- Dumbbell / Flame icon -->
-    <path d="M 36 40 L 36 60 M 64 40 L 64 60 M 36 50 L 64 50 M 30 43 L 30 57 M 70 43 L 70 57" stroke="url(#workoutGrad)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
-  </g>
-
-  <!-- Indicator Glow Dots below -->
-  <circle cx="210" cy="370" r="7" fill="#10b981" />
-  <circle cx="256" cy="370" r="7" fill="#f59e0b" />
-  <circle cx="302" cy="370" r="7" fill="#3b82f6" />
 </svg>
