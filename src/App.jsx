@@ -206,6 +206,11 @@ export default function App() {
     }
   }, [user, userData]);
 
+  useEffect(() => {
+    window.__openOnboarding = () => setShowOnboardingModal(true);
+    return () => { delete window.__openOnboarding; };
+  }, []);
+
   const handleSaveStartDate = async (startDateStr) => {
     setShowStartDateModal(false);
     if (setJourneyStartDate) {

@@ -3543,11 +3543,206 @@ h1, h2, h3, h4, .brand-title {
 .ob-date-preview-label { font-size:0.73rem; color:var(--text-muted); font-weight:500; white-space:nowrap; }
 .ob-date-preview-value { font-size:0.78rem; font-weight:700; color:#34d399; text-align:right; }
 
-/* PWA step */
-.ob-pwa { align-items:stretch; gap:0.9rem; }
-.ob-pwa-steps { display:flex; flex-direction:column; gap:7px; }
-.ob-pwa-step { display:flex; align-items:flex-start; gap:8px; font-size:0.78rem; color:var(--text-secondary); line-height:1.45; }
-.ob-pwa-step-num { min-width:21px; height:21px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.68rem; font-weight:700; color:#fff; flex-shrink:0; }
+/* PWA step — Swipable Screenshots */
+.ob-pwa-swipable {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  user-select: none;
+  align-items: stretch;
+}
+
+.ob-pwa-slide-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 3px;
+}
+
+.ob-pwa-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.ob-pwa-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(16, 185, 129, 0.14);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.32);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+.ob-pwa-swipe-hint {
+  font-size: 0.69rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.ob-pwa-step-heading {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 3px 0 0;
+  text-align: center;
+}
+
+.ob-pwa-step-sub {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+  text-align: center;
+  max-width: 420px;
+}
+
+/* Swipable Carousel Frame */
+.ob-carousel-container {
+  position: relative;
+  width: 100%;
+  height: 290px;
+  border-radius: 14px;
+  background: #080c14;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+  cursor: grab;
+  touch-action: pan-y;
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+}
+
+.ob-carousel-container:active {
+  cursor: grabbing;
+}
+
+@media (min-width: 640px) {
+  .ob-carousel-container {
+    height: 330px;
+  }
+}
+
+.ob-carousel-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.ob-carousel-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  box-sizing: border-box;
+}
+
+.ob-carousel-img-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ob-carousel-img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 10px;
+  user-select: none;
+  -webkit-user-drag: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+/* Arrow buttons */
+.ob-carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.18s ease;
+  padding: 0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+.ob-carousel-arrow--left {
+  left: 8px;
+}
+
+.ob-carousel-arrow--right {
+  right: 8px;
+}
+
+.ob-carousel-arrow:hover {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(16, 185, 129, 0.6);
+  color: #34d399;
+  transform: translateY(-50%) scale(1.08);
+}
+
+/* Pagination Dots */
+.ob-pwa-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.ob-pwa-dot {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ob-pwa-dot-inner {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  transition: all 0.25s ease;
+  display: block;
+}
+
+.ob-pwa-dot.active .ob-pwa-dot-inner {
+  width: 22px;
+  border-radius: 999px;
+  background: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
 
 /* Error */
 .ob-error { font-size:0.77rem; color:#f87171; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.25); border-radius:10px; padding:0.45rem 0.7rem; flex-shrink:0; }

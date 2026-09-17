@@ -15,7 +15,9 @@ import {
   PlusSquare,
   Star,
   Trash2,
-  Plus
+  Plus,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { getTodayKey, formatDateKey } from '../utils/calendarUtils';
 
@@ -328,59 +330,168 @@ function StartDateStep({ selectedDate, setSelectedDate }) {
   );
 }
 
-// ─── Step 6: Add to Home Screen ───────────────────────────────────────────────
+// ─── Step 6: Add to Home Screen (Swipable Guide Screenshots) ─────────────────
+const ATH_GUIDE_SLIDES = [
+  {
+    step: 1,
+    title: 'Tap the Share Button',
+    instruction: "At the bottom of Safari, tap the Share button (square with arrow pointing up).",
+    img: '/guides/step-1.jpg',
+    badge: 'Step 1 of 3'
+  },
+  {
+    step: 2,
+    title: "Select 'Add to Home Screen'",
+    instruction: "Scroll down the share sheet options and tap 'Add to Home Screen'.",
+    img: '/guides/step-2.jpg',
+    badge: 'Step 2 of 3'
+  },
+  {
+    step: 3,
+    title: "Tap 'Add' in Top Right",
+    instruction: "Confirm 'HabitWave' and tap Add in the top-right corner to install.",
+    img: '/guides/step-3.jpg',
+    badge: 'Step 3 of 3'
+  }
+];
+
 function AddToHomeStep() {
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isAndroid = /Android/.test(navigator.userAgent);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [touchStartX, setTouchStartX] = useState(null);
+  const [touchStartY, setTouchStartY] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartX, setDragStartX] = useState(null);
+
+  const prevSlide = () => {
+    setActiveSlide(idx => Math.max(0, idx - 1));
+  };
+
+  const nextSlide = () => {
+    setActiveSlide(idx => Math.min(ATH_GUIDE_SLIDES.length - 1, idx + 1));
+  };
+
+  const handleTouchStart = (e) => {
+    if (e.touches && e.touches.length === 1) {
+      setTouchStartX(e.touches[0].clientX);
+      setTouchStartY(e.touches[0].clientY);
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+
+    if (Math.abs(deltaX) > 35 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX < 0) {
+        nextSlide();
+      } else {
+        prevSlide();
+      }
+    }
+    setTouchStartX(null);
+    setTouchStartY(null);
+  };
+
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setDragStartX(e.clientX);
+  };
+
+  const handleMouseUp = (e) => {
+    if (!isDragging || dragStartX === null) return;
+    const deltaX = e.clientX - dragStartX;
+    if (Math.abs(deltaX) > 35) {
+      if (deltaX < 0) nextSlide();
+      else prevSlide();
+    }
+    setIsDragging(false);
+    setDragStartX(null);
+  };
+
+  const current = ATH_GUIDE_SLIDES[activeSlide];
 
   return (
-    <div className="ob-illustration ob-pwa">
-      {/* Header Widgets button replica */}
-      <div className="ob-ui-section">
-        <div className="ob-section-label">① Tap the Widgets button in the top bar</div>
-        <div className="ob-ui-header-bar">
-          <div className="ob-ui-brand">
-            <CalendarHeart size={16} color="#10b981" />
-            <span>HabitWave</span>
-          </div>
-          <div className="ob-ui-header-btns">
-            <div className="ob-ui-header-btn">
-              <SlidersHorizontal size={12} />
-              <span>Habits</span>
-            </div>
-            <div className="ob-ui-header-btn ob-ui-header-btn--pulse">
-              <Smartphone size={12} />
-              <span>Widgets</span>
-              <TapIndicator style={{ top: -10, right: -10 }} />
-            </div>
-          </div>
+    <div className="ob-illustration ob-pwa-swipable">
+      <div className="ob-pwa-slide-header">
+        <div className="ob-pwa-badge-row">
+          <span className="ob-pwa-pill-badge">
+            <Smartphone size={12} /> {current.badge}
+          </span>
+          <span className="ob-pwa-swipe-hint">👈 Swipe or use arrows 👉</span>
         </div>
-        <CalloutLabel align="right">Tap "Widgets" for install guide</CalloutLabel>
+        <h3 className="ob-pwa-step-heading">{current.title}</h3>
+        <p className="ob-pwa-step-sub">{current.instruction}</p>
       </div>
 
-      {/* Platform steps */}
-      <div className="ob-ui-section">
-        <div className="ob-section-label">② Follow the steps shown in the panel</div>
-        {isIOS && (
-          <div className="ob-pwa-steps">
-            <div className="ob-pwa-step"><div className="ob-pwa-step-num">1</div><div>Tap the <Share2 size={12} style={{ verticalAlign: 'middle' }} /> <strong>Share</strong> button in Safari's toolbar</div></div>
-            <div className="ob-pwa-step"><div className="ob-pwa-step-num">2</div><div>Scroll down and tap <strong>"Add to Home Screen"</strong> <PlusSquare size={12} style={{ verticalAlign: 'middle' }} /></div></div>
-            <div className="ob-pwa-step"><div className="ob-pwa-step-num">3</div><div>Confirm the name and tap <strong>Add</strong> in the top-right corner</div></div>
-          </div>
+      {/* Swipable Carousel Frame */}
+      <div
+        className="ob-carousel-container"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+      >
+        {/* Previous Button */}
+        {activeSlide > 0 && (
+          <button
+            type="button"
+            className="ob-carousel-arrow ob-carousel-arrow--left"
+            onClick={(e) => { e.stopPropagation(); prevSlide(); }}
+            aria-label="Previous step image"
+          >
+            <ChevronLeft size={20} />
+          </button>
         )}
-        {isAndroid && (
-          <div className="ob-pwa-steps">
-            <div className="ob-pwa-step"><div className="ob-pwa-step-num">1</div><div>Tap the <strong>⋮ menu</strong> in Chrome's top-right corner</div></div>
-            <div className="ob-pwa-step"><div className="ob-pwa-step-num">2</div><div>Select <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong></div></div>
-            <div className="ob-pwa-step"><div className="ob-pwa-step-num">3</div><div>Tap <strong>Add</strong> to confirm</div></div>
-          </div>
+
+        {/* Next Button */}
+        {activeSlide < ATH_GUIDE_SLIDES.length - 1 && (
+          <button
+            type="button"
+            className="ob-carousel-arrow ob-carousel-arrow--right"
+            onClick={(e) => { e.stopPropagation(); nextSlide(); }}
+            aria-label="Next step image"
+          >
+            <ChevronRight size={20} />
+          </button>
         )}
-        {!isIOS && !isAndroid && (
-          <div className="ob-pwa-steps">
-            <div className="ob-pwa-step"><div className="ob-pwa-step-num">💡</div><div>Open HabitWave on your mobile browser and use the browser's menu to install it to your home screen.</div></div>
-            <div className="ob-pwa-step"><div className="ob-pwa-step-num">✨</div><div>You'll get live streak badges on your home screen icon and full offline support!</div></div>
-          </div>
-        )}
+
+        {/* Sliding Track */}
+        <div
+          className="ob-carousel-track"
+          style={{ transform: `translateX(-${activeSlide * 100}%)` }}
+        >
+          {ATH_GUIDE_SLIDES.map((slide) => (
+            <div className="ob-carousel-slide" key={slide.step}>
+              <div className="ob-carousel-img-wrap">
+                <img
+                  src={slide.img}
+                  alt={`Step ${slide.step}: ${slide.title}`}
+                  className="ob-carousel-img"
+                  draggable={false}
+                  loading="eager"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Pagination Dots */}
+      <div className="ob-pwa-pagination">
+        {ATH_GUIDE_SLIDES.map((slide, idx) => (
+          <button
+            key={slide.step}
+            type="button"
+            className={`ob-pwa-dot ${idx === activeSlide ? 'active' : ''}`}
+            onClick={() => setActiveSlide(idx)}
+            aria-label={`Go to step image ${slide.step}`}
+          >
+            <span className="ob-pwa-dot-inner" />
+          </button>
+        ))}
       </div>
     </div>
   );
