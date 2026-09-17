@@ -8,8 +8,10 @@ import { QuickModeBar } from './components/QuickModeBar';
 import { CalendarGrid } from './components/CalendarGrid';
 import { DayModal } from './components/DayModal';
 import { WidgetsModal } from './components/WidgetsModal';
+import { LoadingScreen } from './components/LoadingScreen';
 
 export default function App() {
+  const [isLoading, setIsLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [selectedDay, setSelectedDay] = useState(null);
   const [activeMode, setActiveMode] = useState('modal'); // 'modal' | 'smokeFree' | 'workout' | 'both'
@@ -131,7 +133,9 @@ export default function App() {
   };
 
   return (
-    <div className="app-container">
+    <>
+      {isLoading && <LoadingScreen onFinished={() => setIsLoading(false)} />}
+      <div className="app-container">
       {/* App Top Bar */}
       <header className="app-header">
         <div className="brand-wrapper">
@@ -236,5 +240,6 @@ export default function App() {
         />
       )}
     </div>
+    </>
   );
 }

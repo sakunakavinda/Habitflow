@@ -19,7 +19,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="initial-splash" style="position:fixed;inset:0;background:#0a0e1a;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#ffffff;z-index:99999;">
+        <div style="width:74px;height:74px;border-radius:22px;background:linear-gradient(135deg,#10b981,#f59e0b);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(16,185,129,0.4);">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#051a14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.127 21H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v5.125"></path>
+            <path d="M14.62 17.8A2.25 2.25 0 0118 14.836a2.25 2.25 0 013.38 2.966l-2.626 2.856a.998.998 0 01-1.507 0z" fill="#051a14"></path>
+            <path d="M16 2v3"></path>
+            <path d="M3 9h18"></path>
+            <path d="M8 2v3"></path>
+          </svg>
+        </div>
+        <div style="margin-top:20px;font-weight:800;font-size:26px;letter-spacing:-0.5px;color:#ffffff;">HabitWave</div>
+        <div style="margin-top:6px;font-size:13px;color:#94a3b8;letter-spacing:0.2px;">Smoke-Free & Workout Day Tracker</div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
