@@ -18,6 +18,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { NeonLogo } from './NeonLogo';
 
 export function AuthModal({ onClose }) {
   const {
@@ -37,14 +38,6 @@ export function AuthModal({ onClose }) {
 
   const wasLoggedInOnOpen = useRef(!!user);
 
-  // If the modal was opened while not logged in, close immediately upon authentication
-  // so the profile/account settings modal does not flash for a glance.
-  useEffect(() => {
-    if (!wasLoggedInOnOpen.current && user) {
-      onClose();
-    }
-  }, [user, onClose]);
-
   const [isSignUp, setIsSignUp] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
@@ -52,6 +45,14 @@ export function AuthModal({ onClose }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState(null);
+
+  // If the modal was opened while not logged in, close immediately upon authentication
+  // once loading completes, so the profile/account settings modal does not flash for a glance.
+  useEffect(() => {
+    if (!wasLoggedInOnOpen.current && user && !loading) {
+      onClose();
+    }
+  }, [user, loading, onClose]);
 
   // Account Settings Accordions: null | 'password' | 'reset' | 'delete'
   const [activeSetting, setActiveSetting] = useState(null);
@@ -111,6 +112,7 @@ export function AuthModal({ onClose }) {
     setError(null);
     setSuccessMsg(null);
     setLoading(true);
+    const startTime = Date.now();
 
     try {
       if (isSignUp) {
@@ -121,15 +123,18 @@ export function AuthModal({ onClose }) {
           throw new Error('Password must be at least 6 characters.');
         }
         await signUpWithEmail(email, password, displayName);
-        onClose();
       } else {
         await signInWithEmail(email, password);
-        onClose();
       }
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, 1100 - elapsed);
+      setTimeout(() => {
+        setLoading(false);
+        onClose();
+      }, remaining);
     } catch (err) {
       console.error('Auth error:', err);
       setError(formatAuthError(err));
-    } finally {
       setLoading(false);
     }
   };
@@ -137,13 +142,18 @@ export function AuthModal({ onClose }) {
   const handleGoogleSignIn = async () => {
     setError(null);
     setLoading(true);
+    const startTime = Date.now();
     try {
       await signInWithGoogle();
-      onClose();
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, 1100 - elapsed);
+      setTimeout(() => {
+        setLoading(false);
+        onClose();
+      }, remaining);
     } catch (err) {
       console.error('Google auth error:', err);
       setError(formatAuthError(err));
-    } finally {
       setLoading(false);
     }
   };
@@ -246,14 +256,31 @@ export function AuthModal({ onClose }) {
   };
 
   // If the modal was opened while unauthenticated and the user has just logged in,
-  // do not render the profile / account settings view even for a single frame.
-  if (!wasLoggedInOnOpen.current && user) {
+  // do not render the profile / account settings view once loading finishes.
+  if (!wasLoggedInOnOpen.current && user && !loading) {
     return null;
   }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content auth-modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal-content auth-modal"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Animated Neon Logo Overlay while logging in */}
+        {loading && (
+          <div className="auth-loading-overlay">
+            <div className="auth-loading-card">
+              <NeonLogo size={190} />
+              <div className="auth-loading-info">
+                <h3 className="auth-loading-title">
+                  {isSignUp ? 'Creating Your Account...' : 'Logging In...'}
+                </h3>
+                <p className="auth-loading-subtitle">Syncing your habits & streaks to the cloud</p>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Header */}
         <div className="modal-header">
           <div className="modal-title-wrap">

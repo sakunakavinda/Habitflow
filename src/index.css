@@ -1774,6 +1774,7 @@ h1, h2, h3, h4, .brand-title {
 /* Auth Modal Specifics */
 .auth-modal {
   max-width: 440px !important;
+  position: relative;
 }
 
 .auth-tabs {
@@ -4153,3 +4154,132 @@ h1, h2, h3, h4, .brand-title {
 .ob-next-btn:hover { background:linear-gradient(135deg,#34d399,#10b981); box-shadow:0 6px 20px rgba(16,185,129,0.45); transform:translateY(-1px); }
 .ob-next-btn--required { background:linear-gradient(135deg,#10b981,#3b82f6); box-shadow:0 4px 14px rgba(59,130,246,0.3); }
 .ob-next-btn--required:hover { box-shadow:0 6px 20px rgba(59,130,246,0.45); }
+
+/* ==========================================================================
+   Thin Neon Animated Logo & Auth Login Loading Screen
+   ========================================================================== */
+
+.neon-logo {
+  width: 220px;
+  height: 220px;
+  background: transparent;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.neon-logo:hover {
+  transform: scale(1.05);
+}
+
+.neon-logo:active {
+  transform: scale(0.96);
+}
+
+.neon-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Slender strokes with crisp neon glow matching the gradient */
+.neon-path {
+  stroke: url(#brandGradient);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 2px rgba(45, 212, 191, 0.8))
+          drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))
+          drop-shadow(0 0 16px rgba(245, 158, 11, 0.4))
+          drop-shadow(0 0 28px rgba(234, 88, 12, 0.35));
+}
+
+/* Running line / draw-and-erase animation */
+.heart-running-line {
+  /* Approximate perimeter length of the heart SVG path */
+  stroke-dasharray: 240;
+  stroke-dashoffset: 240;
+  animation: traceHeart 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes traceHeart {
+  0% {
+    stroke-dashoffset: 240;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  50% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  75% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  95%, 100% {
+    stroke-dashoffset: -240;
+    opacity: 0;
+  }
+}
+
+/* Click / tap surge effect */
+.neon-boost .neon-path {
+  filter: drop-shadow(0 0 4px #fff)
+          drop-shadow(0 0 14px rgba(45, 212, 191, 1))
+          drop-shadow(0 0 32px rgba(249, 115, 22, 1))
+          drop-shadow(0 0 50px rgba(234, 88, 12, 0.9));
+}
+
+/* Auth Modal Loading Overlay with Neon Logo */
+.auth-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 12, 16, 0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 2rem 1.5rem;
+  animation: fadeIn 0.2s ease forwards;
+}
+
+.auth-loading-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.25rem;
+}
+
+.auth-loading-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.auth-loading-title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.3px;
+  background: linear-gradient(135deg, #34d399, #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.auth-loading-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
