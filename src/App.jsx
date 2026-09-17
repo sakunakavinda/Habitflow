@@ -21,6 +21,7 @@ import { WidgetsModal } from './components/WidgetsModal';
 import { AuthModal } from './components/AuthModal';
 import { ManageHabitsModal } from './components/ManageHabitsModal';
 import { LoadingScreen } from './components/LoadingScreen';
+import AddToHomeModal from './components/AddToHomeModal';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -30,10 +31,11 @@ export default function App() {
   const [showWidgetsModal, setShowWidgetsModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showHabitsModal, setShowHabitsModal] = useState(false);
+  const [showAddToHomeModal, setShowAddToHomeModal] = useState(false);
   const [actionToast, setActionToast] = useState(null);
   const calendarRef = useRef(null);
 
-  const { user, userData } = useAuth();
+  const { user, userData, markAddToHomeSeen } = useAuth();
   const {
     habits,
     logs,
@@ -125,6 +127,30 @@ export default function App() {
 
   const handleNextMonthDateUpdate = () => {
     setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  };
+
+  // Automatically trigger Add to Home Screen onboarding guide for newly registered users outside standalone PWA
+  useEffect(() => {
+    if (user && userData) {
+      const isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+      const localSeen = localStorage.getItem(`habitwave_seen_pwa_guide_${user.uid}`);
+
+      if (!isStandalone && !localSeen && (userData.hasSeenAddToHome === false || userData.isNewRegistration)) {
+        const timer = setTimeout(() => {
+          setShowAddToHomeModal(true);
+        }, 900);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [user, userData]);
+
+  const handleDismissAddToHome = () => {
+    setShowAddToHomeModal(false);
+    if (markAddToHomeSeen) {
+      markAddToHomeSeen();
+    }
   };
 
   // Triggered when user clicks header Chevron buttons
@@ -346,8 +372,19 @@ export default function App() {
             onClose={() => setShowWidgetsModal(false)}
             onTriggerShortcut={handleTriggerShortcut}
             currentStreak={streaks.smokeFreeStreak}
+            onOpenAddToHomeGuide={() => {
+              setShowWidgetsModal(false);
+              setShowAddToHomeModal(true);
+            }}
           />
         )}
+
+        {/* Add to Home Screen Onboarding Guide Modal */}
+        <AddToHomeModal
+          isOpen={showAddToHomeModal}
+          onClose={handleDismissAddToHome}
+          onComplete={handleDismissAddToHome}
+        />
       </div>
     </>
   );

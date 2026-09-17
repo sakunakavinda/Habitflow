@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Smartphone, Sparkles, CigaretteOff, Dumbbell, Share2, PlusSquare, Flame, Check } from 'lucide-react';
 
-export function WidgetsModal({ onClose, onTriggerShortcut, currentStreak }) {
+export function WidgetsModal({ onClose, onTriggerShortcut, currentStreak, onOpenAddToHomeGuide }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content widget-guide-modal" onClick={(e) => e.stopPropagation()}>
@@ -125,6 +125,17 @@ export function WidgetsModal({ onClose, onTriggerShortcut, currentStreak }) {
               🤖 <strong>Android (Chrome):</strong> Tap <strong>⋮ Menu</strong> ➔ <strong>Install App</strong> (or Add to Home Screen).
             </div>
           </div>
+          {onOpenAddToHomeGuide && (
+            <button
+              type="button"
+              className="btn btn-outline"
+              style={{ width: '100%', marginTop: '0.65rem', padding: '0.45rem', fontSize: '0.78rem', justifyContent: 'center', gap: '6px' }}
+              onClick={onOpenAddToHomeGuide}
+            >
+              <Smartphone size={14} color="#10b981" />
+              <span>View Step-by-Step Visual Guide 📸</span>
+            </button>
+          )}
         </div>
 
         <div className="modal-footer" style={{ marginTop: '0.5rem' }}>

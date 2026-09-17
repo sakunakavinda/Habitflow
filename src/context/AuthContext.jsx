@@ -11,6 +11,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  updateDoc,
   collection,
   getDocs,
   addDoc,
@@ -26,7 +27,8 @@ const AuthContext = createContext({
   signInWithEmail: async () => {},
   signUpWithEmail: async () => {},
   signInWithGoogle: async () => {},
-  logout: async () => {}
+  logout: async () => {},
+  markAddToHomeSeen: async () => {}
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -49,7 +51,8 @@ export function AuthProvider({ children }) {
       if (!userSnap.exists()) {
         const initialData = {
           name,
-          joinedAt: serverTimestamp()
+          joinedAt: serverTimestamp(),
+          hasSeenAddToHome: false
         };
         await setDoc(userDocRef, initialData);
 
@@ -68,7 +71,7 @@ export function AuthProvider({ children }) {
             });
           }
         }
-        return initialData;
+        return { ...initialData, isNewRegistration: true };
       }
       return userSnap.data();
     } catch (err) {
@@ -139,6 +142,20 @@ export function AuthProvider({ children }) {
     setUserData(null);
   };
 
+  const markAddToHomeSeen = async () => {
+    if (!user) return;
+    try {
+      localStorage.setItem(`habitwave_seen_pwa_guide_${user.uid}`, 'true');
+      if (db) {
+        const userDocRef = doc(db, 'users', user.uid);
+        await updateDoc(userDocRef, { hasSeenAddToHome: true });
+      }
+      setUserData(prev => prev ? { ...prev, hasSeenAddToHome: true, isNewRegistration: false } : prev);
+    } catch (err) {
+      console.error('Error updating hasSeenAddToHome:', err);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -149,7 +166,8 @@ export function AuthProvider({ children }) {
         signInWithEmail,
         signUpWithEmail,
         signInWithGoogle,
-        logout
+        logout,
+        markAddToHomeSeen
       }}
     >
       {children}
