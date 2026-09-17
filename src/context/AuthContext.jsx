@@ -5,13 +5,20 @@ import {
   signInWithPopup,
   signOut,
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  sendPasswordResetEmail,
+  deleteUser,
+  reauthenticateWithPopup
 } from 'firebase/auth';
 import {
   doc,
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
   collection,
   getDocs,
   addDoc,
@@ -30,7 +37,11 @@ const AuthContext = createContext({
   logout: async () => {},
   markAddToHomeSeen: async () => {},
   setJourneyStartDate: async () => {},
-  markOnboardingComplete: async () => {}
+  markOnboardingComplete: async () => {},
+  changePassword: async () => {},
+  sendPasswordReset: async () => {},
+  resetAccountData: async () => {},
+  deleteAccount: async () => {}
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -199,6 +210,126 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const changePassword = async (currentPassword, newPassword) => {
+    if (!auth || !auth.currentUser) throw new Error('No user is currently signed in.');
+    const currentUser = auth.currentUser;
+    const isPasswordUser = currentUser.providerData.some(p => p.providerId === 'password');
+    if (!isPasswordUser) {
+      throw new Error('This account uses Google Sign-In. Password cannot be changed here.');
+    }
+    const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+    await reauthenticateWithCredential(currentUser, credential);
+    await updatePassword(currentUser, newPassword);
+  };
+
+  const sendPasswordReset = async () => {
+    if (!auth || !auth.currentUser?.email) throw new Error('No user email found.');
+    await sendPasswordResetEmail(auth, auth.currentUser.email);
+  };
+
+  const resetAccountData = async () => {
+    if (!user || !db) throw new Error('Cannot reset account: user not authenticated.');
+    const uid = user.uid;
+
+    // 1. Delete all habit logs and habits in Firestore
+    const habitsColRef = collection(db, 'users', uid, 'habits');
+    const habitsSnap = await getDocs(habitsColRef);
+
+    for (const habitDoc of habitsSnap.docs) {
+      const logsColRef = collection(db, 'users', uid, 'habits', habitDoc.id, 'logs');
+      const logsSnap = await getDocs(logsColRef);
+      for (const logDoc of logsSnap.docs) {
+        await deleteDoc(doc(db, 'users', uid, 'habits', habitDoc.id, 'logs', logDoc.id));
+      }
+      await deleteDoc(doc(db, 'users', uid, 'habits', habitDoc.id));
+    }
+
+    // 2. Reset user document fields
+    const userDocRef = doc(db, 'users', uid);
+    await updateDoc(userDocRef, {
+      startDate: null,
+      hasSeenOnboarding: false,
+      hasSeenAddToHome: false
+    });
+
+    // 3. Clear user local caches
+    const keysToRemove = [
+      `habitwave_start_date_${uid}`,
+      `habitwave_seeded_habits_${uid}`,
+      `habitwave_onboarding_done_${uid}`,
+      `habitwave_seen_pwa_guide_${uid}`,
+      `habitwave_logs_${uid}`,
+      `habitwave_custom_habits_${uid}`
+    ];
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+
+    // 4. Re-seed default starter habit ("Worked Out")
+    await addDoc(habitsColRef, {
+      name: 'Worked Out',
+      frequency: 'daily',
+      color: '#f59e0b',
+      icon: 'dumbbell',
+      createdAt: serverTimestamp()
+    });
+
+    // 5. Update local state
+    setUserData(prev => ({
+      ...(prev || {}),
+      startDate: null,
+      hasSeenOnboarding: false,
+      hasSeenAddToHome: false
+    }));
+  };
+
+  const deleteAccount = async (passwordForReauth = null) => {
+    if (!auth || !auth.currentUser) throw new Error('No user is currently signed in.');
+    const currentUser = auth.currentUser;
+    const uid = currentUser.uid;
+
+    // 1. Re-authenticate
+    const isPasswordUser = currentUser.providerData.some(p => p.providerId === 'password');
+    if (isPasswordUser) {
+      if (!passwordForReauth) {
+        throw new Error('Please enter your current password to confirm account deletion.');
+      }
+      const credential = EmailAuthProvider.credential(currentUser.email, passwordForReauth);
+      await reauthenticateWithCredential(currentUser, credential);
+    } else if (googleProvider) {
+      await reauthenticateWithPopup(currentUser, googleProvider);
+    }
+
+    // 2. Delete all Firestore data for user
+    if (db) {
+      try {
+        const habitsColRef = collection(db, 'users', uid, 'habits');
+        const habitsSnap = await getDocs(habitsColRef);
+        for (const habitDoc of habitsSnap.docs) {
+          const logsColRef = collection(db, 'users', uid, 'habits', habitDoc.id, 'logs');
+          const logsSnap = await getDocs(logsColRef);
+          for (const logDoc of logsSnap.docs) {
+            await deleteDoc(doc(db, 'users', uid, 'habits', habitDoc.id, 'logs', logDoc.id));
+          }
+          await deleteDoc(doc(db, 'users', uid, 'habits', habitDoc.id));
+        }
+        await deleteDoc(doc(db, 'users', uid));
+      } catch (err) {
+        console.warn('Error deleting user Firestore data:', err);
+      }
+    }
+
+    // 3. Clear all user local storage
+    Object.keys(localStorage).forEach(k => {
+      if (k.includes(uid)) {
+        localStorage.removeItem(k);
+      }
+    });
+
+    // 4. Delete user account from Firebase Auth
+    await deleteUser(currentUser);
+    setUser(null);
+    setUserData(null);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -212,7 +343,11 @@ export function AuthProvider({ children }) {
         logout,
         markAddToHomeSeen,
         setJourneyStartDate,
-        markOnboardingComplete
+        markOnboardingComplete,
+        changePassword,
+        sendPasswordReset,
+        resetAccountData,
+        deleteAccount
       }}
     >
       {children}

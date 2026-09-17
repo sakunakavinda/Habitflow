@@ -1,9 +1,39 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, User, LogIn, UserPlus, AlertCircle, Sparkles, CheckCircle2 } from 'lucide-react';
+import {
+  X,
+  Mail,
+  Lock,
+  User,
+  LogIn,
+  UserPlus,
+  AlertCircle,
+  Sparkles,
+  CheckCircle2,
+  KeyRound,
+  RotateCcw,
+  Trash2,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  ShieldCheck
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function AuthModal({ onClose }) {
-  const { user, userData, isConfigured, signInWithEmail, signUpWithEmail, signInWithGoogle, logout, setJourneyStartDate } = useAuth();
+  const {
+    user,
+    userData,
+    isConfigured,
+    signInWithEmail,
+    signUpWithEmail,
+    signInWithGoogle,
+    logout,
+    setJourneyStartDate,
+    changePassword,
+    sendPasswordReset,
+    resetAccountData,
+    deleteAccount
+  } = useAuth();
 
   const [isSignUp, setIsSignUp] = useState(false);
   const [displayName, setDisplayName] = useState('');
@@ -13,6 +43,32 @@ export function AuthModal({ onClose }) {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState(null);
 
+  // Account Settings Accordions: null | 'password' | 'reset' | 'delete'
+  const [activeSetting, setActiveSetting] = useState(null);
+
+  // Change Password state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState(null);
+  const [passwordSuccess, setPasswordSuccess] = useState(null);
+
+  // Reset Account state
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState(null);
+  const [resetSuccess, setResetSuccess] = useState(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  // Delete Account state
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const isPasswordUser = user?.providerData?.some(p => p.providerId === 'password');
+  const isGoogleUser = user?.providerData?.some(p => p.providerId === 'google.com');
 
   const formatAuthError = (err) => {
     const msg = err?.message || '';
@@ -23,7 +79,7 @@ export function AuthModal({ onClose }) {
       return 'Google sign-in was closed before completing.';
     }
     if (msg.includes('auth/invalid-credential') || msg.includes('auth/wrong-password') || msg.includes('auth/user-not-found')) {
-      return 'Invalid email or password.';
+      return 'Incorrect email or password.';
     }
     if (msg.includes('auth/email-already-in-use')) {
       return 'This email is already registered. Please sign in instead.';
@@ -34,7 +90,10 @@ export function AuthModal({ onClose }) {
     if (msg.includes('auth/network-request-failed')) {
       return 'Network connection error. Please check your internet connection.';
     }
-    return msg || 'Authentication failed. Please try again.';
+    if (msg.includes('auth/requires-recent-login')) {
+      return 'Please re-authenticate with your recent credentials to perform this action.';
+    }
+    return msg || 'Action failed. Please try again.';
   };
 
   const handleSubmit = async (e) => {
@@ -91,6 +150,94 @@ export function AuthModal({ onClose }) {
     }
   };
 
+  // ─── Change Password Handler ──────────────────────────────────────────────
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPasswordError(null);
+    setPasswordSuccess(null);
+
+    if (!currentPassword) {
+      setPasswordError('Please enter your current password.');
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      setPasswordError('New password must be at least 6 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New passwords do not match.');
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      await changePassword(currentPassword, newPassword);
+      setPasswordSuccess('Password updated successfully!');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setTimeout(() => setPasswordSuccess(null), 4000);
+    } catch (err) {
+      console.error('Password change error:', err);
+      setPasswordError(formatAuthError(err));
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const handleSendResetEmail = async () => {
+    setPasswordError(null);
+    setPasswordSuccess(null);
+    try {
+      await sendPasswordReset();
+      setPasswordSuccess(`Password reset link sent to ${user.email}. Please check your inbox!`);
+    } catch (err) {
+      setPasswordError(formatAuthError(err));
+    }
+  };
+
+  // ─── Reset Account Handler ────────────────────────────────────────────────
+  const handleResetAccount = async () => {
+    setResetError(null);
+    setResetSuccess(null);
+    setResetLoading(true);
+    try {
+      await resetAccountData();
+      setResetSuccess('Account data reset successfully! Default starter habits restored.');
+      setShowResetConfirm(false);
+      setTimeout(() => setResetSuccess(null), 4000);
+    } catch (err) {
+      console.error('Reset account error:', err);
+      setResetError(err.message || 'Failed to reset account data.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  // ─── Delete Account Handler ───────────────────────────────────────────────
+  const handleDeleteAccount = async () => {
+    setDeleteError(null);
+    if (deleteConfirmText.trim().toUpperCase() !== 'DELETE') {
+      setDeleteError('Please type DELETE to confirm.');
+      return;
+    }
+    if (isPasswordUser && !deletePassword) {
+      setDeleteError('Please enter your password to confirm account deletion.');
+      return;
+    }
+
+    setDeleteLoading(true);
+    try {
+      await deleteAccount(deletePassword);
+      onClose();
+    } catch (err) {
+      console.error('Delete account error:', err);
+      setDeleteError(formatAuthError(err));
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content auth-modal" onClick={(e) => e.stopPropagation()}>
@@ -98,11 +245,11 @@ export function AuthModal({ onClose }) {
         <div className="modal-header">
           <div className="modal-title-wrap">
             <h2 className="modal-title">
-              {user ? 'Account Profile' : isSignUp ? 'Create an Account' : 'Welcome Back'}
+              {user ? 'Account Settings' : isSignUp ? 'Create an Account' : 'Welcome Back'}
             </h2>
             <p className="modal-subtitle">
               {user
-                ? 'Sync habits and tracking across all your devices'
+                ? 'Manage your profile, password, and account data'
                 : 'Cloud sync with Firebase Authentication & Firestore'}
             </p>
           </div>
@@ -119,6 +266,7 @@ export function AuthModal({ onClose }) {
         {/* If user is already logged in */}
         {user ? (
           <div className="auth-profile-view">
+            {/* Profile Info Card */}
             <div className="profile-badge-card">
               <div className="profile-avatar">
                 {user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
@@ -130,13 +278,13 @@ export function AuthModal({ onClose }) {
                 <div className="profile-email">{user.email}</div>
                 <div className="profile-status">
                   <span className="online-indicator" />
-                  <span>Cloud Synced</span>
+                  <span>Cloud Synced {isGoogleUser && '• Google Account'}</span>
                 </div>
               </div>
             </div>
 
             {/* Journey Start Date Config Card */}
-            <div style={{ marginTop: '0.85rem', padding: '0.8rem 0.95rem', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <div className="auth-setting-box">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                 <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#94a3b8' }}>Tracking Start Date:</span>
                 <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#10b981' }}>
@@ -159,6 +307,321 @@ export function AuthModal({ onClose }) {
               />
             </div>
 
+            {/* Account Settings & Management Section */}
+            <div className="auth-management-section">
+              <div className="auth-section-title">Security & Account Management</div>
+
+              {/* 1. Change Password Accordion */}
+              <div className={`auth-accordion-card ${activeSetting === 'password' ? 'open' : ''}`}>
+                <button
+                  type="button"
+                  className="auth-accordion-header"
+                  onClick={() => {
+                    setActiveSetting(prev => prev === 'password' ? null : 'password');
+                    setPasswordError(null);
+                    setPasswordSuccess(null);
+                  }}
+                >
+                  <div className="auth-accordion-title-wrap">
+                    <div className="auth-acc-icon" style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa' }}>
+                      <KeyRound size={15} />
+                    </div>
+                    <div>
+                      <div className="auth-acc-heading">Change Password</div>
+                      <div className="auth-acc-sub">Update your account login password</div>
+                    </div>
+                  </div>
+                  {activeSetting === 'password' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+
+                {activeSetting === 'password' && (
+                  <div className="auth-accordion-body">
+                    {isGoogleUser && !isPasswordUser ? (
+                      <div className="auth-notice-box">
+                        <ShieldCheck size={16} color="#60a5fa" />
+                        <div>
+                          You signed in using <strong>Google</strong>. Passwords are managed directly via your Google Account security settings.
+                        </div>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleChangePassword} className="auth-setting-form">
+                        {passwordError && (
+                          <div className="auth-alert error">
+                            <AlertCircle size={15} />
+                            <span>{passwordError}</span>
+                          </div>
+                        )}
+                        {passwordSuccess && (
+                          <div className="auth-alert success">
+                            <CheckCircle2 size={15} />
+                            <span>{passwordSuccess}</span>
+                          </div>
+                        )}
+
+                        <div className="form-group">
+                          <label className="form-label" htmlFor="current-pw">Current Password</label>
+                          <div className="input-with-icon">
+                            <Lock size={15} className="input-icon" />
+                            <input
+                              id="current-pw"
+                              type="password"
+                              className="form-input"
+                              placeholder="Enter current password"
+                              value={currentPassword}
+                              onChange={(e) => setCurrentPassword(e.target.value)}
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="form-group">
+                          <label className="form-label" htmlFor="new-pw">New Password</label>
+                          <div className="input-with-icon">
+                            <Lock size={15} className="input-icon" />
+                            <input
+                              id="new-pw"
+                              type="password"
+                              className="form-input"
+                              placeholder="Min. 6 characters"
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="form-group">
+                          <label className="form-label" htmlFor="confirm-pw">Confirm New Password</label>
+                          <div className="input-with-icon">
+                            <Lock size={15} className="input-icon" />
+                            <input
+                              id="confirm-pw"
+                              type="password"
+                              className="form-input"
+                              placeholder="Repeat new password"
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="auth-form-footer">
+                          <button
+                            type="button"
+                            className="auth-link-btn"
+                            onClick={handleSendResetEmail}
+                          >
+                            Forgot password? Send reset email
+                          </button>
+                          <button
+                            type="submit"
+                            className="btn btn-primary btn-sm"
+                            disabled={passwordLoading}
+                          >
+                            {passwordLoading ? 'Updating...' : 'Save Password'}
+                          </button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* 2. Reset Account Accordion */}
+              <div className={`auth-accordion-card ${activeSetting === 'reset' ? 'open' : ''}`}>
+                <button
+                  type="button"
+                  className="auth-accordion-header"
+                  onClick={() => {
+                    setActiveSetting(prev => prev === 'reset' ? null : 'reset');
+                    setResetError(null);
+                    setResetSuccess(null);
+                    setShowResetConfirm(false);
+                  }}
+                >
+                  <div className="auth-accordion-title-wrap">
+                    <div className="auth-acc-icon" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' }}>
+                      <RotateCcw size={15} />
+                    </div>
+                    <div>
+                      <div className="auth-acc-heading">Reset Account Data</div>
+                      <div className="auth-acc-sub">Clear habit history & restore starter habits</div>
+                    </div>
+                  </div>
+                  {activeSetting === 'reset' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+
+                {activeSetting === 'reset' && (
+                  <div className="auth-accordion-body">
+                    {resetError && (
+                      <div className="auth-alert error">
+                        <AlertCircle size={15} />
+                        <span>{resetError}</span>
+                      </div>
+                    )}
+                    {resetSuccess && (
+                      <div className="auth-alert success">
+                        <CheckCircle2 size={15} />
+                        <span>{resetSuccess}</span>
+                      </div>
+                    )}
+
+                    <div className="auth-notice-box" style={{ borderColor: 'rgba(245, 158, 11, 0.3)', background: 'rgba(245, 158, 11, 0.06)' }}>
+                      <AlertTriangle size={16} color="#f59e0b" style={{ flexShrink: 0 }} />
+                      <div style={{ fontSize: '0.78rem', color: '#fef3c7', lineHeight: 1.45 }}>
+                        Resetting will <strong>erase all logged days, custom habits, and streaks</strong>. Your account login remains active with fresh starter habits.
+                      </div>
+                    </div>
+
+                    {!showResetConfirm ? (
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-warning"
+                        style={{ marginTop: '0.65rem' }}
+                        onClick={() => setShowResetConfirm(true)}
+                      >
+                        <RotateCcw size={14} /> Reset Habit Records
+                      </button>
+                    ) : (
+                      <div className="auth-confirm-dialog" style={{ marginTop: '0.65rem' }}>
+                        <div className="auth-confirm-text">Are you sure you want to reset all habit records?</div>
+                        <div className="auth-confirm-actions">
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-subtle"
+                            onClick={() => setShowResetConfirm(false)}
+                            disabled={resetLoading}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-warning"
+                            onClick={handleResetAccount}
+                            disabled={resetLoading}
+                          >
+                            {resetLoading ? 'Resetting...' : 'Yes, Reset All Data'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* 3. Delete Account Accordion (Danger Zone) */}
+              <div className={`auth-accordion-card danger ${activeSetting === 'delete' ? 'open' : ''}`}>
+                <button
+                  type="button"
+                  className="auth-accordion-header"
+                  onClick={() => {
+                    setActiveSetting(prev => prev === 'delete' ? null : 'delete');
+                    setDeleteError(null);
+                    setShowDeleteConfirm(false);
+                    setDeleteConfirmText('');
+                    setDeletePassword('');
+                  }}
+                >
+                  <div className="auth-accordion-title-wrap">
+                    <div className="auth-acc-icon" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444' }}>
+                      <Trash2 size={15} />
+                    </div>
+                    <div>
+                      <div className="auth-acc-heading" style={{ color: '#fca5a5' }}>Delete Account</div>
+                      <div className="auth-acc-sub">Permanently remove account & all cloud data</div>
+                    </div>
+                  </div>
+                  {activeSetting === 'delete' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+
+                {activeSetting === 'delete' && (
+                  <div className="auth-accordion-body">
+                    {deleteError && (
+                      <div className="auth-alert error">
+                        <AlertCircle size={15} />
+                        <span>{deleteError}</span>
+                      </div>
+                    )}
+
+                    <div className="auth-notice-box" style={{ borderColor: 'rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.08)' }}>
+                      <AlertTriangle size={16} color="#ef4444" style={{ flexShrink: 0 }} />
+                      <div style={{ fontSize: '0.78rem', color: '#fee2e2', lineHeight: 1.45 }}>
+                        <strong>Permanent and irreversible:</strong> Your account, login credentials, and all Firestore habit records will be completely destroyed.
+                      </div>
+                    </div>
+
+                    {!showDeleteConfirm ? (
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-danger"
+                        style={{ marginTop: '0.65rem' }}
+                        onClick={() => setShowDeleteConfirm(true)}
+                      >
+                        <Trash2 size={14} /> Request Account Deletion
+                      </button>
+                    ) : (
+                      <div className="auth-confirm-dialog danger" style={{ marginTop: '0.75rem' }}>
+                        <div className="auth-confirm-title">Confirm Permanent Deletion</div>
+                        <p style={{ fontSize: '0.74rem', color: '#fca5a5', margin: '4px 0 8px' }}>
+                          Type <strong>DELETE</strong> below to confirm.
+                        </p>
+
+                        <div className="form-group" style={{ marginBottom: '8px' }}>
+                          <input
+                            type="text"
+                            className="form-input"
+                            placeholder="Type DELETE"
+                            value={deleteConfirmText}
+                            onChange={(e) => setDeleteConfirmText(e.target.value)}
+                            style={{ borderColor: 'rgba(239, 68, 68, 0.4)' }}
+                          />
+                        </div>
+
+                        {isPasswordUser && (
+                          <div className="form-group" style={{ marginBottom: '8px' }}>
+                            <label className="form-label" style={{ fontSize: '0.72rem' }}>Confirm Your Password</label>
+                            <input
+                              type="password"
+                              className="form-input"
+                              placeholder="Enter current password"
+                              value={deletePassword}
+                              onChange={(e) => setDeletePassword(e.target.value)}
+                              style={{ borderColor: 'rgba(239, 68, 68, 0.4)' }}
+                            />
+                          </div>
+                        )}
+
+                        <div className="auth-confirm-actions">
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-subtle"
+                            onClick={() => {
+                              setShowDeleteConfirm(false);
+                              setDeleteConfirmText('');
+                              setDeletePassword('');
+                            }}
+                            disabled={deleteLoading}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-danger"
+                            onClick={handleDeleteAccount}
+                            disabled={deleteLoading || deleteConfirmText.trim().toUpperCase() !== 'DELETE' || (isPasswordUser && !deletePassword)}
+                          >
+                            {deleteLoading ? 'Deleting...' : 'Delete Permanently'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Meta note & Sign Out */}
             <div className="profile-meta-banner" style={{ marginTop: '0.85rem' }}>
               <Sparkles size={16} color="#fbbf24" />
               <span>Your habits, logs, and streaks are securely stored in your personal Firestore collection.</span>
@@ -166,11 +629,11 @@ export function AuthModal({ onClose }) {
 
             <button
               type="button"
-              className="btn btn-full btn-danger"
+              className="btn btn-full btn-outline-danger"
               onClick={handleLogout}
-              style={{ marginTop: '1.15rem' }}
+              style={{ marginTop: '1rem' }}
             >
-              Sign Out
+              <LogIn size={15} style={{ transform: 'rotate(180deg)' }} /> Sign Out
             </button>
           </div>
         ) : (
