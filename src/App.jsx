@@ -148,9 +148,9 @@ export default function App() {
       const isStandalone =
         window.matchMedia('(display-mode: standalone)').matches ||
         window.navigator.standalone === true;
-      const localSeen = localStorage.getItem(`habitwave_seen_pwa_guide_${user.uid}`);
+      const localSeen = user ? localStorage.getItem(`habitwave_seen_pwa_guide_${user.uid}`) : null;
 
-      if (!isStandalone && !localSeen && (userData.hasSeenAddToHome === false || userData.isNewRegistration)) {
+      if (!isStandalone && !localSeen && userData.hasSeenAddToHome !== true) {
         const timer = setTimeout(() => {
           setShowAddToHomeModal(true);
         }, 800);
@@ -165,20 +165,17 @@ export default function App() {
       await setJourneyStartDate(startDateStr);
     }
     setActionToast(`🎉 Journey start date set to ${startDateStr}!`);
-    setTimeout(() => setActionToast(null), 3500);
+    setTimeout(() => setActionToast(null), 3000);
 
-    // After setting start date, prompt AddToHome if user has not seen it and is not in standalone mode
-    if (user) {
-      const isStandalone =
-        window.matchMedia('(display-mode: standalone)').matches ||
-        window.navigator.standalone === true;
-      const localSeen = localStorage.getItem(`habitwave_seen_pwa_guide_${user.uid}`);
+    // Prompt Add to Home Screen guide immediately after setting start date (unless already in standalone app)
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
 
-      if (!isStandalone && !localSeen && (userData?.hasSeenAddToHome === false || userData?.isNewRegistration)) {
-        setTimeout(() => {
-          setShowAddToHomeModal(true);
-        }, 600);
-      }
+    if (!isStandalone) {
+      setTimeout(() => {
+        setShowAddToHomeModal(true);
+      }, 500);
     }
   };
 
