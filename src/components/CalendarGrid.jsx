@@ -6,7 +6,7 @@ import React, {
   useCallback
 } from 'react';
 import { CigaretteOff, Dumbbell, Sparkles } from 'lucide-react';
-import { WEEK_DAYS, getMonthGrid } from '../utils/calendarUtils';
+import { WEEK_DAYS, MONTH_NAMES, getMonthGrid } from '../utils/calendarUtils';
 
 export const CalendarGrid = forwardRef(function CalendarGrid(
   {
@@ -262,45 +262,58 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
       : 'none'
   };
 
-  const renderDaysPanel = (panelDays, isCurrent) => (
-    <div className="calendar-panel">
-      <div className="days-grid">
-        {panelDays.map((day) => {
-          const record = habitData[day.dateKey] || {};
-          const isSmokeFree = !!record.smokeFree;
-          const isWorkout = !!record.workout;
-          const hasBoth = isSmokeFree && isWorkout;
+  const renderDaysPanel = (panelDays, isCurrent, panelDate) => {
+    const pMonthName = MONTH_NAMES[panelDate.getMonth()];
+    const pYear = panelDate.getFullYear();
 
-          return (
-            <div
-              key={day.dateKey}
-              onClick={() => isCurrent && handleCellClick(day)}
-              className={`day-cell ${!day.isCurrentMonth ? 'other-month' : ''} ${
-                day.isToday ? 'today' : ''
-              } ${day.isFuture ? 'is-future' : ''} ${hasBoth ? 'has-both' : ''}`}
-              title={`${day.dateKey}${isSmokeFree ? ' • Smoke-Free' : ''}${
-                isWorkout ? ' • Worked Out' : ''
-              }`}
-            >
-              <div className="day-header-row">
-                <span className="day-number">{day.dayNumber}</span>
-                {day.isToday && <span className="today-dot" title="Today" />}
-              </div>
+    return (
+      <div className="calendar-panel">
+        <div className="days-grid">
+          {panelDays.map((day) => {
+            const record = habitData[day.dateKey] || {};
+            const isSmokeFree = !!record.smokeFree;
+            const isWorkout = !!record.workout;
+            const hasBoth = isSmokeFree && isWorkout;
 
-              <div className="day-lines-row">
-                {isSmokeFree && (
-                  <span className="habit-line smoke" title="Smoke-Free" />
-                )}
-                {isWorkout && (
-                  <span className="habit-line workout" title="Worked Out" />
-                )}
+            return (
+              <div
+                key={day.dateKey}
+                onClick={() => isCurrent && handleCellClick(day)}
+                className={`day-cell ${!day.isCurrentMonth ? 'other-month' : ''} ${
+                  day.isToday ? 'today' : ''
+                } ${day.isFuture ? 'is-future' : ''} ${hasBoth ? 'has-both' : ''}`}
+                title={`${day.dateKey}${isSmokeFree ? ' • Smoke-Free' : ''}${
+                  isWorkout ? ' • Worked Out' : ''
+                }`}
+              >
+                <div className="day-header-row">
+                  <span className="day-number">{day.dayNumber}</span>
+                  {day.isToday && <span className="today-dot" title="Today" />}
+                </div>
+
+                <div className="day-lines-row">
+                  {isSmokeFree && (
+                    <span className="habit-line smoke" title="Smoke-Free" />
+                  )}
+                  {isWorkout && (
+                    <span className="habit-line workout" title="Worked Out" />
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+
+        {/* Month & Year Display below the dates with synchronized swiping */}
+        <div className="panel-month-footer">
+          <div className="panel-month-badge">
+            <span className="panel-month-text">{pMonthName}</span>
+            <span className="panel-year-text">{pYear}</span>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div
@@ -334,9 +347,9 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
             style={trackStyle}
             onTransitionEnd={handleTransitionEnd}
           >
-            {renderDaysPanel(prevDays, false)}
-            {renderDaysPanel(currentDays, true)}
-            {renderDaysPanel(nextDays, false)}
+            {renderDaysPanel(prevDays, false, prevMonthDate)}
+            {renderDaysPanel(currentDays, true, currentDate)}
+            {renderDaysPanel(nextDays, false, nextMonthDate)}
           </div>
         </div>
 
