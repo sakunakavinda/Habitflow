@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   X,
   Mail,
@@ -34,6 +34,16 @@ export function AuthModal({ onClose }) {
     resetAccountData,
     deleteAccount
   } = useAuth();
+
+  const wasLoggedInOnOpen = useRef(!!user);
+
+  // If the modal was opened while not logged in, close immediately upon authentication
+  // so the profile/account settings modal does not flash for a glance.
+  useEffect(() => {
+    if (!wasLoggedInOnOpen.current && user) {
+      onClose();
+    }
+  }, [user, onClose]);
 
   const [isSignUp, setIsSignUp] = useState(false);
   const [displayName, setDisplayName] = useState('');
@@ -111,12 +121,10 @@ export function AuthModal({ onClose }) {
           throw new Error('Password must be at least 6 characters.');
         }
         await signUpWithEmail(email, password, displayName);
-        setSuccessMsg('Account created successfully! Welcome to HabitWave.');
-        setTimeout(() => onClose(), 1200);
+        onClose();
       } else {
         await signInWithEmail(email, password);
-        setSuccessMsg('Logged in successfully!');
-        setTimeout(() => onClose(), 1000);
+        onClose();
       }
     } catch (err) {
       console.error('Auth error:', err);
@@ -131,8 +139,7 @@ export function AuthModal({ onClose }) {
     setLoading(true);
     try {
       await signInWithGoogle();
-      setSuccessMsg('Signed in with Google!');
-      setTimeout(() => onClose(), 1000);
+      onClose();
     } catch (err) {
       console.error('Google auth error:', err);
       setError(formatAuthError(err));
@@ -237,6 +244,12 @@ export function AuthModal({ onClose }) {
       setDeleteLoading(false);
     }
   };
+
+  // If the modal was opened while unauthenticated and the user has just logged in,
+  // do not render the profile / account settings view even for a single frame.
+  if (!wasLoggedInOnOpen.current && user) {
+    return null;
+  }
 
   return (
     <div className="modal-overlay" onClick={onClose}>

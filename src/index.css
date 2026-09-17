@@ -3731,9 +3731,14 @@ h1, h2, h3, h4, .brand-title {
    Onboarding Modal Wizard — v2 (Rich UI Mockups)
    ========================================================================== */
 
-.ob-overlay { z-index: 110000; }
+.ob-overlay {
+  z-index: 110000;
+  touch-action: none;
+  overscroll-behavior: contain;
+}
 
 .onboarding-modal {
+  touch-action: pan-y;
   gap: 0;
   padding: 1.25rem 1.15rem calc(env(safe-area-inset-bottom, 16px) + 1.25rem);
   max-height: 95vh;

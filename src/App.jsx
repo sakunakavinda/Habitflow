@@ -116,7 +116,8 @@ export default function App() {
       showAuthModal ||
       showHabitsModal ||
       showAddToHomeModal ||
-      showStartDateModal;
+      showStartDateModal ||
+      showOnboardingModal;
 
     if (anyModalOpen) {
       const scrollY = window.scrollY;

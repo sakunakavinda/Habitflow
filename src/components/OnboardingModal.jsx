@@ -334,20 +334,27 @@ function StartDateStep({ selectedDate, setSelectedDate }) {
 const ATH_GUIDE_SLIDES = [
   {
     step: 1,
+    title: 'Install the app for easy access',
+    instruction: "Add HabitWave to your home screen for quick 1-tap access and a full app experience.",
+    img: '/guides/home-screen.png',
+    badge: 'Home Screen'
+  },
+  {
+    step: 2,
     title: 'Tap the Share Button',
     instruction: "At the bottom of Safari, tap the Share button (square with arrow pointing up).",
     img: '/guides/step-1.jpg',
     badge: 'Step 1 of 3'
   },
   {
-    step: 2,
+    step: 3,
     title: "Select 'Add to Home Screen'",
     instruction: "Scroll down the share sheet options and tap 'Add to Home Screen'.",
     img: '/guides/step-2.jpg',
     badge: 'Step 2 of 3'
   },
   {
-    step: 3,
+    step: 4,
     title: "Tap 'Add' in Top Right",
     instruction: "Confirm 'HabitWave' and tap Add in the top-right corner to install.",
     img: '/guides/step-3.jpg',
@@ -587,7 +594,14 @@ export default function OnboardingModal({ isOpen, userName, onComplete }) {
   };
 
   return (
-    <div className="modal-overlay ob-overlay">
+    <div
+      className="modal-overlay ob-overlay"
+      onTouchMove={e => {
+        if (e.target === e.currentTarget) {
+          e.preventDefault();
+        }
+      }}
+    >
       <div
         className="modal-content onboarding-modal"
         onClick={e => e.stopPropagation()}
