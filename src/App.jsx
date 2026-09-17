@@ -139,7 +139,7 @@ export default function App() {
             <CalendarHeart size={24} />
           </div>
           <div>
-            <h1 className="brand-title">HabitFlow</h1>
+            <h1 className="brand-title">HabitWave</h1>
             <p className="brand-subtitle">Smoke-Free & Workout Day Tracker</p>
           </div>
         </div>

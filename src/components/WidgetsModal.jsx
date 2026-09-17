@@ -25,7 +25,7 @@ export function WidgetsModal({ onClose, onTriggerShortcut, currentStreak }) {
         {/* Live App Badge Preview */}
         <div className="widget-badge-card">
           <div className="widget-icon-preview">
-            <img src="/pwa-icon.svg" alt="HabitFlow" width={48} height={48} />
+            <img src="/pwa-icon.svg" alt="HabitWave" width={48} height={48} />
             {currentStreak > 0 && (
               <span className="app-icon-counter-badge" title="Live streak count on your home screen icon!">
                 {currentStreak}

@@ -1,5 +1,5 @@
-// HabitFlow PWA Service Worker
-const CACHE_NAME = 'habitflow-cache-v1';
+// HabitWave PWA Service Worker
+const CACHE_NAME = 'habitwave-cache-v1';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
