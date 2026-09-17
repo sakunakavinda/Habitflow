@@ -5,6 +5,7 @@ import { HabitIcon } from '../utils/habitIcons';
 export function MonthStats({ totals, streaks, habits = [] }) {
   const {
     daysInMonth,
+    totalMonthDays = daysInMonth,
     daysElapsed,
     habitCounts = {},
     habitRates = {},
@@ -20,7 +21,7 @@ export function MonthStats({ totals, streaks, habits = [] }) {
 
   // If dynamic habits are available, render dynamic cards
   if (habits && habits.length > 0) {
-    const perfectRate = daysInMonth > 0 ? Math.round((perfectDaysCount / daysInMonth) * 100) : 0;
+    const perfectRate = totalMonthDays > 0 ? Math.round((perfectDaysCount / totalMonthDays) * 100) : 0;
 
     // Find highest active streak among habits
     let bestStreak = 0;
@@ -66,14 +67,14 @@ export function MonthStats({ totals, streaks, habits = [] }) {
                 <span className="stat-number" style={{ color: habit.color }}>
                   {count}
                 </span>
-                <span className="stat-subtext">/ {daysInMonth} days</span>
+                <span className="stat-subtext">/ {totalMonthDays} days</span>
               </div>
 
               <div className="stat-progress-bar">
                 <div
                   className="stat-progress-fill"
                   style={{
-                    width: `${Math.min(100, Math.round((count / (daysInMonth || 30)) * 100))}%`,
+                    width: `${Math.min(100, Math.round((count / (totalMonthDays || 1)) * 100))}%`,
                     backgroundColor: habit.color || 'var(--accent-emerald)'
                   }}
                 />
@@ -139,7 +140,7 @@ export function MonthStats({ totals, streaks, habits = [] }) {
   }
 
   // Fallback for default two habits
-  const doubleWinRate = daysInMonth > 0 ? Math.round((doubleWinCount / daysInMonth) * 100) : 0;
+  const doubleWinRate = totalMonthDays > 0 ? Math.round((doubleWinCount / totalMonthDays) * 100) : 0;
 
   return (
     <div className="stats-grid">
@@ -153,12 +154,12 @@ export function MonthStats({ totals, streaks, habits = [] }) {
         </div>
         <div className="stat-number-row">
           <span className="stat-number">{smokeFreeCount}</span>
-          <span className="stat-subtext">/ {daysInMonth} days</span>
+          <span className="stat-subtext">/ {totalMonthDays} days</span>
         </div>
         <div className="stat-progress-bar">
           <div
             className="stat-progress-fill"
-            style={{ width: `${Math.min(100, Math.round((smokeFreeCount / daysInMonth) * 100))}%` }}
+            style={{ width: `${Math.min(100, Math.round((smokeFreeCount / (totalMonthDays || 1)) * 100))}%` }}
           />
         </div>
         <span className="stat-subtext">{smokeFreeRate}% of elapsed month</span>
@@ -174,12 +175,12 @@ export function MonthStats({ totals, streaks, habits = [] }) {
         </div>
         <div className="stat-number-row">
           <span className="stat-number">{workoutCount}</span>
-          <span className="stat-subtext">/ {daysInMonth} days</span>
+          <span className="stat-subtext">/ {totalMonthDays} days</span>
         </div>
         <div className="stat-progress-bar">
           <div
             className="stat-progress-fill"
-            style={{ width: `${Math.min(100, Math.round((workoutCount / daysInMonth) * 100))}%` }}
+            style={{ width: `${Math.min(100, Math.round((workoutCount / (totalMonthDays || 1)) * 100))}%` }}
           />
         </div>
         <span className="stat-subtext">{workoutRate}% consistency</span>

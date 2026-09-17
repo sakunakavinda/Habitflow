@@ -171,6 +171,24 @@ export function calculateMonthTotals(habitData, year, month, habits = [], startD
     }
   }
 
+  // Calculate total trackable days in this month based on user's journey startDate
+  let totalMonthDays = daysInMonth;
+  if (startDate) {
+    const [sYear, sMonth, sDay] = startDate.split('-').map(Number);
+    const startMonthIdx = sMonth - 1; // 0-indexed month
+
+    if (year === sYear && month === startMonthIdx) {
+      // Starting date is in this month: count from startDay to daysInMonth (e.g. 25th to 30th = 6 days)
+      totalMonthDays = Math.max(0, daysInMonth - sDay + 1);
+    } else if (year < sYear || (year === sYear && month < startMonthIdx)) {
+      // Month is prior to starting date: 0 trackable days
+      totalMonthDays = 0;
+    } else {
+      // Starting date was from a previous month: full days of the current month
+      totalMonthDays = daysInMonth;
+    }
+  }
+
   const habitRates = {};
   habits.forEach((h) => {
     habitRates[h.id] = daysElapsed > 0 ? Math.round(((habitCounts[h.id] || 0) / daysElapsed) * 100) : 0;
@@ -187,6 +205,7 @@ export function calculateMonthTotals(habitData, year, month, habits = [], startD
     habitCounts,
     habitRates,
     daysInMonth,
+    totalMonthDays,
     daysElapsed,
     smokeFreeRate,
     workoutRate
