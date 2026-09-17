@@ -1,15 +1,16 @@
 import React, { useEffect } from 'react';
-import { X, CigaretteOff, Dumbbell, Sparkles, Trash2, Check } from 'lucide-react';
+import { X, Sparkles, Trash2, Check } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { MONTH_NAMES } from '../utils/calendarUtils';
+import { HabitIcon } from '../utils/habitIcons';
 
 export function DayModal({
   selectedDay,
-  habitData,
+  habits = [],
+  logs = {},
   onClose,
-  onToggleSmokeFree,
-  onToggleWorkout,
-  onToggleBoth,
+  onToggleHabit,
+  onToggleAll,
   onClearDay
 }) {
   useEffect(() => {
@@ -29,25 +30,46 @@ export function DayModal({
   const dayNum = date.getDate();
   const year = date.getFullYear();
 
-  const record = habitData[dateKey] || {};
-  const isSmokeFree = !!record.smokeFree;
-  const isWorkout = !!record.workout;
-  const hasBoth = isSmokeFree && isWorkout;
+  const dayLogs = logs[dateKey] || {};
 
-  const handleBothClick = () => {
-    onToggleBoth(dateKey);
-    if (!hasBoth) {
-      // Trigger celebration confetti
+  const allHabitsCompleted =
+    habits.length > 0 && habits.every((h) => !!dayLogs[h.id]);
+  const hasAnyHabitsCompleted =
+    habits.some((h) => !!dayLogs[h.id]);
+
+  const handleToggleAll = () => {
+    onToggleAll(dateKey);
+    if (!allHabitsCompleted) {
       try {
         confetti({
           particleCount: 55,
           spread: 60,
           origin: { y: 0.65 },
-          colors: ['#10b981', '#f59e0b', '#3b82f6', '#ec4899']
+          colors: habits.map((h) => h.color || '#3b82f6')
         });
       } catch (err) {
         // Fallback silently if confetti encounters issue
       }
+    }
+  };
+
+  const handleSingleToggle = (habitId) => {
+    onToggleHabit(habitId, dateKey);
+    // Check if toggling this will make all complete
+    const willBeComplete = !dayLogs[habitId];
+    const otherHabitsAllComplete = habits
+      .filter((h) => h.id !== habitId)
+      .every((h) => !!dayLogs[h.id]);
+
+    if (willBeComplete && otherHabitsAllComplete && habits.length > 1) {
+      try {
+        confetti({
+          particleCount: 45,
+          spread: 55,
+          origin: { y: 0.65 },
+          colors: habits.map((h) => h.color || '#10b981')
+        });
+      } catch (e) {}
     }
   };
 
@@ -72,72 +94,78 @@ export function DayModal({
           </button>
         </div>
 
-        {/* Action Toggles */}
+        {/* Dynamic Habit Action Toggles */}
         <div className="modal-actions-list">
-          {/* Smoke-Free Toggle Card */}
-          <div
-            className={`habit-toggle-card smoke ${isSmokeFree ? 'active' : ''}`}
-            onClick={() => onToggleSmokeFree(dateKey)}
-            role="button"
-            tabIndex={0}
-          >
-            <div className="habit-toggle-left">
-              <div className="habit-card-icon">
-                <CigaretteOff size={22} />
-              </div>
-              <div>
-                <div className="habit-card-title">Smoke-Free Day</div>
-                <div className="habit-card-desc">
-                  {isSmokeFree
-                    ? '🎉 Clean lungs & smoke-free!'
-                    : 'Tap to mark this day smoke-free'}
+          {habits.map((habit) => {
+            const isCompleted = !!dayLogs[habit.id];
+            return (
+              <div
+                key={habit.id}
+                className={`habit-toggle-card ${isCompleted ? 'active' : ''}`}
+                style={
+                  isCompleted
+                    ? {
+                        borderColor: habit.color,
+                        boxShadow: `0 0 16px ${habit.color}25`
+                      }
+                    : {}
+                }
+                onClick={() => handleSingleToggle(habit.id)}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="habit-toggle-left">
+                  <div
+                    className="habit-card-icon"
+                    style={{
+                      backgroundColor: isCompleted ? habit.color : 'rgba(255, 255, 255, 0.05)',
+                      color: isCompleted ? '#ffffff' : habit.color || 'var(--text-secondary)'
+                    }}
+                  >
+                    <HabitIcon name={habit.icon} color={isCompleted ? '#fff' : habit.color} size={20} />
+                  </div>
+                  <div>
+                    <div className="habit-card-title">{habit.name}</div>
+                    <div className="habit-card-desc">
+                      {isCompleted
+                        ? 'Completed for this day!'
+                        : `Tap to mark ${habit.name.toLowerCase()} completed`}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="switch-pill" />
-          </div>
 
-          {/* Workout Toggle Card */}
-          <div
-            className={`habit-toggle-card workout ${isWorkout ? 'active' : ''}`}
-            onClick={() => onToggleWorkout(dateKey)}
-            role="button"
-            tabIndex={0}
-          >
-            <div className="habit-toggle-left">
-              <div className="habit-card-icon">
-                <Dumbbell size={22} />
+                <div
+                  className="switch-pill"
+                  style={isCompleted ? { backgroundColor: habit.color } : {}}
+                />
               </div>
-              <div>
-                <div className="habit-card-title">Worked Out</div>
-                <div className="habit-card-desc">
-                  {isWorkout
-                    ? '💪 Workout completed & logged!'
-                    : 'Tap to mark physical workout done'}
-                </div>
-              </div>
-            </div>
-            <div className="switch-pill" />
-          </div>
+            );
+          })}
+
+          {habits.length === 0 && (
+            <p className="empty-habits-note">No habits defined. Add habits using the Manage Habits button.</p>
+          )}
         </div>
 
-        {/* Quick Dual Action & Clear */}
-        <div style={{ display: 'flex', gap: '0.6rem' }}>
-          <button
-            type="button"
-            className={`btn btn-full ${hasBoth ? '' : 'btn-primary'}`}
-            onClick={handleBothClick}
-            style={
-              hasBoth
-                ? { background: 'rgba(255, 255, 255, 0.08)' }
-                : { background: 'var(--gold-gradient)', color: '#032117' }
-            }
-          >
-            <Sparkles size={16} />
-            <span>{hasBoth ? 'Unmark Both' : 'Achieved Both Today!'}</span>
-          </button>
+        {/* Quick Multi-Action & Clear */}
+        <div style={{ display: 'flex', gap: '0.6rem', marginTop: '0.8rem' }}>
+          {habits.length > 0 && (
+            <button
+              type="button"
+              className={`btn btn-full ${allHabitsCompleted ? '' : 'btn-primary'}`}
+              onClick={handleToggleAll}
+              style={
+                allHabitsCompleted
+                  ? { background: 'rgba(255, 255, 255, 0.08)' }
+                  : { background: 'var(--gold-gradient)', color: '#032117' }
+              }
+            >
+              <Sparkles size={16} />
+              <span>{allHabitsCompleted ? 'Unmark All' : 'Achieved All Today!'}</span>
+            </button>
+          )}
 
-          {(isSmokeFree || isWorkout) && (
+          {hasAnyHabitsCompleted && (
             <button
               type="button"
               className="btn btn-icon"

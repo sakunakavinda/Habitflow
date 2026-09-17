@@ -103,15 +103,21 @@ export function getMonthGrid(year, month) {
 }
 
 /**
- * Calculates monthly totals for smoke-free and workout days
+ * Calculates monthly totals for all habits (and legacy smoke-free / workout compatibility)
  */
-export function calculateMonthTotals(habitData, year, month) {
+export function calculateMonthTotals(habitData, year, month, habits = []) {
   const prefix = `${year}-${String(month + 1).padStart(2, '0')}-`;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const habitCounts = {};
+  habits.forEach((h) => {
+    habitCounts[h.id] = 0;
+  });
 
   let smokeFreeCount = 0;
   let workoutCount = 0;
   let doubleWinCount = 0;
+  let perfectDaysCount = 0;
 
   const now = new Date();
   const isCurrentMonth = now.getFullYear() === year && now.getMonth() === month;
@@ -126,14 +132,32 @@ export function calculateMonthTotals(habitData, year, month) {
     const key = `${prefix}${String(day).padStart(2, '0')}`;
     const record = habitData[key];
     if (record) {
-      const isSF = !!record.smokeFree;
-      const isWO = !!record.workout;
+      // Dynamic habit counts
+      let completedHabitsThisDay = 0;
+      habits.forEach((h) => {
+        if (record[h.id]) {
+          habitCounts[h.id] = (habitCounts[h.id] || 0) + 1;
+          completedHabitsThisDay++;
+        }
+      });
 
+      if (habits.length > 0 && completedHabitsThisDay === habits.length) {
+        perfectDaysCount++;
+      }
+
+      // Legacy fallback
+      const isSF = !!(record.smokeFree || record['smoke-free']);
+      const isWO = !!record.workout;
       if (isSF) smokeFreeCount++;
       if (isWO) workoutCount++;
       if (isSF && isWO) doubleWinCount++;
     }
   }
+
+  const habitRates = {};
+  habits.forEach((h) => {
+    habitRates[h.id] = daysElapsed > 0 ? Math.round(((habitCounts[h.id] || 0) / daysElapsed) * 100) : 0;
+  });
 
   const smokeFreeRate = daysElapsed > 0 ? Math.round((smokeFreeCount / daysElapsed) * 100) : 0;
   const workoutRate = daysElapsed > 0 ? Math.round((workoutCount / daysElapsed) * 100) : 0;
@@ -142,6 +166,9 @@ export function calculateMonthTotals(habitData, year, month) {
     smokeFreeCount,
     workoutCount,
     doubleWinCount,
+    perfectDaysCount,
+    habitCounts,
+    habitRates,
     daysInMonth,
     daysElapsed,
     smokeFreeRate,
@@ -150,9 +177,9 @@ export function calculateMonthTotals(habitData, year, month) {
 }
 
 /**
- * Calculate current consecutive streak up to today or yesterday
+ * Calculate current consecutive streaks for dynamic habits as well as legacy keys
  */
-export function calculateStreaks(habitData) {
+export function calculateStreaks(habitData, habits = []) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -163,16 +190,15 @@ export function calculateStreaks(habitData) {
     // If today is marked, start count from today.
     // If today is not yet marked, check if yesterday was marked (streak still alive today!).
     const todayStr = dateToKey(checkDate);
-    const todayMarked = habitData[todayStr] && habitData[todayStr][habitKey];
+    const todayMarked = habitData[todayStr] && (habitData[todayStr][habitKey] || (habitKey === 'smokeFree' && habitData[todayStr]['smoke-free']));
 
     if (!todayMarked) {
-      // Step back to yesterday
       checkDate.setDate(checkDate.getDate() - 1);
     }
 
     while (true) {
       const key = dateToKey(checkDate);
-      if (habitData[key] && habitData[key][habitKey]) {
+      if (habitData[key] && (habitData[key][habitKey] || (habitKey === 'smokeFree' && habitData[key]['smoke-free']))) {
         streak++;
         checkDate.setDate(checkDate.getDate() - 1);
       } else {
@@ -183,8 +209,14 @@ export function calculateStreaks(habitData) {
     return streak;
   }
 
+  const habitStreaks = {};
+  habits.forEach((h) => {
+    habitStreaks[h.id] = getStreak(h.id);
+  });
+
   return {
     smokeFreeStreak: getStreak('smokeFree'),
-    workoutStreak: getStreak('workout')
+    workoutStreak: getStreak('workout'),
+    habitStreaks
   };
 }
