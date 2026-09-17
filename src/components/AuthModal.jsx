@@ -47,12 +47,12 @@ export function AuthModal({ onClose }) {
   const [successMsg, setSuccessMsg] = useState(null);
 
   // If the modal was opened while not logged in, close immediately upon authentication
-  // so the profile/account settings modal does not flash for a glance.
+  // once loading completes, so the profile/account settings modal does not flash for a glance.
   useEffect(() => {
-    if (!wasLoggedInOnOpen.current && user && (!loading || isSignUp)) {
+    if (!wasLoggedInOnOpen.current && user && !loading) {
       onClose();
     }
-  }, [user, loading, isSignUp, onClose]);
+  }, [user, loading, onClose]);
 
   // Account Settings Accordions: null | 'password' | 'reset' | 'delete'
   const [activeSetting, setActiveSetting] = useState(null);
@@ -123,13 +123,9 @@ export function AuthModal({ onClose }) {
           throw new Error('Password must be at least 6 characters.');
         }
         await signUpWithEmail(email, password, displayName);
-        // Take user directly home with no animation overlay or delay
-        setLoading(false);
-        onClose();
-        return;
+      } else {
+        await signInWithEmail(email, password);
       }
-
-      await signInWithEmail(email, password);
       const elapsed = Date.now() - startTime;
       const remaining = Math.max(0, 1100 - elapsed);
       setTimeout(() => {
@@ -259,14 +255,16 @@ export function AuthModal({ onClose }) {
     }
   };
 
-  // If user is logging in, completely hide the login modal and display only the floating animation
-  if (loading && !isSignUp) {
+  // If user is logging in or registering, completely hide the modal and display only the floating animation
+  if (loading) {
     return (
       <div className="auth-loading-screen-overlay">
         <div className="auth-loading-card">
           <NeonLogo size={200} />
           <div className="auth-loading-info">
-            <h3 className="auth-loading-title">Logging In...</h3>
+            <h3 className="auth-loading-title">
+              {isSignUp ? 'Creating Your Account...' : 'Logging In...'}
+            </h3>
             <p className="auth-loading-subtitle">Syncing your habits & streaks to the cloud</p>
           </div>
         </div>
@@ -274,9 +272,9 @@ export function AuthModal({ onClose }) {
     );
   }
 
-  // If the modal was opened while unauthenticated and the user has just logged in,
-  // do not render the profile / account settings view.
-  if (!wasLoggedInOnOpen.current && user && (!loading || isSignUp)) {
+  // If the modal was opened while unauthenticated and the user has just logged in or registered,
+  // do not render the profile / account settings view once loading finishes.
+  if (!wasLoggedInOnOpen.current && user && !loading) {
     return null;
   }
 
