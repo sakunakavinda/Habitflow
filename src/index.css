@@ -3579,11 +3579,19 @@ h1, h2, h3, h4, .brand-title {
 
 .icon-library-grid-scroll {
   flex: 1 1 auto;
-  min-height: 0;
   overflow-y: auto;
-  max-height: 340px;
+  height: 340px;
+  min-height: 260px;
+  max-height: 48dvh;
   padding-right: 4px;
   scrollbar-width: thin;
+}
+
+@media (min-width: 640px) {
+  .icon-library-grid-scroll {
+    height: 340px;
+    max-height: 340px;
+  }
 }
 
 .icon-library-grid-scroll::-webkit-scrollbar {
