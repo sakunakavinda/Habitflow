@@ -72,8 +72,7 @@ export function AuthProvider({ children }) {
           name: effectiveName,
           joinedAt: serverTimestamp(),
           hasSeenAddToHome: false,
-          hasSeenOnboarding: false,
-          startDate: null
+          hasSeenOnboarding: false
         };
         await setDoc(userDocRef, initialData);
 
@@ -107,10 +106,6 @@ export function AuthProvider({ children }) {
         data.name = newName;
       }
 
-      const localCachedStart = localStorage.getItem(`habitwave_start_date_${firebaseUser.uid}`);
-      if (!data.startDate && localCachedStart) {
-        data.startDate = localCachedStart;
-      }
       return data;
     } catch (err) {
       console.error('Error syncing user profile:', err);
@@ -274,14 +269,12 @@ export function AuthProvider({ children }) {
     // 2. Reset user document fields
     const userDocRef = doc(db, 'users', uid);
     await updateDoc(userDocRef, {
-      startDate: null,
       hasSeenOnboarding: false,
       hasSeenAddToHome: false
     });
 
     // 3. Clear user local caches
     const keysToRemove = [
-      `habitwave_start_date_${uid}`,
       `habitwave_seeded_habits_${uid}`,
       `habitwave_onboarding_done_${uid}`,
       `habitwave_seen_pwa_guide_${uid}`,
@@ -302,7 +295,6 @@ export function AuthProvider({ children }) {
     // 5. Update local state
     setUserData(prev => ({
       ...(prev || {}),
-      startDate: null,
       hasSeenOnboarding: false,
       hasSeenAddToHome: false
     }));
@@ -369,7 +361,6 @@ export function AuthProvider({ children }) {
         signInWithGoogle,
         logout,
         markAddToHomeSeen,
-        setJourneyStartDate,
         markOnboardingComplete,
         changePassword,
         sendPasswordReset,

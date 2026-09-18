@@ -506,11 +506,10 @@ function AddToHomeStep() {
 
 // ─── Step Config ──────────────────────────────────────────────────────────────
 const STEPS = [
-  { id: 'welcome',    skippable: true  },
+  { id: 'welcome',   skippable: true  },
   { id: 'log',       skippable: true  },
   { id: 'habits',    skippable: true  },
   { id: 'streaks',   skippable: true  },
-  { id: 'startdate', skippable: false },
   { id: 'pwa',       skippable: true  },
 ];
 
@@ -519,25 +518,19 @@ const STEP_TITLES = {
   log:       'Log Habits Daily',
   habits:    'Manage Your Habits',
   streaks:   'Track Your Streaks',
-  startdate: 'Set Your Start Date',
   pwa:       'Add to Home Screen',
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function OnboardingModal({ isOpen, userName, onComplete }) {
-  const todayKey = getTodayKey();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState('forward');
   const [animKey, setAnimKey] = useState(0);
-  const [startDate, setStartDate] = useState(todayKey);
-  const [startDateError, setStartDateError] = useState('');
 
   useEffect(() => {
     if (isOpen) {
       setStep(0);
       setDirection('forward');
-      setStartDate(todayKey);
-      setStartDateError('');
     }
   }, [isOpen]);
 
@@ -546,16 +539,10 @@ export default function OnboardingModal({ isOpen, userName, onComplete }) {
   const currentStep = STEPS[step];
   const isLast = step === STEPS.length - 1;
   const isFirst = step === 0;
-  const isStartDateStep = currentStep.id === 'startdate';
 
   const goNext = () => {
-    if (isStartDateStep && !startDate) {
-      setStartDateError('Please select a start date to continue.');
-      return;
-    }
-    setStartDateError('');
     if (isLast) {
-      onComplete(startDate);
+      onComplete();
       return;
     }
     setDirection('forward');
@@ -573,16 +560,7 @@ export default function OnboardingModal({ isOpen, userName, onComplete }) {
   const handleSkip = () => {
     if (!currentStep.skippable) return;
     if (isLast) {
-      onComplete(startDate);
-      return;
-    }
-
-    const startDateIndex = STEPS.findIndex(s => s.id === 'startdate');
-    // If on slides 1, 2, 3, or 4 (index 0, 1, 2, 3), jump directly to the 5th slide (Set Your Start Date)
-    if (step < startDateIndex) {
-      setDirection('forward');
-      setAnimKey(k => k + 1);
-      setStep(startDateIndex);
+      onComplete();
       return;
     }
 
@@ -597,7 +575,6 @@ export default function OnboardingModal({ isOpen, userName, onComplete }) {
       case 'log':       return <LogHabitsIllustration />;
       case 'habits':    return <ManageHabitsIllustration />;
       case 'streaks':   return <TrackStreaksIllustration />;
-      case 'startdate': return <StartDateStep selectedDate={startDate} setSelectedDate={setStartDate} />;
       case 'pwa':       return <AddToHomeStep />;
       default:          return null;
     }

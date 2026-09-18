@@ -22,7 +22,6 @@ import { AuthModal } from './components/AuthModal';
 import { ManageHabitsModal } from './components/ManageHabitsModal';
 import { LoadingScreen } from './components/LoadingScreen';
 import AddToHomeModal from './components/AddToHomeModal';
-import StartDateModal from './components/StartDateModal';
 import OnboardingModal from './components/OnboardingModal';
 import DigitalClock from './components/DigitalClock';
 
@@ -35,12 +34,11 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showHabitsModal, setShowHabitsModal] = useState(false);
   const [showAddToHomeModal, setShowAddToHomeModal] = useState(false);
-  const [showStartDateModal, setShowStartDateModal] = useState(false);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [actionToast, setActionToast] = useState(null);
   const calendarRef = useRef(null);
 
-  const { user, userData, markAddToHomeSeen, setJourneyStartDate, markOnboardingComplete } = useAuth();
+  const { user, userData, markAddToHomeSeen, markOnboardingComplete } = useAuth();
   const {
     habits,
     logs,
@@ -57,14 +55,14 @@ export default function App() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  // Calculate earliest effective start date across user profile and all active habits
+  // Calculate earliest effective start date across all active habits
   const effectiveStartDate = useMemo(() => {
     const habitStartDates = habits.map((h) => h.startDate).filter(Boolean);
     if (habitStartDates.length > 0) {
       return habitStartDates.reduce((min, d) => (d < min ? d : min));
     }
-    return userData?.startDate || null;
-  }, [userData?.startDate, habits]);
+    return null;
+  }, [habits]);
 
   // Calculated totals for active month scoped to effective start date
   const totals = useMemo(() => {
@@ -76,132 +74,8 @@ export default function App() {
     return calculateStreaks(logs, habits, effectiveStartDate);
   }, [logs, habits, effectiveStartDate]);
 
-  // Handlers for adding/updating habits that also sync user's journey start date if earlier
-  const handleAddHabit = async (newHabitData) => {
-    const newId = await addHabit(newHabitData);
-    if (newHabitData.startDate && setJourneyStartDate) {
-      if (!userData?.startDate || newHabitData.startDate < userData.startDate) {
-        await setJourneyStartDate(newHabitData.startDate);
-      }
-    }
-    return newId;
-  };
-
-  const handleUpdateHabit = async (habitId, updates) => {
-    await updateHabit(habitId, updates);
-    if (updates.startDate && setJourneyStartDate) {
-      if (!userData?.startDate || updates.startDate < userData.startDate) {
-        await setJourneyStartDate(updates.startDate);
-      }
-    }
-  };
-
-  // Handle Home Screen Quick Actions from URL (?action=smoke-free, etc.)
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const action = params.get('action');
-    if (action) {
-      const todayKey = getTodayKey();
-      if (action === 'smoke-free') {
-        toggleHabitForDay('smoke-free', todayKey);
-        setActionToast('🚭 Logged Smoke-Free for Today via Quick Action!');
-      } else if (action === 'workout') {
-        toggleHabitForDay('workout', todayKey);
-        setActionToast('💪 Logged Workout for Today via Quick Action!');
-      } else if (action === 'both' || action === 'all') {
-        toggleAllForDay(todayKey);
-        setActionToast('✨ Logged All Habits for Today via Quick Action!');
-      }
-      window.history.replaceState({}, '', window.location.pathname);
-      const timer = setTimeout(() => setActionToast(null), 4500);
-      return () => clearTimeout(timer);
-    }
-  }, [toggleHabitForDay, toggleAllForDay]);
-
-  // Update App Icon Badge with live streak count on supported mobile browsers
-  useEffect(() => {
-    if ('setAppBadge' in navigator) {
-      // Use maximum streak among active habits or legacy smoke-free streak
-      let maxStreak = streaks.smokeFreeStreak || 0;
-      if (streaks.habitStreaks) {
-        Object.values(streaks.habitStreaks).forEach((s) => {
-          if (s > maxStreak) maxStreak = s;
-        });
-      }
-
-      if (maxStreak > 0) {
-        navigator.setAppBadge(maxStreak).catch(() => {});
-      } else if ('clearAppBadge' in navigator) {
-        navigator.clearAppBadge().catch(() => {});
-      }
-    }
-  }, [streaks]);
-
-  // Lock body scroll when any modal is open to prevent background scrolling
-  useEffect(() => {
-    const anyModalOpen =
-      !!selectedDay ||
-      showWidgetsModal ||
-      showAuthModal ||
-      showHabitsModal ||
-      showAddToHomeModal ||
-      showStartDateModal ||
-      showOnboardingModal;
-
-    if (anyModalOpen) {
-      const scrollY = window.scrollY;
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-    } else {
-      const top = document.body.style.top;
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      if (top) {
-        window.scrollTo(0, parseInt(top || '0') * -1);
-      }
-    }
-
-    return () => {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-    };
-  }, [selectedDay, showWidgetsModal, showAuthModal, showHabitsModal, showAddToHomeModal, showStartDateModal, showOnboardingModal]);
-
-  // Trigger shortcuts directly from the modal
-  const handleTriggerShortcut = (actionType) => {
-    const todayKey = getTodayKey();
-    if (actionType === 'smoke-free') {
-      toggleHabitForDay('smoke-free', todayKey);
-      setActionToast('🚭 Logged Smoke-Free for Today!');
-    } else if (actionType === 'workout') {
-      toggleHabitForDay('workout', todayKey);
-      setActionToast('💪 Logged Workout for Today!');
-    } else if (actionType === 'both' || actionType === 'all') {
-      toggleAllForDay(todayKey);
-      setActionToast('✨ Logged All Habits for Today!');
-    }
-    setShowWidgetsModal(false);
-    setTimeout(() => setActionToast(null), 4000);
-  };
-
-  // State updates called when calendar animation or swipe completes
-  const handlePrevMonthDateUpdate = () => {
-    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-  };
-
-  const handleNextMonthDateUpdate = () => {
-    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-  };
-
   // Onboarding sequence for registered users:
   // — New users (hasSeenOnboarding !== true): show the full onboarding wizard
-  // — Returning users who skipped start date: fall back to StartDateModal
   // — Users already onboarded: skip everything
   useEffect(() => {
     if (!user || !userData) return;
@@ -212,14 +86,6 @@ export default function App() {
       const timer = setTimeout(() => {
         setShowOnboardingModal(true);
       }, 600);
-      return () => clearTimeout(timer);
-    }
-
-    // Returning user who completed onboarding but somehow missed start date
-    if (!userData.startDate) {
-      const timer = setTimeout(() => {
-        setShowStartDateModal(true);
-      }, 700);
       return () => clearTimeout(timer);
     }
 
@@ -242,33 +108,8 @@ export default function App() {
     return () => { delete window.__openOnboarding; };
   }, []);
 
-  const handleSaveStartDate = async (startDateStr) => {
-    setShowStartDateModal(false);
-    if (setJourneyStartDate) {
-      await setJourneyStartDate(startDateStr);
-    }
-    setActionToast(`🎉 Journey start date set to ${startDateStr}!`);
-    setTimeout(() => setActionToast(null), 3000);
-
-    // Prompt Add to Home Screen guide immediately after setting start date (unless already in standalone app)
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      window.navigator.standalone === true;
-
-    if (!isStandalone) {
-      setTimeout(() => {
-        setShowAddToHomeModal(true);
-      }, 500);
-    }
-  };
-
-  const handleOnboardingComplete = async (startDateStr) => {
+  const handleOnboardingComplete = async () => {
     setShowOnboardingModal(false);
-
-    // Save start date
-    if (startDateStr && setJourneyStartDate) {
-      await setJourneyStartDate(startDateStr);
-    }
 
     // Mark onboarding done in Firestore + localStorage
     if (markOnboardingComplete) {
@@ -289,6 +130,15 @@ export default function App() {
     if (markAddToHomeSeen) {
       markAddToHomeSeen();
     }
+  };
+
+  // State updates called when calendar animation or swipe completes
+  const handlePrevMonthDateUpdate = () => {
+    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  };
+
+  const handleNextMonthDateUpdate = () => {
+    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   };
 
   // Triggered when user clicks header Chevron buttons
@@ -520,8 +370,8 @@ export default function App() {
         {showHabitsModal && (
           <ManageHabitsModal
             habits={habits}
-            onAddHabit={handleAddHabit}
-            onUpdateHabit={handleUpdateHabit}
+            onAddHabit={addHabit}
+            onUpdateHabit={updateHabit}
             onDeleteHabit={deleteHabit}
             onClose={() => setShowHabitsModal(false)}
           />
@@ -550,13 +400,6 @@ export default function App() {
           isOpen={showOnboardingModal}
           userName={userData?.name || user?.displayName}
           onComplete={handleOnboardingComplete}
-        />
-
-        {/* Journey Start Date Modal (fallback for returning users without start date) */}
-        <StartDateModal
-          isOpen={showStartDateModal}
-          initialDate={userData?.startDate}
-          onSave={handleSaveStartDate}
         />
 
         {/* Add to Home Screen Onboarding Guide Modal */}

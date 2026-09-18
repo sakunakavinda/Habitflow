@@ -31,7 +31,6 @@ export function AuthModal({ onClose }) {
     signUpWithEmail,
     signInWithGoogle,
     logout,
-    setJourneyStartDate,
     changePassword,
     sendPasswordReset,
     resetAccountData,
@@ -348,7 +347,7 @@ export function AuthModal({ onClose }) {
             </h2>
             <p className="modal-subtitle">
               {user && wasLoggedInOnOpen.current
-                ? 'Manage your profile, password, and account data'
+                ? 'Manage your profile'
                 : isForgotPassword
                   ? 'Enter your email to receive a password reset link'
                   : 'Cloud sync with Firebase Authentication & Firestore'}
@@ -382,30 +381,6 @@ export function AuthModal({ onClose }) {
                   <span>Cloud Synced {isGoogleUser && '• Google Account'}</span>
                 </div>
               </div>
-            </div>
-
-            {/* Journey Start Date Config Card */}
-            <div className="auth-setting-box">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#94a3b8' }}>Tracking Start Date:</span>
-                <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#10b981' }}>
-                  {userData?.startDate || 'Not Set'}
-                </span>
-              </div>
-              <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                All habit streaks and monthly statistics begin from this date.
-              </div>
-              <input
-                type="date"
-                className="form-input"
-                style={{ padding: '0.45rem 0.75rem', fontSize: '0.82rem' }}
-                value={userData?.startDate || ''}
-                onChange={async (e) => {
-                  if (e.target.value) {
-                    await setJourneyStartDate(e.target.value);
-                  }
-                }}
-              />
             </div>
 
             {/* Account Settings & Management Section */}
