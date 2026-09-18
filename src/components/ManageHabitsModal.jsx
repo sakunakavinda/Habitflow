@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, Plus, Trash2, Check, Sparkles, AlertCircle, Search, Calendar, Edit2 } from 'lucide-react';
 import { AVAILABLE_ICONS, AVAILABLE_COLORS, POPULAR_ICON_IDS, HabitIcon } from '../utils/habitIcons';
 import { IconLibraryModal } from './IconLibraryModal';
@@ -15,6 +15,27 @@ export function ManageHabitsModal({ habits, onAddHabit, onUpdateHabit, onDeleteH
   const [error, setError] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [editingStartDateId, setEditingStartDateId] = useState(null);
+
+  // Map of normalized hex -> array of habit names using this color
+  const usedColorsMap = useMemo(() => {
+    const map = {};
+    (habits || []).forEach((h) => {
+      if (h.color) {
+        const key = h.color.trim().toLowerCase();
+        if (!map[key]) map[key] = [];
+        map[key].push(h.name);
+      }
+    });
+    return map;
+  }, [habits]);
+
+  const handleOpenAdd = () => {
+    const firstUnused = AVAILABLE_COLORS.find(c => !usedColorsMap[c.hex.toLowerCase()]);
+    if (firstUnused) {
+      setSelectedColor(firstUnused.hex);
+    }
+    setIsAdding(true);
+  };
 
   const handleCreateHabit = async (e) => {
     e.preventDefault();
@@ -202,7 +223,7 @@ export function ManageHabitsModal({ habits, onAddHabit, onUpdateHabit, onDeleteH
           <button
             type="button"
             className="btn btn-full btn-outline"
-            onClick={() => setIsAdding(true)}
+            onClick={handleOpenAdd}
             style={{ marginTop: '0.8rem' }}
           >
             <Plus size={16} />
@@ -234,49 +255,75 @@ export function ManageHabitsModal({ habits, onAddHabit, onUpdateHabit, onDeleteH
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="new-habit-freq">Frequency</label>
-              <select
-                id="new-habit-freq"
-                className="form-input form-select"
-                value={frequency}
-                onChange={(e) => setFrequency(e.target.value)}
-              >
-                <option value="daily">Daily</option>
-                <option value="weekdays">Weekdays (Mon-Fri)</option>
-                <option value="weekends">Weekends</option>
-              </select>
-            </div>
+            <div className="form-row-2col">
+              <div className="form-group">
+                <label htmlFor="new-habit-freq">Frequency</label>
+                <select
+                  id="new-habit-freq"
+                  className="form-input form-select"
+                  value={frequency}
+                  onChange={(e) => setFrequency(e.target.value)}
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekdays">Weekdays (Mon-Fri)</option>
+                  <option value="weekends">Weekends</option>
+                </select>
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="new-habit-start">Start Tracking From</label>
-              <input
-                id="new-habit-start"
-                type="date"
-                className="form-input"
-                value={habitStartDate}
-                max={getTodayKey()}
-                onChange={(e) => setHabitStartDate(e.target.value)}
-              />
+              <div className="form-group">
+                <label htmlFor="new-habit-start">Start Tracking</label>
+                <input
+                  id="new-habit-start"
+                  type="date"
+                  className="form-input"
+                  value={habitStartDate}
+                  max={getTodayKey()}
+                  onChange={(e) => setHabitStartDate(e.target.value)}
+                />
+              </div>
             </div>
 
             {/* Color Swatch Picker */}
             <div className="form-group">
-              <label>Highlight Color</label>
-              <div className="color-swatches-grid">
-                {AVAILABLE_COLORS.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    className={`color-swatch-btn ${selectedColor === c.hex ? 'selected' : ''}`}
-                    style={{ backgroundColor: c.hex }}
-                    onClick={() => setSelectedColor(c.hex)}
-                    title={c.label}
-                  >
-                    {selectedColor === c.hex && <Check size={14} color="#000" strokeWidth={3} />}
-                  </button>
-                ))}
+              <div className="color-picker-header-row">
+                <label style={{ margin: 0 }}>Highlight Color</label>
+                <span className="color-picker-selected-tag">
+                  {AVAILABLE_COLORS.find(c => c.hex.toLowerCase() === selectedColor?.toLowerCase())?.label || 'Selected'}
+                </span>
               </div>
+
+              <div className="color-swatches-grid">
+                {AVAILABLE_COLORS.map((c) => {
+                  const usedByHabits = usedColorsMap[c.hex.toLowerCase()];
+                  const isUsed = Boolean(usedByHabits && usedByHabits.length > 0);
+                  const isSelected = selectedColor?.toLowerCase() === c.hex.toLowerCase();
+                  const tooltip = isUsed
+                    ? `${c.label} • In use by: ${usedByHabits.join(', ')}`
+                    : c.label;
+
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className={`color-swatch-btn ${isSelected ? 'selected' : ''} ${isUsed ? 'is-used' : ''}`}
+                      style={{ backgroundColor: c.hex }}
+                      onClick={() => setSelectedColor(c.hex)}
+                      title={tooltip}
+                      aria-label={tooltip}
+                    >
+                      {isSelected && <Check size={12} color="#000" strokeWidth={3.2} />}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Informative chip when currently selected color is already in use */}
+              {usedColorsMap[selectedColor?.toLowerCase()]?.length > 0 && (
+                <div className="color-already-used-hint">
+                  <AlertCircle size={12} />
+                  <span>Already in use by <strong>{usedColorsMap[selectedColor.toLowerCase()].join(', ')}</strong></span>
+                </div>
+              )}
             </div>
 
             {/* Icon Picker */}

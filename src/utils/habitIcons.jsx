@@ -241,7 +241,13 @@ export const AVAILABLE_COLORS = [
   { id: 'pink', label: 'Bright Pink', hex: '#ec4899' },
   { id: 'orange', label: 'Deep Orange', hex: '#f97316' },
   { id: 'indigo', label: 'Electric Indigo', hex: '#6366f1' },
-  { id: 'lime', label: 'Neon Lime', hex: '#84cc16' }
+  { id: 'lime', label: 'Neon Lime', hex: '#84cc16' },
+  { id: 'mint', label: 'Fresh Mint', hex: '#2dd4bf' },
+  { id: 'yellow', label: 'Sunburst Yellow', hex: '#eab308' },
+  { id: 'fuchsia', label: 'Neon Fuchsia', hex: '#d946ef' },
+  { id: 'crimson', label: 'Crimson Red', hex: '#dc2626' },
+  { id: 'azure', label: 'Ocean Azure', hex: '#0284c7' },
+  { id: 'coral', label: 'Sunset Coral', hex: '#fb7185' }
 ];
 
 export function HabitIcon({ name, size = 18, color, className = '' }) {
