@@ -696,14 +696,15 @@ h1, h2, h3, h4, .brand-title {
 .quick-mode-bar {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.6rem;
   padding: 0.85rem 1rem;
+  border-radius: 20px;
 }
 
 @media (min-width: 640px) {
   .quick-mode-bar {
-    padding: 1rem 1.25rem;
-    gap: 0.85rem;
+    padding: 0.95rem 1.15rem;
+    gap: 0.75rem;
   }
 }
 
@@ -714,26 +715,18 @@ h1, h2, h3, h4, .brand-title {
   width: 100%;
 }
 
-.quick-mode-title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-}
-
 .quick-mode-label {
-  font-size: 0.75rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  opacity: 0.9;
+  color: #ffffff;
+  letter-spacing: -0.01em;
 }
 
 .quick-mode-hint {
-  font-size: 0.74rem;
+  font-size: 0.78rem;
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.05);
-  padding: 0.2rem 0.65rem;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.22rem 0.75rem;
   border-radius: 999px;
   border: 1px solid var(--border-subtle);
   white-space: nowrap;
@@ -741,26 +734,52 @@ h1, h2, h3, h4, .brand-title {
   transition: all 0.2s ease;
 }
 
+.mode-selector-track {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  background: rgba(4, 7, 14, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  padding: 4px;
+  overflow: hidden;
+}
+
 .mode-selector {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 0.45rem;
+  gap: 6px;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 0;
+}
+
+.mode-selector::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .mode-btn {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  min-height: 36px;
-  padding: 0.4rem 0.85rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.8rem;
-  font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+  min-height: 38px;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  border: none;
+  background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.18s ease;
@@ -769,16 +788,12 @@ h1, h2, h3, h4, .brand-title {
 
 .mode-btn:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: var(--text-primary);
-  transform: translateY(-1px);
+  color: #ffffff;
 }
 
 .mode-btn.active {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: var(--text-primary);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  color: #000000;
+  font-weight: 700;
 }
 
 @media (min-width: 640px) {
@@ -1884,6 +1899,10 @@ h1, h2, h3, h4, .brand-title {
 .user-avatar-tiny {
   width: 20px;
   height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  flex-shrink: 0;
+  aspect-ratio: 1;
   border-radius: 50%;
   background: var(--gold-gradient);
   color: #032117;
@@ -1893,11 +1912,16 @@ h1, h2, h3, h4, .brand-title {
   align-items: center;
   justify-content: center;
   text-transform: uppercase;
+  line-height: 1;
 }
 
 .online-indicator {
   width: 8px;
   height: 8px;
+  min-width: 8px;
+  min-height: 8px;
+  flex-shrink: 0;
+  aspect-ratio: 1;
   border-radius: 50%;
   background: #10b981;
   box-shadow: 0 0 8px #10b981;
@@ -2928,6 +2952,10 @@ h1, h2, h3, h4, .brand-title {
   .quick-mode-bar {
     padding: 0.5rem 0.75rem;
     gap: 0.35rem;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .quick-mode-header {
@@ -2935,6 +2963,7 @@ h1, h2, h3, h4, .brand-title {
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    min-width: 0;
   }
 
   .quick-mode-title-wrap {
@@ -2942,6 +2971,7 @@ h1, h2, h3, h4, .brand-title {
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    min-width: 0;
     gap: 0.4rem;
   }
 
@@ -2967,14 +2997,20 @@ h1, h2, h3, h4, .brand-title {
     align-items: center;
     gap: 0.35rem;
     width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    touch-action: pan-x;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     padding: 0.1rem 0;
   }
 
   .mode-selector::-webkit-scrollbar {
     display: none;
+    width: 0;
+    height: 0;
   }
 
   .mode-btn {

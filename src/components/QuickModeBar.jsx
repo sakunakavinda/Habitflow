@@ -35,84 +35,77 @@ export function QuickModeBar({ activeMode, setActiveMode, habits = [] }) {
     activeHint = `1-Tap to toggle ${activeHabit.name}`;
   }
 
+  const activeColor = activeHabit ? activeHabit.color : '#3b82f6';
+
   return (
     <div id="tap-actions-section" className="glass-card quick-mode-bar">
+      {/* Header Row */}
       <div className="quick-mode-header">
-        <div className="quick-mode-title-wrap">
-          <span className="quick-mode-label">Tap Action:</span>
-          <span
-            className="quick-mode-hint"
-            style={
-              activeHabit
-                ? {
-                    color: activeHabit.color,
-                    borderColor: `${activeHabit.color}44`,
-                    background: `${activeHabit.color}15`
-                  }
-                : {}
-            }
-          >
-            {activeHint}
-          </span>
-        </div>
+        <span className="quick-mode-label">Tap Action:</span>
+        <span
+          className="quick-mode-hint"
+          style={{
+            color: activeHabit ? activeHabit.color : 'var(--text-secondary)',
+            borderColor: activeHabit ? `${activeHabit.color}66` : 'var(--border-subtle)',
+            background: activeHabit ? `${activeHabit.color}15` : 'rgba(255, 255, 255, 0.04)'
+          }}
+        >
+          {activeHint}
+        </span>
       </div>
-      <div className="mode-selector">
-        {modes.map((mode) => {
-          const isActive = activeMode === mode.id;
 
-          // Build button styles
-          let btnStyle = {};
-          if (mode.color) {
+      {/* Capsule Track Container */}
+      <div className="mode-selector-track">
+        <div className="mode-selector">
+          {modes.map((mode) => {
+            const isActive = activeMode === mode.id;
+
+            let btnStyle = {};
             if (isActive) {
-              // Solid filled pill in habit color
+              const themeColor = mode.color || '#3b82f6';
               btnStyle = {
-                background: mode.color,
-                color: '#0a0a0a',
-                boxShadow: `0 2px 14px ${mode.color}55`,
-                border: `1.5px solid ${mode.color}`
+                background: themeColor,
+                color: '#000000',
+                boxShadow: `0 2px 14px ${themeColor}66`
               };
-            } else {
-              // Subtle tint — colored icon/text at rest
+            } else if (mode.color) {
               btnStyle = {
                 color: mode.color
               };
             }
-          }
 
-          // Icon color: contrast white on active (dark bg), habit color when inactive
-          const iconColor = mode.color
-            ? isActive
-              ? '#0a0a0a'
-              : mode.color
-            : undefined;
+            const iconColor = isActive
+              ? '#000000'
+              : mode.color || 'var(--text-secondary)';
 
-          return (
-            <button
-              key={mode.id}
-              type="button"
-              className={`mode-btn ${isActive ? 'active' : ''}`}
-              style={btnStyle}
-              onClick={() => setActiveMode(mode.id)}
-              title={
-                mode.isDefaultModal
-                  ? 'Click day to open detail modal'
-                  : `1-Click to toggle ${mode.label} on calendar days`
-              }
-            >
-              {mode.isDefaultModal ? (
-                <MousePointer size={14} className="mode-icon" />
-              ) : (
-                <HabitIcon
-                  name={mode.iconName}
-                  color={iconColor}
-                  size={14}
-                  className="mode-icon"
-                />
-              )}
-              <span className="mode-text">{mode.label}</span>
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={mode.id}
+                type="button"
+                className={`mode-btn ${isActive ? 'active' : ''}`}
+                style={btnStyle}
+                onClick={() => setActiveMode(mode.id)}
+                title={
+                  mode.isDefaultModal
+                    ? 'Click day to open detail modal'
+                    : `1-Click to toggle ${mode.label} on calendar days`
+                }
+              >
+                {mode.isDefaultModal ? (
+                  <MousePointer size={15} color={isActive ? '#000000' : 'var(--text-secondary)'} className="mode-icon" />
+                ) : (
+                  <HabitIcon
+                    name={mode.iconName}
+                    color={iconColor}
+                    size={15}
+                    className="mode-icon"
+                  />
+                )}
+                <span className="mode-text">{mode.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
