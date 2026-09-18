@@ -965,11 +965,23 @@ h1, h2, h3, h4, .brand-title {
   flex-shrink: 0;
 }
 
+/* Active habit not yet completed on this day — same shape, hollow/dim */
+.habit-line.incomplete {
+  background: transparent;
+  border: 1.5px solid;
+  opacity: 0.38;
+  height: 3.5px;
+}
+
 @media (min-width: 640px) {
   .habit-line {
     height: 4px;
     width: 20px;
     max-width: calc(50% - 4px);
+  }
+
+  .habit-line.incomplete {
+    height: 4px;
   }
 }
 

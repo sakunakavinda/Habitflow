@@ -370,16 +370,21 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
                 </div>
 
                 <div className="day-lines-row">
-                  {activeHabitsOnDay.length > 0
-                    ? completedHabits.map((h) => (
-                        <span
-                          key={h.id}
-                          className="habit-line"
-                          style={{ backgroundColor: h.color || '#3b82f6' }}
-                          title={h.name}
-                        />
-                      ))
-                    : null}
+                  {activeHabitsOnDay.map((h) => {
+                    const isDone = !!record[h.id];
+                    return (
+                      <span
+                        key={h.id}
+                        className={`habit-line${isDone ? '' : ' incomplete'}`}
+                        style={
+                          isDone
+                            ? { backgroundColor: h.color || '#3b82f6' }
+                            : { borderColor: h.color || '#3b82f6' }
+                        }
+                        title={isDone ? `${h.name} ✓` : h.name}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             );
