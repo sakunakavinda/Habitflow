@@ -38,13 +38,23 @@ export function QuickModeBar({ activeMode, setActiveMode, habits = [] }) {
   return (
     <div id="tap-actions-section" className="glass-card quick-mode-bar">
       <div className="quick-mode-header">
-        <span className="quick-mode-label">Tap Action:</span>
-        <span
-          className="quick-mode-hint"
-          style={activeHabit ? { color: activeHabit.color } : {}}
-        >
-          {activeHint}
-        </span>
+        <div className="quick-mode-title-wrap">
+          <span className="quick-mode-label">Tap Action:</span>
+          <span
+            className="quick-mode-hint"
+            style={
+              activeHabit
+                ? {
+                    color: activeHabit.color,
+                    borderColor: `${activeHabit.color}44`,
+                    background: `${activeHabit.color}15`
+                  }
+                : {}
+            }
+          >
+            {activeHint}
+          </span>
+        </div>
       </div>
       <div className="mode-selector">
         {modes.map((mode) => {
