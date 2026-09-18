@@ -14,8 +14,16 @@ import { db } from '../firebase/firebaseConfig';
 import { useAuth } from '../context/AuthContext';
 import { getTodayKey, dateToKey } from '../utils/calendarUtils';
 
-const LOCAL_HABITS_KEY = 'habitwave_local_habits_v5';
-const LOCAL_LOGS_KEY = 'habitwave_local_logs_v5';
+const LOCAL_HABITS_KEY = 'habitwave_local_habits_v6';
+const LOCAL_LOGS_KEY = 'habitwave_local_logs_v6';
+
+// One-time cleanup for legacy demo data from prior versions
+try {
+  ['v1', 'v2', 'v3', 'v4', 'v5'].forEach(v => {
+    localStorage.removeItem(`habitwave_local_habits_${v}`);
+    localStorage.removeItem(`habitwave_local_logs_${v}`);
+  });
+} catch {}
 
 export const DEFAULT_HABITS = [];
 
@@ -30,7 +38,14 @@ export function useUserHabits() {
       const lastUid = localStorage.getItem('habitwave_last_known_uid');
       if (lastUid) {
         const cached = localStorage.getItem(`habitwave_cached_habits_${lastUid}`);
-        if (cached) return JSON.parse(cached);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length === 1 && parsed[0].id === 'workout') {
+            localStorage.removeItem(`habitwave_cached_habits_${lastUid}`);
+            return [];
+          }
+          return parsed;
+        }
       }
     } catch (e) {
       console.warn('Error reading cached habits:', e);
