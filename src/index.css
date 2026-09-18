@@ -1648,6 +1648,7 @@ body.modal-open .app-container {
   border-radius: 999px;
   position: relative;
   transition: background 0.25s ease;
+  flex-shrink: 0;
 }
 
 .switch-pill::after {
@@ -1660,6 +1661,11 @@ body.modal-open .app-container {
   background: white;
   border-radius: 50%;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Generic active state — moves the thumb for ALL habit types */
+.habit-toggle-card.active .switch-pill::after {
+  transform: translateX(24px);
 }
 
 .habit-toggle-card.smoke.active {
@@ -1748,9 +1754,63 @@ body.modal-open .app-container {
   }
 }
 
-/* Widgets Modal Specifics */
+/* Widgets Modal Specifics - Confined Scrollbars Inside Rounded Corners */
 .widget-guide-modal {
-  max-width: 440px;
+  max-width: 450px !important;
+  position: relative;
+  overflow: hidden !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.widget-guide-modal .modal-header {
+  padding: 1.5rem 1.6rem 0.5rem 1.6rem;
+  flex-shrink: 0;
+}
+
+.widget-modal-scroll-body {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+  padding: 0.5rem 1.6rem 1.6rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+@media (max-width: 639px) {
+  .widget-guide-modal .modal-header {
+    padding: 1.25rem 1.15rem 0.35rem 1.15rem;
+  }
+  .widget-modal-scroll-body {
+    padding: 0.35rem 1.15rem calc(env(safe-area-inset-bottom, 12px) + 1.25rem) 1.15rem;
+  }
+}
+
+.widget-modal-scroll-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.widget-modal-scroll-body::-webkit-scrollbar-track {
+  background: transparent;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.widget-modal-scroll-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+.widget-modal-scroll-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.38);
 }
 
 .widget-badge-card {
@@ -2072,10 +2132,67 @@ body.modal-open .app-container {
   display: inline-block;
 }
 
-/* Auth Modal Specifics */
+/* Auth Modal Specifics - Confined Scrollbars Inside Rounded Corners */
 .auth-modal {
-  max-width: 440px !important;
+  max-width: 460px !important;
   position: relative;
+  overflow: hidden !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.auth-modal .modal-header {
+  padding: 1.5rem 1.6rem 0.5rem 1.6rem;
+  flex-shrink: 0;
+}
+
+.auth-modal-scroll-body {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+  padding: 0.5rem 1.6rem 1.6rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+@media (max-width: 639px) {
+  .auth-modal .modal-header {
+    padding: 1.25rem 1.15rem 0.35rem 1.15rem;
+  }
+  .auth-modal-scroll-body {
+    padding: 0.35rem 1.15rem calc(env(safe-area-inset-bottom, 12px) + 1.25rem) 1.15rem;
+  }
+}
+
+.auth-modal-scroll-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.auth-modal-scroll-body::-webkit-scrollbar-track {
+  background: transparent;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.auth-modal-scroll-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+.auth-modal-scroll-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.auth-modal-scroll-body::-webkit-scrollbar-thumb:active {
+  background: #10b981;
 }
 
 .auth-tabs {
@@ -2413,6 +2530,45 @@ body.modal-open .app-container {
   max-width: 440px;
   border: 1px solid rgba(16, 185, 129, 0.3);
   background: #000000;
+  overflow: hidden !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.avatar-modal-content .modal-header {
+  padding: 1.4rem 1.5rem 0.5rem 1.5rem;
+  flex-shrink: 0;
+}
+
+.avatar-modal-scroll-body {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+  padding: 0.25rem 1.5rem 0.75rem 1.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.avatar-modal-scroll-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.avatar-modal-scroll-body::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 6px 0;
+}
+
+.avatar-modal-scroll-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.avatar-modal-scroll-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.38);
 }
 
 .avatar-popup-grid {
@@ -2502,7 +2658,11 @@ body.modal-open .app-container {
 }
 
 .avatar-modal-footer {
-  margin-top: 0.5rem;
+  padding: 0.75rem 1.5rem 1.4rem 1.5rem;
+  flex-shrink: 0;
+  background: #000000;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 0;
 }
 
 .avatar-option-img {
@@ -2809,24 +2969,73 @@ body.modal-open .app-container {
    Manage Habits Modal Styles
    ========================================================================== */
 
+/* Manage Habits Modal — Two-Layer Scroll Architecture (mirrors .auth-modal) */
 .manage-habits-modal {
   max-width: 500px !important;
   width: min(100%, 500px);
+  overflow: hidden !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.manage-habits-modal .modal-header {
+  padding: 1.5rem 1.6rem 0.5rem 1.6rem;
+  flex-shrink: 0;
+}
+
+.manage-habits-scroll-body {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+  padding: 0.5rem 1.6rem 1.6rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+@media (max-width: 639px) {
+  .manage-habits-modal .modal-header {
+    padding: 1.25rem 1.15rem 0.35rem 1.15rem;
+  }
+  .manage-habits-scroll-body {
+    padding: 0.35rem 1.15rem calc(env(safe-area-inset-bottom, 12px) + 1.25rem) 1.15rem;
+  }
+}
+
+.manage-habits-scroll-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.manage-habits-scroll-body::-webkit-scrollbar-track {
+  background: transparent;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.manage-habits-scroll-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+.manage-habits-scroll-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.manage-habits-scroll-body::-webkit-scrollbar-thumb:active {
+  background: #10b981;
 }
 
 .manage-habits-list {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  max-height: clamp(180px, 40vh, 320px);
-  overflow-y: auto;
-  padding-right: 0.25rem;
-}
-
-@media (min-width: 640px) {
-  .manage-habits-list {
-    max-height: 380px;
-  }
 }
 
 .manage-habit-item {
@@ -3727,10 +3936,7 @@ body.modal-open .app-container {
     height: 36px;
   }
 
-  /* Mobile Manage Habits Modal */
-  .manage-habits-list {
-    max-height: clamp(240px, 38vh, 320px);
-  }
+  /* Mobile Manage Habits Modal — scroll handled by .manage-habits-scroll-body */
 
   .icon-picker-grid {
     grid-template-columns: repeat(5, 1fr);

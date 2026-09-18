@@ -367,8 +367,10 @@ export function AuthModal({ onClose }) {
           </button>
         </div>
 
-        {/* If user was already logged in on open */}
-        {user && wasLoggedInOnOpen.current ? (
+        {/* Scrollable Modal Body strictly contained within rounded borders */}
+        <div className="auth-modal-scroll-body">
+          {/* If user was already logged in on open */}
+          {user && wasLoggedInOnOpen.current ? (
           <div className="auth-profile-view">
             {/* Profile Info Card */}
             <div className="profile-badge-card">
@@ -1092,6 +1094,7 @@ export function AuthModal({ onClose }) {
             </form>
           </>
         )}
+        </div>
       </div>
 
       {/* Avatar Selection Popup Modal */}
@@ -1116,37 +1119,39 @@ export function AuthModal({ onClose }) {
               </button>
             </div>
 
-            <div className="avatar-popup-grid">
-              {AVAILABLE_AVATARS.map((avatar) => {
-                const currentAvatarUrl = getAvatarUrl(userData?.avatar);
-                const isSelected = currentAvatarUrl === avatar.url;
+            <div className="avatar-modal-scroll-body">
+              <div className="avatar-popup-grid">
+                {AVAILABLE_AVATARS.map((avatar) => {
+                  const currentAvatarUrl = getAvatarUrl(userData?.avatar);
+                  const isSelected = currentAvatarUrl === avatar.url;
 
-                return (
-                  <button
-                    key={avatar.id}
-                    type="button"
-                    className={`avatar-popup-card ${isSelected ? 'selected' : ''}`}
-                    onClick={async () => {
-                      await setProfileAvatar(avatar.url);
-                      setShowAvatarModal(false);
-                    }}
-                  >
-                    <div className="avatar-popup-img-wrap">
-                      <img
-                        src={avatar.url}
-                        alt={avatar.label}
-                        className="avatar-popup-img"
-                      />
-                      {isSelected && (
-                        <span className="avatar-popup-check">
-                          <CheckCircle2 size={14} color="#ffffff" />
-                        </span>
-                      )}
-                    </div>
-                    <span className="avatar-popup-name">{avatar.label}</span>
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={avatar.id}
+                      type="button"
+                      className={`avatar-popup-card ${isSelected ? 'selected' : ''}`}
+                      onClick={async () => {
+                        await setProfileAvatar(avatar.url);
+                        setShowAvatarModal(false);
+                      }}
+                    >
+                      <div className="avatar-popup-img-wrap">
+                        <img
+                          src={avatar.url}
+                          alt={avatar.label}
+                          className="avatar-popup-img"
+                        />
+                        {isSelected && (
+                          <span className="avatar-popup-check">
+                            <CheckCircle2 size={14} color="#ffffff" />
+                          </span>
+                        )}
+                      </div>
+                      <span className="avatar-popup-name">{avatar.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="avatar-modal-footer">

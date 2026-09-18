@@ -22,7 +22,8 @@ export function WidgetsModal({ onClose, onTriggerShortcut, currentStreak, onOpen
           </button>
         </div>
 
-        {/* Live App Badge Preview */}
+        <div className="widget-modal-scroll-body">
+          {/* Live App Badge Preview */}
         <div className="widget-badge-card">
           <div className="widget-icon-preview">
             <img src="/pwa-icon.svg" alt="HabitWave" width={48} height={48} />
@@ -124,6 +125,7 @@ export function WidgetsModal({ onClose, onTriggerShortcut, currentStreak, onOpen
             <Check size={16} />
             <span>Got it!</span>
           </button>
+        </div>
         </div>
       </div>
     </div>
