@@ -443,8 +443,8 @@ export default function App() {
               setTimeout(() => setActionToast(null), 3000);
             }}
             onPastStartAttempt={() => {
-              setActionToast(`🚫 Prior to Start Date: Tracking begins on ${userData?.startDate || 'start date'}.`);
-              setTimeout(() => setActionToast(null), 3000);
+              setActionToast("🚫 Can't log before start");
+              setTimeout(() => setActionToast(null), 2500);
             }}
           />
         </main>

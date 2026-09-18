@@ -275,20 +275,40 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
 
     if (activeMode === 'modal') {
       onSelectDay(day);
-    } else if (activeMode === 'both' || activeMode === 'all') {
-      if (onToggleAll) {
-        onToggleAll(day.dateKey);
-      } else if (onToggleBoth) {
-        onToggleBoth(day.dateKey);
-      }
-    } else if (activeMode === 'smokeFree') {
-      onToggleSmokeFree ? onToggleSmokeFree(day.dateKey) : onToggleHabit?.('smoke-free', day.dateKey);
-    } else if (activeMode === 'workout') {
-      onToggleWorkout ? onToggleWorkout(day.dateKey) : onToggleHabit?.('workout', day.dateKey);
-    } else if (onToggleHabit) {
-      onToggleHabit(activeMode, day.dateKey);
     } else {
-      onSelectDay(day);
+      // Tap Action mode: check if selected habit has started by this date
+      const selectedHabit = habits.find((h) => h.id === activeMode);
+      if (selectedHabit) {
+        const hStart = selectedHabit.startDate || startDate || null;
+        if (hStart && day.dateKey < hStart) {
+          onPastStartAttempt?.(day, selectedHabit);
+          return;
+        }
+      }
+
+      if (activeMode === 'both' || activeMode === 'all') {
+        const activeOnDay = habits.filter((h) => {
+          const hStart = h.startDate || startDate || null;
+          return !hStart || day.dateKey >= hStart;
+        });
+        if (activeOnDay.length === 0) {
+          onPastStartAttempt?.(day);
+          return;
+        }
+        if (onToggleAll) {
+          onToggleAll(day.dateKey);
+        } else if (onToggleBoth) {
+          onToggleBoth(day.dateKey);
+        }
+      } else if (activeMode === 'smokeFree') {
+        onToggleSmokeFree ? onToggleSmokeFree(day.dateKey) : onToggleHabit?.('smoke-free', day.dateKey);
+      } else if (activeMode === 'workout') {
+        onToggleWorkout ? onToggleWorkout(day.dateKey) : onToggleHabit?.('workout', day.dateKey);
+      } else if (onToggleHabit) {
+        onToggleHabit(activeMode, day.dateKey);
+      } else {
+        onSelectDay(day);
+      }
     }
   };
 
@@ -389,16 +409,26 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
                 <div className="day-lines-row">
                   {activeHabitsOnDay.map((h) => {
                     const isDone = !!record[h.id];
+                    const hColor = h.color || '#3b82f6';
                     return (
                       <span
                         key={h.id}
-                        className={`habit-line${isDone ? '' : ' incomplete'}`}
+                        className={`habit-line${isDone ? ' completed' : ' incomplete'}`}
                         style={
                           isDone
-                            ? { backgroundColor: h.color || '#3b82f6' }
-                            : { borderColor: h.color || '#3b82f6' }
+                            ? {
+                                backgroundColor: hColor,
+                                borderColor: hColor,
+                                boxShadow: `0 0 7px ${hColor}bb`,
+                                opacity: 1
+                              }
+                            : {
+                                backgroundColor: `${hColor}25`,
+                                borderColor: hColor,
+                                opacity: 0.62
+                              }
                         }
-                        title={isDone ? `${h.name} ✓` : h.name}
+                        title={isDone ? `${h.name} ✓` : `${h.name} (not completed)`}
                       />
                     );
                   })}

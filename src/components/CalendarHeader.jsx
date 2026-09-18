@@ -18,7 +18,7 @@ export function CalendarHeader({
     today.getFullYear() === year && today.getMonth() === monthIndex;
 
   return (
-    <div className="glass-card calendar-header">
+    <div id="calendar-header-section" className="glass-card calendar-header">
       <div className="month-title-wrap">
         <h2 className="current-month-text">{monthName}</h2>
         <span className="current-year-text">{year}</span>
