@@ -500,28 +500,28 @@ const ATH_GUIDE_SLIDES = [
     step: 1,
     title: 'Install the app for easy access',
     instruction: "Add HabitWave to your home screen for quick 1-tap access and a full app experience.",
-    img: '/guides/home-screen.png',
+    img: '/guides/home-screen.webp',
     badge: 'Home Screen'
   },
   {
     step: 2,
     title: 'Tap the Share Button',
     instruction: "At the bottom of Safari, tap the Share button (square with arrow pointing up).",
-    img: '/guides/step-1.jpg',
+    img: '/guides/step-1.webp',
     badge: 'Step 1 of 3'
   },
   {
     step: 3,
     title: "Select 'Add to Home Screen'",
     instruction: "Scroll down the share sheet options and tap 'Add to Home Screen'.",
-    img: '/guides/step-2.jpg',
+    img: '/guides/step-2.webp',
     badge: 'Step 2 of 3'
   },
   {
     step: 4,
     title: "Tap 'Add' in Top Right",
     instruction: "Confirm 'HabitWave' and tap Add in the top-right corner to install.",
-    img: '/guides/step-3.jpg',
+    img: '/guides/step-3.webp',
     badge: 'Step 3 of 3'
   }
 ];
@@ -532,6 +532,13 @@ function AddToHomeStep() {
   const [touchStartY, setTouchStartY] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(null);
+
+  useEffect(() => {
+    ATH_GUIDE_SLIDES.forEach((slide) => {
+      const img = new Image();
+      img.src = slide.img;
+    });
+  }, []);
 
   const prevSlide = () => {
     setActiveSlide(idx => Math.max(0, idx - 1));

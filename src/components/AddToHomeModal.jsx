@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, X, Smartphone, CheckCircle2, Share2, PlusSquare } from 'lucide-react';
 
 const STEPS = [
@@ -6,7 +6,7 @@ const STEPS = [
     step: 1,
     title: 'Tap the Share Button',
     subtitle: 'At the bottom of Safari, tap the Share icon (the square with an arrow pointing up).',
-    image: '/guides/step-1.jpg',
+    image: '/guides/step-1.webp',
     icon: Share2,
     badgeColor: '#10b981'
   },
@@ -14,7 +14,7 @@ const STEPS = [
     step: 2,
     title: "Select 'Add to Home Screen'",
     subtitle: "Scroll down the share sheet and tap the 'Add to Home Screen' option.",
-    image: '/guides/step-2.jpg',
+    image: '/guides/step-2.webp',
     icon: PlusSquare,
     badgeColor: '#3b82f6'
   },
@@ -22,7 +22,7 @@ const STEPS = [
     step: 3,
     title: "Tap 'Add' in Top Right",
     subtitle: "Confirm 'HabitWave' and tap Add. Launch it directly from your home screen anytime!",
-    image: '/guides/step-3.jpg',
+    image: '/guides/step-3.webp',
     icon: CheckCircle2,
     badgeColor: '#f59e0b'
   }
@@ -30,6 +30,13 @@ const STEPS = [
 
 export default function AddToHomeModal({ isOpen, onClose, onComplete }) {
   const [currentStep, setCurrentStep] = useState(0);
+
+  useEffect(() => {
+    STEPS.forEach((step) => {
+      const img = new Image();
+      img.src = step.image;
+    });
+  }, []);
 
   if (!isOpen) return null;
 

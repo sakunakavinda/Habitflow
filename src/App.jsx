@@ -111,6 +111,20 @@ export default function App() {
     return () => { delete window.__openOnboarding; };
   }, []);
 
+  // Proactively preload guide images into browser memory for instant display
+  useEffect(() => {
+    const guideImages = [
+      '/guides/home-screen.webp',
+      '/guides/step-1.webp',
+      '/guides/step-2.webp',
+      '/guides/step-3.webp'
+    ];
+    guideImages.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
+
   // Lock background scrolling whenever any modal is open
   const isAnyModalOpen = Boolean(
     selectedDay ||
