@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { X, Plus, Trash2, Check, Sparkles, AlertCircle, Search, Calendar } from 'lucide-react';
+import { X, Plus, Trash2, Check, Sparkles, AlertCircle, Search, Calendar, Edit2 } from 'lucide-react';
 import { AVAILABLE_ICONS, AVAILABLE_COLORS, POPULAR_ICON_IDS, HabitIcon } from '../utils/habitIcons';
 import { IconLibraryModal } from './IconLibraryModal';
 import { getTodayKey } from '../utils/calendarUtils';
 
-export function ManageHabitsModal({ habits, onAddHabit, onDeleteHabit, onClose }) {
+export function ManageHabitsModal({ habits, onAddHabit, onUpdateHabit, onDeleteHabit, onClose }) {
   const [isAdding, setIsAdding] = useState(false);
   const [habitName, setHabitName] = useState('');
   const [frequency, setFrequency] = useState('daily');
@@ -14,6 +14,7 @@ export function ManageHabitsModal({ habits, onAddHabit, onDeleteHabit, onClose }
   const [showIconLibrary, setShowIconLibrary] = useState(false);
   const [error, setError] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [editingStartDateId, setEditingStartDateId] = useState(null);
 
   const handleCreateHabit = async (e) => {
     e.preventDefault();
@@ -36,6 +37,18 @@ export function ManageHabitsModal({ habits, onAddHabit, onDeleteHabit, onClose }
     } catch (err) {
       console.error('Error adding habit:', err);
       setError(err.message || 'Failed to create habit.');
+    }
+  };
+
+  const handleUpdateStartDate = async (habitId, newStartDate) => {
+    try {
+      if (onUpdateHabit) {
+        await onUpdateHabit(habitId, { startDate: newStartDate });
+      }
+      setEditingStartDateId(null);
+    } catch (err) {
+      console.error('Error updating habit start date:', err);
+      setError(err.message || 'Failed to update start date.');
     }
   };
 
@@ -100,11 +113,44 @@ export function ManageHabitsModal({ habits, onAddHabit, onDeleteHabit, onClose }
                       style={{ backgroundColor: habit.color }}
                     />
                     <span>{habit.frequency || 'daily'}</span>
-                    {habit.startDate && (
-                      <span className="habit-starts-badge">
+                    
+                    {editingStartDateId === habit.id ? (
+                      <div className="habit-start-edit-group">
+                        <input
+                          type="date"
+                          className="habit-start-date-inline-input"
+                          defaultValue={habit.startDate || getTodayKey()}
+                          max={getTodayKey()}
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              handleUpdateStartDate(habit.id, e.target.value);
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="btn-icon-xs"
+                          onClick={() => setEditingStartDateId(null)}
+                          title="Done"
+                        >
+                          <Check size={12} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className="habit-starts-badge editable"
+                        onClick={() => setEditingStartDateId(habit.id)}
+                        title="Click to edit start date"
+                      >
                         <Calendar size={10} />
-                        {new Date(habit.startDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </span>
+                        <span>
+                          {habit.startDate
+                            ? new Date(habit.startDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                            : 'Set start date'}
+                        </span>
+                        <Edit2 size={9} style={{ opacity: 0.65, marginLeft: 2 }} />
+                      </button>
                     )}
                   </div>
                 </div>

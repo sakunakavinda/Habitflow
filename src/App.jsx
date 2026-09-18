@@ -57,15 +57,44 @@ export default function App() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  // Calculated totals for active month scoped to user's journey startDate
-  const totals = useMemo(() => {
-    return calculateMonthTotals(logs, year, month, habits, userData?.startDate);
-  }, [logs, year, month, habits, userData?.startDate]);
+  // Calculate earliest effective start date across user profile and all active habits
+  const effectiveStartDate = useMemo(() => {
+    const habitStartDates = habits.map((h) => h.startDate).filter(Boolean);
+    if (habitStartDates.length > 0) {
+      return habitStartDates.reduce((min, d) => (d < min ? d : min));
+    }
+    return userData?.startDate || null;
+  }, [userData?.startDate, habits]);
 
-  // Streaks up to today scoped to user's journey startDate
+  // Calculated totals for active month scoped to effective start date
+  const totals = useMemo(() => {
+    return calculateMonthTotals(logs, year, month, habits, effectiveStartDate);
+  }, [logs, year, month, habits, effectiveStartDate]);
+
+  // Streaks up to today scoped to effective start date
   const streaks = useMemo(() => {
-    return calculateStreaks(logs, habits, userData?.startDate);
-  }, [logs, habits, userData?.startDate]);
+    return calculateStreaks(logs, habits, effectiveStartDate);
+  }, [logs, habits, effectiveStartDate]);
+
+  // Handlers for adding/updating habits that also sync user's journey start date if earlier
+  const handleAddHabit = async (newHabitData) => {
+    const newId = await addHabit(newHabitData);
+    if (newHabitData.startDate && setJourneyStartDate) {
+      if (!userData?.startDate || newHabitData.startDate < userData.startDate) {
+        await setJourneyStartDate(newHabitData.startDate);
+      }
+    }
+    return newId;
+  };
+
+  const handleUpdateHabit = async (habitId, updates) => {
+    await updateHabit(habitId, updates);
+    if (updates.startDate && setJourneyStartDate) {
+      if (!userData?.startDate || updates.startDate < userData.startDate) {
+        await setJourneyStartDate(updates.startDate);
+      }
+    }
+  };
 
   // Handle Home Screen Quick Actions from URL (?action=smoke-free, etc.)
   useEffect(() => {
@@ -434,7 +463,7 @@ export default function App() {
                 currentDate={currentDate}
                 habitData={logs}
                 habits={habits}
-                startDate={userData?.startDate}
+                startDate={effectiveStartDate}
                 onPrevMonth={handlePrevMonthDateUpdate}
                 onNextMonth={handleNextMonthDateUpdate}
                 onSelectDay={(day) => setSelectedDay(day)}
@@ -479,7 +508,7 @@ export default function App() {
             selectedDay={selectedDay}
             habits={habits}
             logs={logs}
-            globalStartDate={userData?.startDate || null}
+            globalStartDate={effectiveStartDate}
             onClose={() => setSelectedDay(null)}
             onToggleHabit={toggleHabitForDay}
             onToggleAll={toggleAllForDay}
@@ -491,7 +520,8 @@ export default function App() {
         {showHabitsModal && (
           <ManageHabitsModal
             habits={habits}
-            onAddHabit={addHabit}
+            onAddHabit={handleAddHabit}
+            onUpdateHabit={handleUpdateHabit}
             onDeleteHabit={deleteHabit}
             onClose={() => setShowHabitsModal(false)}
           />
