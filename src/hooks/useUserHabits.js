@@ -124,6 +124,10 @@ export function useUserHabits() {
       const hasSeeded = localStorage.getItem(`habitwave_seeded_habits_${user.uid}`);
       if (fetchedHabits.length === 0 && !snapshot.metadata.hasPendingWrites && !hasSeeded) {
         localStorage.setItem(`habitwave_seeded_habits_${user.uid}`, 'true');
+        // Immediately resolve loading with empty array so the app doesn't hang on a black screen.
+        // Firestore's onSnapshot will fire again once the seeded habit write completes.
+        setHabits([]);
+        setLoading(false);
         DEFAULT_HABITS.forEach(async (h) => {
           try {
             await addDoc(habitsColRef, {
@@ -144,8 +148,8 @@ export function useUserHabits() {
         try {
           localStorage.setItem(`habitwave_cached_habits_${user.uid}`, JSON.stringify(fetchedHabits));
         } catch {}
+        setLoading(false);
       }
-      setLoading(false);
     }, (err) => {
       console.error('Error listening to habits:', err);
       setLoading(false);

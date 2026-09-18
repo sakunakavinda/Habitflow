@@ -618,10 +618,6 @@ export default function OnboardingModal({ isOpen, userName, onComplete }) {
           {renderSlide()}
         </div>
 
-        {/* Start date error */}
-        {startDateError && (
-          <div className="ob-error">{startDateError}</div>
-        )}
 
         {/* Footer */}
         <div className="ob-footer">
@@ -635,13 +631,11 @@ export default function OnboardingModal({ isOpen, userName, onComplete }) {
 
           <button
             type="button"
-            className={`ob-next-btn${isStartDateStep ? ' ob-next-btn--required' : ''}`}
+            className="ob-next-btn"
             onClick={goNext}
           >
             {isLast ? (
               <>All Done! <CheckCircle2 size={15} /></>
-            ) : isStartDateStep ? (
-              <>Set Date & Continue <ArrowRight size={15} /></>
             ) : (
               <>Next <ArrowRight size={15} /></>
             )}
