@@ -105,18 +105,34 @@ export function MonthStats({ totals, streaks, habits = [] }) {
           );
         })}
 
-        {/* Expand / Collapse Toggle Arrow Button */}
-        {habits.length > 2 && (
+        {/* Compact 2-Button Control Row */}
+        <div className="stats-actions-row">
+          {habits.length > 2 ? (
+            <button
+              type="button"
+              className="stats-action-btn"
+              onClick={() => setIsExpanded(!isExpanded)}
+              aria-label={isExpanded ? 'Show less habits' : 'Show all habits'}
+            >
+              <span>{isExpanded ? 'Show Less' : `All Habits (${habits.length})`}</span>
+              {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+          ) : <div />}
+
           <button
             type="button"
-            className="stats-expand-btn"
-            onClick={() => setIsExpanded(!isExpanded)}
-            aria-label={isExpanded ? 'Show less habits' : 'Show all habits'}
+            className="stats-action-btn"
+            onClick={() => {
+              const el = document.getElementById('calendar-grid-section') || document.querySelector('.calendar-viewport');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              else window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            title="Scroll to calendar grid"
           >
-            <span>{isExpanded ? 'Show Less Habits' : `Show All Habits (${habits.length})`}</span>
-            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            <span>To Calendar</span>
+            <Calendar size={14} />
           </button>
-        )}
+        </div>
 
         {/* Perfect Days Card */}
         <div className="glass-card stat-card double-win">

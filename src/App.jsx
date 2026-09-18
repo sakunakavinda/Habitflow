@@ -425,7 +425,7 @@ export default function App() {
         />
 
         {/* Swipable Calendar Grid */}
-        <main>
+        <main id="calendar-grid-section">
           <CalendarGrid
             ref={calendarRef}
             currentDate={currentDate}
