@@ -123,11 +123,11 @@ export function MonthStats({ totals, streaks, habits = [] }) {
             type="button"
             className="stats-action-btn"
             onClick={() => {
-              const el = document.getElementById('calendar-header-section') || document.querySelector('.calendar-header') || document.querySelector('.calendar-viewport');
+              const el = document.getElementById('tap-actions-section') || document.querySelector('.quick-mode-bar') || document.getElementById('calendar-header-section');
               if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
               else window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            title="Scroll to calendar header"
+            title="Scroll to Tap Actions"
           >
             <span>To Calendar</span>
             <Calendar size={14} />

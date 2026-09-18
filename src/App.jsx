@@ -404,57 +404,73 @@ export default function App() {
           </div>
         )}
 
-        {/* Monthly Statistics & Totals */}
-        <section aria-label="Monthly Totals">
-          <MonthStats totals={totals} streaks={streaks} habits={habits} />
-        </section>
+        {/* Responsive Desktop & Mobile Dashboard Grid */}
+        <div className="dashboard-grid">
+          {/* Main Column: Calendar Controls & Swipable Grid */}
+          <div className="dashboard-main">
+            {/* Calendar Header: Month & Navigation */}
+            <div className="order-item-header">
+              <CalendarHeader
+                currentDate={currentDate}
+                onPrevMonth={handlePrevMonthClick}
+                onNextMonth={handleNextMonthClick}
+                onToday={handleToday}
+              />
+            </div>
 
-        {/* Calendar Header: Month & Navigation */}
-        <CalendarHeader
-          currentDate={currentDate}
-          onPrevMonth={handlePrevMonthClick}
-          onNextMonth={handleNextMonthClick}
-          onToday={handleToday}
-        />
+            {/* Quick Tap Mode Selector */}
+            <div className="order-item-mode">
+              <QuickModeBar
+                activeMode={activeMode}
+                setActiveMode={setActiveMode}
+                habits={habits}
+              />
+            </div>
 
-        {/* Quick Tap Mode Selector */}
-        <QuickModeBar
-          activeMode={activeMode}
-          setActiveMode={setActiveMode}
-          habits={habits}
-        />
+            {/* Swipable Calendar Grid */}
+            <main id="calendar-grid-section" className="order-item-grid">
+              <CalendarGrid
+                ref={calendarRef}
+                currentDate={currentDate}
+                habitData={logs}
+                habits={habits}
+                startDate={userData?.startDate}
+                onPrevMonth={handlePrevMonthDateUpdate}
+                onNextMonth={handleNextMonthDateUpdate}
+                onSelectDay={(day) => setSelectedDay(day)}
+                activeMode={activeMode}
+                onToggleHabit={toggleHabitForDay}
+                onToggleAll={toggleAllForDay}
+                onFutureAttempt={() => {
+                  setActionToast('⏳ Upcoming date: Habits cannot be logged ahead of time.');
+                  setTimeout(() => setActionToast(null), 3000);
+                }}
+                onPastStartAttempt={() => {
+                  setActionToast("🚫 Can't log before start");
+                  setTimeout(() => setActionToast(null), 2500);
+                }}
+              />
+            </main>
+          </div>
 
-        {/* Swipable Calendar Grid */}
-        <main id="calendar-grid-section">
-          <CalendarGrid
-            ref={calendarRef}
-            currentDate={currentDate}
-            habitData={logs}
-            habits={habits}
-            startDate={userData?.startDate}
-            onPrevMonth={handlePrevMonthDateUpdate}
-            onNextMonth={handleNextMonthDateUpdate}
-            onSelectDay={(day) => setSelectedDay(day)}
-            activeMode={activeMode}
-            onToggleHabit={toggleHabitForDay}
-            onToggleAll={toggleAllForDay}
-            onFutureAttempt={() => {
-              setActionToast('⏳ Upcoming date: Habits cannot be logged ahead of time.');
-              setTimeout(() => setActionToast(null), 3000);
-            }}
-            onPastStartAttempt={() => {
-              setActionToast("🚫 Can't log before start");
-              setTimeout(() => setActionToast(null), 2500);
-            }}
-          />
-        </main>
+          {/* Sidebar Column: Monthly Stats & Motivational Tip */}
+          <aside className="dashboard-sidebar">
+            <div className="order-item-stats">
+              <section aria-label="Monthly Totals">
+                <MonthStats totals={totals} streaks={streaks} habits={habits} />
+              </section>
+            </div>
 
-        {/* Bottom Motivational Tip */}
-        <div className="banner-quote">
-          <Sparkles size={18} color="#fbbf24" />
-          <span>
-            <span className="quote-highlight">Pro-tip:</span> Tap any day to log your habits, or use &quot;Habits&quot; at the top to add your own custom goals with unique colors and icons.
-          </span>
+            {/* Motivational Tip */}
+            <div className="order-item-quote">
+              <div className="banner-quote">
+                <Sparkles size={18} color="#fbbf24" />
+                <span>
+                  <span className="quote-highlight">Pro-tip:</span> Tap any day to log your habits, or use &quot;Habits&quot; at the top to add your own custom goals with unique colors and icons.
+                </span>
+              </div>
+            </div>
+          </aside>
         </div>
 
         {/* Selected Day Detail Modal */}

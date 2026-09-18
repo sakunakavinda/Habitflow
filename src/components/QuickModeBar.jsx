@@ -36,7 +36,7 @@ export function QuickModeBar({ activeMode, setActiveMode, habits = [] }) {
   }
 
   return (
-    <div className="glass-card quick-mode-bar">
+    <div id="tap-actions-section" className="glass-card quick-mode-bar">
       <div className="quick-mode-header">
         <span className="quick-mode-label">Tap Action:</span>
         <span
