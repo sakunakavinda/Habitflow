@@ -75,13 +75,12 @@ export function AuthProvider({ children }) {
         'User';
 
       if (!userSnap.exists()) {
-        const localGuestAvatar = localStorage.getItem('habitwave_guest_avatar') || '/avatars/avatar1.png';
         const initialData = {
           name: effectiveName,
           joinedAt: serverTimestamp(),
           hasSeenAddToHome: false,
           hasSeenOnboarding: false,
-          avatar: localGuestAvatar
+          avatar: null
         };
         await setDoc(userDocRef, initialData);
 
@@ -116,8 +115,8 @@ export function AuthProvider({ children }) {
       }
 
       const cachedAvatar = localStorage.getItem(`habitwave_avatar_${firebaseUser.uid}`);
-      if (!data.avatar) {
-        data.avatar = cachedAvatar || '/avatars/avatar1.png';
+      if (data.avatar === undefined) {
+        data.avatar = cachedAvatar || null;
       }
       return data;
     } catch (err) {
@@ -242,12 +241,20 @@ export function AuthProvider({ children }) {
 
   const setProfileAvatar = async (avatarUrl) => {
     if (!user) {
-      localStorage.setItem('habitwave_guest_avatar', avatarUrl);
+      if (avatarUrl) {
+        localStorage.setItem('habitwave_guest_avatar', avatarUrl);
+      } else {
+        localStorage.removeItem('habitwave_guest_avatar');
+      }
       setUserData(prev => ({ ...(prev || {}), avatar: avatarUrl }));
       return;
     }
     try {
-      localStorage.setItem(`habitwave_avatar_${user.uid}`, avatarUrl);
+      if (avatarUrl) {
+        localStorage.setItem(`habitwave_avatar_${user.uid}`, avatarUrl);
+      } else {
+        localStorage.removeItem(`habitwave_avatar_${user.uid}`);
+      }
       if (db) {
         const userDocRef = doc(db, 'users', user.uid);
         await updateDoc(userDocRef, { avatar: avatarUrl });

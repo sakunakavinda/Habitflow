@@ -277,11 +277,15 @@ export default function App() {
                   title={user ? `Signed in as ${user.email}` : 'Sign in or create account'}
                 >
                   <span className="user-avatar-tiny">
-                    <img
-                      src={getAvatarUrl(userData?.avatar)}
-                      alt={displayName || 'User Avatar'}
-                      className="user-avatar-tiny-img"
-                    />
+                    {getAvatarUrl(userData?.avatar) ? (
+                      <img
+                        src={getAvatarUrl(userData?.avatar)}
+                        alt={displayName || 'User Avatar'}
+                        className="user-avatar-tiny-img"
+                      />
+                    ) : (
+                      (displayName || 'U').trim().charAt(0).toUpperCase()
+                    )}
                   </span>
                   <span className="btn-label">{displayName || 'Profile'}</span>
                   <span className="online-indicator" title="Cloud Synced" />

@@ -148,13 +148,6 @@ export default function AddToHomeModal({ isOpen, onClose, onComplete }) {
             )}
           </button>
         </div>
-
-        {/* Skip note */}
-        <div className="ath-footer-note">
-          <button type="button" className="ath-skip-link" onClick={handleClose}>
-            Skip for now
-          </button>
-        </div>
       </div>
     </div>
   );

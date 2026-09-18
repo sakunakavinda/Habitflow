@@ -381,11 +381,17 @@ export function AuthModal({ onClose }) {
                 title="Click to change profile picture"
                 aria-label="Change profile picture"
               >
-                <img
-                  src={getAvatarUrl(userData?.avatar)}
-                  alt="Profile Avatar"
-                  className="profile-avatar-img"
-                />
+                {getAvatarUrl(userData?.avatar) ? (
+                  <img
+                    src={getAvatarUrl(userData?.avatar)}
+                    alt="Profile Avatar"
+                    className="profile-avatar-img"
+                  />
+                ) : (
+                  <span className="profile-avatar-initial">
+                    {(userData?.name || user?.displayName || user?.email || 'U').trim().charAt(0).toUpperCase()}
+                  </span>
+                )}
                 <span className="profile-avatar-edit-badge" title="Edit avatar">
                   <Pencil size={11} color="#ffffff" />
                 </span>
@@ -1121,6 +1127,34 @@ export function AuthModal({ onClose }) {
 
             <div className="avatar-modal-scroll-body">
               <div className="avatar-popup-grid">
+                {(() => {
+                  const initialChar = (userData?.name || user?.displayName || user?.email || 'U').trim().charAt(0).toUpperCase();
+                  const isInitialSelected = !getAvatarUrl(userData?.avatar);
+
+                  return (
+                    <button
+                      type="button"
+                      className={`avatar-popup-card ${isInitialSelected ? 'selected' : ''}`}
+                      onClick={async () => {
+                        await setProfileAvatar(null);
+                        setShowAvatarModal(false);
+                      }}
+                    >
+                      <div className="avatar-popup-img-wrap">
+                        <span className="avatar-popup-initial-preview">
+                          {initialChar}
+                        </span>
+                        {isInitialSelected && (
+                          <span className="avatar-popup-check">
+                            <CheckCircle2 size={14} color="#ffffff" />
+                          </span>
+                        )}
+                      </div>
+                      <span className="avatar-popup-name">Initial ({initialChar})</span>
+                    </button>
+                  );
+                })()}
+
                 {AVAILABLE_AVATARS.map((avatar) => {
                   const currentAvatarUrl = getAvatarUrl(userData?.avatar);
                   const isSelected = currentAvatarUrl === avatar.url;

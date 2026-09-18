@@ -506,11 +506,11 @@ function AddToHomeStep() {
 
 // ─── Step Config ──────────────────────────────────────────────────────────────
 const STEPS = [
-  { id: 'welcome',   skippable: true  },
-  { id: 'log',       skippable: true  },
-  { id: 'habits',    skippable: true  },
-  { id: 'streaks',   skippable: true  },
-  { id: 'pwa',       skippable: true  },
+  { id: 'welcome' },
+  { id: 'log' },
+  { id: 'habits' },
+  { id: 'streaks' },
+  { id: 'pwa' },
 ];
 
 const STEP_TITLES = {
@@ -557,18 +557,6 @@ export default function OnboardingModal({ isOpen, userName, onComplete }) {
     setStep(s => s - 1);
   };
 
-  const handleSkip = () => {
-    if (!currentStep.skippable) return;
-    if (isLast) {
-      onComplete();
-      return;
-    }
-
-    setDirection('forward');
-    setAnimKey(k => k + 1);
-    setStep(s => s + 1);
-  };
-
   const renderSlide = () => {
     switch (currentStep.id) {
       case 'welcome':   return <WelcomeIllustration userName={userName} />;
@@ -593,7 +581,7 @@ export default function OnboardingModal({ isOpen, userName, onComplete }) {
         className="modal-content onboarding-modal"
         onClick={e => e.stopPropagation()}
       >
-        {/* Top bar: dots + step title + skip */}
+        {/* Top bar: dots + step counter */}
         <div className="ob-topbar">
           <div className="ob-topbar-left">
             <div className="ob-dots">
@@ -606,11 +594,6 @@ export default function OnboardingModal({ isOpen, userName, onComplete }) {
             </div>
             <span className="ob-step-counter">{step + 1} / {STEPS.length}</span>
           </div>
-          {currentStep.skippable && !isLast && (
-            <button type="button" className="ob-skip-btn" onClick={handleSkip}>
-              Skip
-            </button>
-          )}
         </div>
 
         {/* Animated slide */}

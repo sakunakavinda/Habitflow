@@ -8,10 +8,10 @@ export const AVAILABLE_AVATARS = [
 ];
 
 export function getAvatarUrl(avatarIdOrUrl) {
-  if (!avatarIdOrUrl) return AVAILABLE_AVATARS[0].url;
+  if (!avatarIdOrUrl) return null;
   if (avatarIdOrUrl.startsWith('/') || avatarIdOrUrl.startsWith('http')) {
     return avatarIdOrUrl;
   }
   const found = AVAILABLE_AVATARS.find((a) => a.id === avatarIdOrUrl);
-  return found ? found.url : AVAILABLE_AVATARS[0].url;
+  return found ? found.url : null;
 }
