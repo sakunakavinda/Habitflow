@@ -331,16 +331,27 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
         <div className="days-grid">
           {panelDays.map((day) => {
             const record = habitData[day.dateKey] || {};
+
+            // Only count habits that have started by this day
+            const activeHabitsOnDay = habits.filter((h) => {
+              const hStart = h.startDate || startDate || null;
+              return !hStart || day.dateKey >= hStart;
+            });
+
             const completedHabits =
-              habits.length > 0 ? habits.filter((h) => !!record[h.id]) : [];
+              activeHabitsOnDay.length > 0
+                ? activeHabitsOnDay.filter((h) => !!record[h.id])
+                : [];
+
             const isSF = !!(record.smokeFree || record['smoke-free']);
             const isWO = !!record.workout;
             const hasAllDone =
-              habits.length > 0 && completedHabits.length === habits.length;
+              activeHabitsOnDay.length > 0 &&
+              completedHabits.length === activeHabitsOnDay.length;
 
             const tooltipTitle = day.isBeforeStart
               ? `${day.dateKey} • Prior to Start Date (${startDate})`
-              : habits.length > 0
+              : activeHabitsOnDay.length > 0
               ? `${day.dateKey}${completedHabits.map((h) => ` • ${h.name}`).join('')}`
               : day.dateKey;
 
@@ -359,7 +370,7 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
                 </div>
 
                 <div className="day-lines-row">
-                  {habits.length > 0
+                  {activeHabitsOnDay.length > 0
                     ? completedHabits.map((h) => (
                         <span
                           key={h.id}

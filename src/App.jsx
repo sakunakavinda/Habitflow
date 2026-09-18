@@ -463,6 +463,7 @@ export default function App() {
             selectedDay={selectedDay}
             habits={habits}
             logs={logs}
+            globalStartDate={userData?.startDate || null}
             onClose={() => setSelectedDay(null)}
             onToggleHabit={toggleHabitForDay}
             onToggleAll={toggleAllForDay}

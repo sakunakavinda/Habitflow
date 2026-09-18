@@ -9,6 +9,7 @@ export function MonthStats({ totals, streaks, habits = [] }) {
     daysElapsed,
     habitCounts = {},
     habitRates = {},
+    habitDaysElapsed = {},
     perfectDaysCount = 0,
     doubleWinCount = 0,
     smokeFreeCount = 0,
@@ -67,14 +68,14 @@ export function MonthStats({ totals, streaks, habits = [] }) {
                 <span className="stat-number" style={{ color: habit.color }}>
                   {count}
                 </span>
-                <span className="stat-subtext">/ {totalMonthDays} days</span>
+                <span className="stat-subtext">/ {habitDaysElapsed[habit.id] ?? totalMonthDays} days</span>
               </div>
 
               <div className="stat-progress-bar">
                 <div
                   className="stat-progress-fill"
                   style={{
-                    width: `${Math.min(100, Math.round((count / (totalMonthDays || 1)) * 100))}%`,
+                    width: `${Math.min(100, Math.round((count / ((habitDaysElapsed[habit.id] || totalMonthDays) || 1)) * 100))}%`,
                     backgroundColor: habit.color || 'var(--accent-emerald)'
                   }}
                 />

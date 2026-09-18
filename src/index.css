@@ -1291,6 +1291,26 @@ h1, h2, h3, h4, .brand-title {
   border-color: var(--border-subtle);
 }
 
+/* Pre-start habit: not yet started on this day — softer treatment than fully-locked */
+.habit-toggle-card.pre-start {
+  opacity: 0.52;
+  cursor: default;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.005),
+    rgba(255, 255, 255, 0.005) 6px,
+    rgba(255, 255, 255, 0.018) 6px,
+    rgba(255, 255, 255, 0.018) 12px
+  );
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.habit-toggle-card.pre-start:hover {
+  transform: none;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
 /* Future Day Restriction Banner */
 .future-day-banner {
   display: flex;
@@ -2369,6 +2389,22 @@ h1, h2, h3, h4, .brand-title {
   height: 8px;
   border-radius: 50%;
   display: inline-block;
+}
+
+/* Small pill in the Manage Habits list showing each habit's start date */
+.habit-starts-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 1px 6px;
+  line-height: 1.4;
+  white-space: nowrap;
+  text-transform: none;
 }
 
 .confirm-delete-group {

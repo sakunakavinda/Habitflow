@@ -106,15 +106,18 @@ export function getMonthGrid(year, month, startDate = null) {
 }
 
 /**
- * Calculates monthly totals for all habits scoped by user journey start date
+ * Calculates monthly totals for all habits, each scoped by its own habit.startDate
+ * (falls back to the global journey startDate if habit.startDate is not set).
  */
-export function calculateMonthTotals(habitData, year, month, habits = [], startDate = null) {
+export function calculateMonthTotals(habitData, year, month, habits = [], globalStartDate = null) {
   const prefix = `${year}-${String(month + 1).padStart(2, '0')}-`;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const habitCounts = {};
+  const habitDaysElapsed = {}; // Per-habit elapsed days within this month
   habits.forEach((h) => {
     habitCounts[h.id] = 0;
+    habitDaysElapsed[h.id] = 0;
   });
 
   let smokeFreeCount = 0;
@@ -125,73 +128,98 @@ export function calculateMonthTotals(habitData, year, month, habits = [], startD
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
-  // Compute days elapsed strictly from startDate onward
+  // Compute global daysElapsed (for backwards-compat legacy fields)
   let daysElapsed = 0;
   for (let day = 1; day <= daysInMonth; day++) {
     const key = `${prefix}${String(day).padStart(2, '0')}`;
     const dayDate = new Date(year, month, day);
     dayDate.setHours(0, 0, 0, 0);
-
     const isFutureDay = dayDate > now;
-    const isBeforeStart = startDate ? key < startDate : false;
-
-    if (!isFutureDay && !isBeforeStart) {
+    const isBeforeGlobal = globalStartDate ? key < globalStartDate : false;
+    if (!isFutureDay && !isBeforeGlobal) {
       daysElapsed++;
     }
   }
 
-  for (let day = 1; day <= daysInMonth; day++) {
-    const key = `${prefix}${String(day).padStart(2, '0')}`;
-    const isBeforeStart = startDate ? key < startDate : false;
-
-    // Do not count records before user's start date
-    if (isBeforeStart) continue;
-
-    const record = habitData[key];
-    if (record) {
-      // Dynamic habit counts
-      let completedHabitsThisDay = 0;
-      habits.forEach((h) => {
-        if (record[h.id]) {
-          habitCounts[h.id] = (habitCounts[h.id] || 0) + 1;
-          completedHabitsThisDay++;
-        }
-      });
-
-      if (habits.length > 0 && completedHabitsThisDay === habits.length) {
-        perfectDaysCount++;
+  // Compute per-habit daysElapsed
+  habits.forEach((habit) => {
+    const effectiveStart = habit.startDate || globalStartDate || null;
+    let count = 0;
+    for (let day = 1; day <= daysInMonth; day++) {
+      const key = `${prefix}${String(day).padStart(2, '0')}`;
+      const dayDate = new Date(year, month, day);
+      dayDate.setHours(0, 0, 0, 0);
+      const isFutureDay = dayDate > now;
+      const isBeforeHabit = effectiveStart ? key < effectiveStart : false;
+      if (!isFutureDay && !isBeforeHabit) {
+        count++;
       }
+    }
+    habitDaysElapsed[habit.id] = count;
+  });
 
-      // Legacy fallback
+  // Tally habit completions per day, scoped to each habit's own startDate
+  for (let day = 1; day <= daysInMonth; day++) {
+    const key = `${prefix}${String(day).padStart(2, '00'.slice(0, 2 - String(day).length))}`;
+    const paddedKey = `${prefix}${String(day).padStart(2, '0')}`;
+
+    const record = habitData[paddedKey];
+
+    // Legacy tallies use global startDate
+    const isBeforeGlobal = globalStartDate ? paddedKey < globalStartDate : false;
+    if (!isBeforeGlobal && record) {
       const isSF = !!(record.smokeFree || record['smoke-free']);
       const isWO = !!record.workout;
       if (isSF) smokeFreeCount++;
       if (isWO) workoutCount++;
       if (isSF && isWO) doubleWinCount++;
     }
+
+    // Per-habit counts
+    let activeHabitsThisDay = 0;
+    let completedActiveHabitsThisDay = 0;
+    habits.forEach((h) => {
+      const effectiveStart = h.startDate || globalStartDate || null;
+      const isBeforeHabit = effectiveStart ? paddedKey < effectiveStart : false;
+      if (!isBeforeHabit) {
+        activeHabitsThisDay++;
+        if (record && record[h.id]) {
+          habitCounts[h.id] = (habitCounts[h.id] || 0) + 1;
+          completedActiveHabitsThisDay++;
+        }
+      }
+    });
+
+    // Perfect day = all habits that were active on this day are completed
+    const dayDate = new Date(year, month, day);
+    dayDate.setHours(0, 0, 0, 0);
+    if (
+      activeHabitsThisDay > 0 &&
+      completedActiveHabitsThisDay === activeHabitsThisDay &&
+      dayDate <= now
+    ) {
+      perfectDaysCount++;
+    }
   }
 
-  // Calculate total trackable days in this month based on user's journey startDate
+  // Calculate total trackable days in this month based on global journey startDate (for MonthStats "/ N days" header)
   let totalMonthDays = daysInMonth;
-  if (startDate) {
-    const [sYear, sMonth, sDay] = startDate.split('-').map(Number);
-    const startMonthIdx = sMonth - 1; // 0-indexed month
-
+  if (globalStartDate) {
+    const [sYear, sMonth, sDay] = globalStartDate.split('-').map(Number);
+    const startMonthIdx = sMonth - 1;
     if (year === sYear && month === startMonthIdx) {
-      // Starting date is in this month: count from startDay to daysInMonth (e.g. 25th to 30th = 6 days)
       totalMonthDays = Math.max(0, daysInMonth - sDay + 1);
     } else if (year < sYear || (year === sYear && month < startMonthIdx)) {
-      // Month is prior to starting date: 0 trackable days
       totalMonthDays = 0;
     } else {
-      // Starting date was from a previous month: full days of the current month
       totalMonthDays = daysInMonth;
     }
   }
 
   const habitRates = {};
   habits.forEach((h) => {
-    habitRates[h.id] = daysElapsed > 0 ? Math.round(((habitCounts[h.id] || 0) / daysElapsed) * 100) : 0;
+    const elapsed = habitDaysElapsed[h.id] || 0;
+    habitRates[h.id] = elapsed > 0 ? Math.round(((habitCounts[h.id] || 0) / elapsed) * 100) : 0;
   });
 
   const smokeFreeRate = daysElapsed > 0 ? Math.round((smokeFreeCount / daysElapsed) * 100) : 0;
@@ -204,6 +232,7 @@ export function calculateMonthTotals(habitData, year, month, habits = [], startD
     perfectDaysCount,
     habitCounts,
     habitRates,
+    habitDaysElapsed,
     daysInMonth,
     totalMonthDays,
     daysElapsed,
@@ -213,20 +242,23 @@ export function calculateMonthTotals(habitData, year, month, habits = [], startD
 }
 
 /**
- * Calculate current consecutive streaks for dynamic habits scoped by user journey start date
+ * Calculate current consecutive streaks for dynamic habits,
+ * each scoped by the habit's own startDate (falls back to global startDate).
  */
-export function calculateStreaks(habitData, habits = [], startDate = null) {
+export function calculateStreaks(habitData, habits = [], globalStartDate = null) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  function getStreak(habitKey) {
+  function getStreak(habitKey, habitStartDate) {
+    const effectiveStart = habitStartDate || globalStartDate || null;
     let streak = 0;
     const checkDate = new Date(today);
 
-    // If today is marked, start count from today.
-    // If today is not yet marked, check if yesterday was marked (streak still alive today!).
     const todayStr = dateToKey(checkDate);
-    const todayMarked = habitData[todayStr] && (habitData[todayStr][habitKey] || (habitKey === 'smokeFree' && habitData[todayStr]['smoke-free']));
+    const todayMarked =
+      habitData[todayStr] &&
+      (habitData[todayStr][habitKey] ||
+        (habitKey === 'smokeFree' && habitData[todayStr]['smoke-free']));
 
     if (!todayMarked) {
       checkDate.setDate(checkDate.getDate() - 1);
@@ -235,12 +267,16 @@ export function calculateStreaks(habitData, habits = [], startDate = null) {
     while (true) {
       const key = dateToKey(checkDate);
 
-      // Stop streak check if reaching earlier than user's start date
-      if (startDate && key < startDate) {
+      // Stop streak check if reaching earlier than this habit's start date
+      if (effectiveStart && key < effectiveStart) {
         break;
       }
 
-      if (habitData[key] && (habitData[key][habitKey] || (habitKey === 'smokeFree' && habitData[key]['smoke-free']))) {
+      if (
+        habitData[key] &&
+        (habitData[key][habitKey] ||
+          (habitKey === 'smokeFree' && habitData[key]['smoke-free']))
+      ) {
         streak++;
         checkDate.setDate(checkDate.getDate() - 1);
       } else {
@@ -253,12 +289,13 @@ export function calculateStreaks(habitData, habits = [], startDate = null) {
 
   const habitStreaks = {};
   habits.forEach((h) => {
-    habitStreaks[h.id] = getStreak(h.id);
+    habitStreaks[h.id] = getStreak(h.id, h.startDate || null);
   });
 
   return {
-    smokeFreeStreak: getStreak('smokeFree'),
-    workoutStreak: getStreak('workout'),
+    smokeFreeStreak: getStreak('smokeFree', globalStartDate),
+    workoutStreak: getStreak('workout', globalStartDate),
     habitStreaks
   };
 }
+

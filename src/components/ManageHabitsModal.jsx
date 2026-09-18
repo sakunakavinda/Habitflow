@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { X, Plus, Trash2, Check, Sparkles, AlertCircle, Search } from 'lucide-react';
+import { X, Plus, Trash2, Check, Sparkles, AlertCircle, Search, Calendar } from 'lucide-react';
 import { AVAILABLE_ICONS, AVAILABLE_COLORS, POPULAR_ICON_IDS, HabitIcon } from '../utils/habitIcons';
 import { IconLibraryModal } from './IconLibraryModal';
+import { getTodayKey } from '../utils/calendarUtils';
 
 export function ManageHabitsModal({ habits, onAddHabit, onDeleteHabit, onClose }) {
   const [isAdding, setIsAdding] = useState(false);
   const [habitName, setHabitName] = useState('');
   const [frequency, setFrequency] = useState('daily');
+  const [habitStartDate, setHabitStartDate] = useState(getTodayKey);
   const [selectedColor, setSelectedColor] = useState(AVAILABLE_COLORS[0].hex);
   const [selectedIcon, setSelectedIcon] = useState(AVAILABLE_ICONS[0].id);
   const [showIconLibrary, setShowIconLibrary] = useState(false);
@@ -25,9 +27,11 @@ export function ManageHabitsModal({ habits, onAddHabit, onDeleteHabit, onClose }
         name: habitName.trim(),
         frequency,
         color: selectedColor,
-        icon: selectedIcon
+        icon: selectedIcon,
+        startDate: habitStartDate
       });
       setHabitName('');
+      setHabitStartDate(getTodayKey());
       setIsAdding(false);
     } catch (err) {
       console.error('Error adding habit:', err);
@@ -96,6 +100,12 @@ export function ManageHabitsModal({ habits, onAddHabit, onDeleteHabit, onClose }
                       style={{ backgroundColor: habit.color }}
                     />
                     <span>{habit.frequency || 'daily'}</span>
+                    {habit.startDate && (
+                      <span className="habit-starts-badge">
+                        <Calendar size={10} />
+                        {new Date(habit.startDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -190,6 +200,18 @@ export function ManageHabitsModal({ habits, onAddHabit, onDeleteHabit, onClose }
                 <option value="weekdays">Weekdays (Mon-Fri)</option>
                 <option value="weekends">Weekends</option>
               </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="new-habit-start">Start Tracking From</label>
+              <input
+                id="new-habit-start"
+                type="date"
+                className="form-input"
+                value={habitStartDate}
+                max={getTodayKey()}
+                onChange={(e) => setHabitStartDate(e.target.value)}
+              />
             </div>
 
             {/* Color Swatch Picker */}

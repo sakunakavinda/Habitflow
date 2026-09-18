@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X, Sparkles, Trash2, Check } from 'lucide-react';
+import { X, Sparkles, Trash2, Check, Lock } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { MONTH_NAMES } from '../utils/calendarUtils';
 import { HabitIcon } from '../utils/habitIcons';
@@ -8,6 +8,7 @@ export function DayModal({
   selectedDay,
   habits = [],
   logs = {},
+  globalStartDate = null,
   onClose,
   onToggleHabit,
   onToggleAll,
@@ -32,48 +33,68 @@ export function DayModal({
 
   const dayLogs = logs[dateKey] || {};
 
-  const allHabitsCompleted =
-    habits.length > 0 && habits.every((h) => !!dayLogs[h.id]);
-  const hasAnyHabitsCompleted =
-    habits.some((h) => !!dayLogs[h.id]);
-
   const isFuture = !!selectedDay.isFuture;
-  const isBeforeStart = !!selectedDay.isBeforeStart;
+
+  // Per-habit: a habit is active on this date if dateKey >= habit's own startDate (or globalStartDate)
+  const isHabitActive = (habit) => {
+    const effectiveStart = habit.startDate || globalStartDate || null;
+    if (!effectiveStart) return true;
+    return dateKey >= effectiveStart;
+  };
+
+  // Active habits for this specific date
+  const activeHabits = habits.filter(isHabitActive);
+
+  // Global isBeforeStart = true only when ALL habits are before their start date
+  const isBeforeStart = habits.length > 0 && activeHabits.length === 0 && !isFuture;
   const isLocked = isFuture || isBeforeStart;
+
+  const allActiveHabitsCompleted =
+    activeHabits.length > 0 && activeHabits.every((h) => !!dayLogs[h.id]);
+  const hasAnyHabitsCompleted = habits.some((h) => !!dayLogs[h.id]);
+
+  // For the Achieved All button label
+  const allHabitsCompleted = allActiveHabitsCompleted;
 
   const handleToggleAll = () => {
     if (isLocked) return;
-    onToggleAll(dateKey);
-    if (!allHabitsCompleted) {
+    // Only toggle habits that are active on this date
+    const allActiveDone = activeHabits.every((h) => !!dayLogs[h.id]);
+    activeHabits.forEach((habit) => {
+      const isDone = !!dayLogs[habit.id];
+      if (allActiveDone && isDone) {
+        onToggleHabit(habit.id, dateKey);
+      } else if (!allActiveDone && !isDone) {
+        onToggleHabit(habit.id, dateKey);
+      }
+    });
+    if (!allActiveDone) {
       try {
         confetti({
           particleCount: 55,
           spread: 60,
           origin: { y: 0.65 },
-          colors: habits.map((h) => h.color || '#3b82f6')
+          colors: activeHabits.map((h) => h.color || '#3b82f6')
         });
-      } catch (err) {
-        // Fallback silently if confetti encounters issue
-      }
+      } catch (err) {}
     }
   };
 
-  const handleSingleToggle = (habitId) => {
-    if (isLocked) return;
-    onToggleHabit(habitId, dateKey);
-    // Check if toggling this will make all complete
-    const willBeComplete = !dayLogs[habitId];
-    const otherHabitsAllComplete = habits
-      .filter((h) => h.id !== habitId)
+  const handleSingleToggle = (habit) => {
+    if (isFuture || !isHabitActive(habit)) return;
+    onToggleHabit(habit.id, dateKey);
+    const willBeComplete = !dayLogs[habit.id];
+    const otherActiveAllComplete = activeHabits
+      .filter((h) => h.id !== habit.id)
       .every((h) => !!dayLogs[h.id]);
 
-    if (willBeComplete && otherHabitsAllComplete && habits.length > 1) {
+    if (willBeComplete && otherActiveAllComplete && activeHabits.length > 1) {
       try {
         confetti({
           particleCount: 45,
           spread: 55,
           origin: { y: 0.65 },
-          colors: habits.map((h) => h.color || '#10b981')
+          colors: activeHabits.map((h) => h.color || '#10b981')
         });
       } catch (e) {}
     }
@@ -119,38 +140,44 @@ export function DayModal({
         {/* Dynamic Habit Action Toggles */}
         <div className="modal-actions-list">
           {habits.map((habit) => {
+            const habitActive = isHabitActive(habit);
             const isCompleted = !!dayLogs[habit.id];
+            const isHabitLocked = isFuture || !habitActive;
             return (
               <div
                 key={habit.id}
-                className={`habit-toggle-card ${isCompleted ? 'active' : ''} ${isLocked ? 'disabled' : ''}`}
+                className={`habit-toggle-card ${isCompleted ? 'active' : ''} ${isHabitLocked ? 'disabled' : ''} ${!habitActive && !isFuture ? 'pre-start' : ''}`}
                 style={
-                  isCompleted && !isLocked
+                  isCompleted && !isHabitLocked
                     ? {
                         borderColor: habit.color,
                         boxShadow: `0 0 16px ${habit.color}25`
                       }
                     : {}
                 }
-                onClick={() => !isLocked && handleSingleToggle(habit.id)}
+                onClick={() => !isHabitLocked && handleSingleToggle(habit)}
                 role="button"
-                tabIndex={isLocked ? -1 : 0}
+                tabIndex={isHabitLocked ? -1 : 0}
               >
                 <div className="habit-toggle-left">
                   <div
                     className="habit-card-icon"
                     style={{
-                      backgroundColor: isCompleted ? habit.color : 'rgba(255, 255, 255, 0.05)',
-                      color: isCompleted ? '#ffffff' : habit.color || 'var(--text-secondary)'
+                      backgroundColor: isCompleted && !isHabitLocked ? habit.color : 'rgba(255, 255, 255, 0.05)',
+                      color: isCompleted && !isHabitLocked ? '#ffffff' : habit.color || 'var(--text-secondary)'
                     }}
                   >
-                    <HabitIcon name={habit.icon} color={isCompleted ? '#fff' : habit.color} size={20} />
+                    {!habitActive && !isFuture
+                      ? <Lock size={16} color="#94a3b8" />
+                      : <HabitIcon name={habit.icon} color={isCompleted ? '#fff' : habit.color} size={20} />}
                   </div>
                   <div>
                     <div className="habit-card-title">{habit.name}</div>
                     <div className="habit-card-desc">
                       {isFuture
                         ? 'Upcoming date (locked)'
+                        : !habitActive
+                        ? `Starts ${new Date(habit.startDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
                         : isCompleted
                         ? 'Completed for this day!'
                         : `Tap to mark ${habit.name.toLowerCase()} completed`}
@@ -160,7 +187,7 @@ export function DayModal({
 
                 <div
                   className="switch-pill"
-                  style={isCompleted ? { backgroundColor: habit.color } : {}}
+                  style={isCompleted && !isHabitLocked ? { backgroundColor: habit.color } : {}}
                 />
               </div>
             );
@@ -171,10 +198,10 @@ export function DayModal({
           )}
         </div>
 
-        {/* Quick Multi-Action & Clear (Hidden for future and before-start dates) */}
-        {!isLocked && (
+        {/* Quick Multi-Action & Clear (Hidden for future and before-start dates where ALL habits locked) */}
+        {!isLocked && activeHabits.length > 0 && (
           <div style={{ display: 'flex', gap: '0.6rem', marginTop: '0.8rem' }}>
-            {habits.length > 0 && (
+            {activeHabits.length > 0 && (
               <button
                 type="button"
                 className={`btn btn-full ${allHabitsCompleted ? '' : 'btn-primary'}`}

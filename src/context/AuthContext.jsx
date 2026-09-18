@@ -81,8 +81,9 @@ export function AuthProvider({ children }) {
         const habitsColRef = collection(db, 'users', firebaseUser.uid, 'habits');
         const habitsSnap = await getDocs(habitsColRef);
         if (habitsSnap.empty) {
+          const todayKey = new Date().toISOString().slice(0, 10);
           const defaultHabits = [
-            { name: 'Worked Out', frequency: 'daily', color: '#f59e0b', icon: 'dumbbell' }
+            { name: 'Worked Out', frequency: 'daily', color: '#f59e0b', icon: 'dumbbell', startDate: todayKey }
           ];
           for (const habit of defaultHabits) {
             await addDoc(habitsColRef, {

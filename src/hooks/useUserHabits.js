@@ -102,6 +102,7 @@ export function useUserHabits() {
               frequency: h.frequency,
               color: h.color,
               icon: h.icon,
+              startDate: getTodayKey(),
               createdAt: serverTimestamp()
             });
           } catch (e) {
@@ -298,8 +299,10 @@ export function useUserHabits() {
   }, [logs, toggleHabitForDay]);
 
   // Add a new habit
-  const addHabit = useCallback(async ({ name, frequency = 'daily', color = '#3b82f6', icon = 'sparkles' }) => {
+  const addHabit = useCallback(async ({ name, frequency = 'daily', color = '#3b82f6', icon = 'sparkles', startDate = null }) => {
     if (!name.trim()) return null;
+
+    const effectiveStartDate = startDate || getTodayKey();
 
     if (isConfigured && user && db) {
       try {
@@ -309,6 +312,7 @@ export function useUserHabits() {
           frequency,
           color,
           icon,
+          startDate: effectiveStartDate,
           createdAt: serverTimestamp()
         });
         return docRef.id;
@@ -325,6 +329,7 @@ export function useUserHabits() {
         frequency,
         color,
         icon,
+        startDate: effectiveStartDate,
         createdAt: new Date().toISOString()
       };
       setHabits((prev) => [...prev, newHabit]);
