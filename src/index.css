@@ -1,5 +1,5 @@
 :root {
-  --bg-main: #0a0e1a;
+  --bg-main: #000000;
   --bg-card: rgba(18, 24, 38, 0.75);
   --bg-card-hover: rgba(28, 36, 56, 0.85);
   --border-subtle: rgba(255, 255, 255, 0.08);
@@ -43,13 +43,37 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+
+/* Global Modern Sleek Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
 body {
-  background-color: var(--bg-main);
-  background-image: 
-    radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 85% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%);
-  background-attachment: fixed;
+  background-color: #000000;
+  background: #000000;
   color: var(--text-primary);
   font-family: var(--font-body);
   min-height: 100vh;
@@ -1265,6 +1289,22 @@ h1, h2, h3, h4, .brand-title {
 }
 
 /* ==========================================================================
+   Background Scroll Lock when Modals are Open
+   ========================================================================== */
+html.modal-open,
+body.modal-open {
+  overflow: hidden !important;
+  height: 100% !important;
+  overscroll-behavior: none !important;
+  touch-action: none !important;
+}
+
+body.modal-open .app-container {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ==========================================================================
    Modal System — Responsive (Mobile Bottom Drawer + Desktop Centred Card)
    ========================================================================== */
 .modal-overlay {
@@ -1281,11 +1321,13 @@ h1, h2, h3, h4, .brand-title {
   padding: 0;
   /* Prevent touch scroll from leaking to body */
   overscroll-behavior: contain;
+  touch-action: none;
+  pointer-events: auto !important;
 }
 
 /* Mobile: Bottom Drawer */
 .modal-content {
-  background: #111728;
+  background: #000000;
   border: 1px solid var(--border-active);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   border-bottom: none;
@@ -1304,6 +1346,108 @@ h1, h2, h3, h4, .brand-title {
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  touch-action: pan-y;
+  pointer-events: auto !important;
+}
+
+/* ==========================================================================
+   Thin & Modern Scrollbars for All Modals (Confined Within Border Radius)
+   ========================================================================== */
+.modal-content,
+.modal-content *,
+.modal-overlay,
+.modal-overlay * {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* Modal Card Scrollbar (Confined strictly inside rounded corners) */
+.modal-content::-webkit-scrollbar,
+.auth-modal::-webkit-scrollbar,
+.widget-guide-modal::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.modal-content::-webkit-scrollbar-track,
+.auth-modal::-webkit-scrollbar-track,
+.widget-guide-modal::-webkit-scrollbar-track {
+  background: transparent;
+  /* Inset track 28px from top and bottom so thumb never travels into the 26px rounded corners */
+  margin-top: 28px;
+  margin-bottom: 28px;
+  margin-block: 28px;
+}
+
+@media (max-width: 639px) {
+  .modal-content::-webkit-scrollbar-track,
+  .auth-modal::-webkit-scrollbar-track,
+  .widget-guide-modal::-webkit-scrollbar-track {
+    margin-top: 26px;
+    margin-bottom: 12px;
+    margin-block: 26px 12px;
+  }
+}
+
+.modal-content::-webkit-scrollbar-thumb,
+.auth-modal::-webkit-scrollbar-thumb,
+.widget-guide-modal::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover,
+.auth-modal::-webkit-scrollbar-thumb:hover,
+.widget-guide-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.modal-content::-webkit-scrollbar-thumb:active,
+.auth-modal::-webkit-scrollbar-thumb:active,
+.widget-guide-modal::-webkit-scrollbar-thumb:active {
+  background: #10b981;
+}
+
+/* Sub-elements inside modals (inner lists/grids) */
+.modal-content *::-webkit-scrollbar,
+.modal-overlay *::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.modal-content *::-webkit-scrollbar-track,
+.modal-overlay *::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 4px 0;
+}
+
+.modal-content *::-webkit-scrollbar-thumb,
+.modal-overlay *::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+.modal-content *::-webkit-scrollbar-thumb:hover,
+.modal-overlay *::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.modal-content *::-webkit-scrollbar-thumb:active,
+.modal-overlay *::-webkit-scrollbar-thumb:active {
+  background: #10b981;
+}
+
+.modal-content::-webkit-scrollbar-corner,
+.modal-content *::-webkit-scrollbar-corner,
+.modal-overlay::-webkit-scrollbar-corner,
+.modal-overlay *::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Drag handle on mobile */
@@ -2268,7 +2412,7 @@ h1, h2, h3, h4, .brand-title {
 .avatar-modal-content {
   max-width: 440px;
   border: 1px solid rgba(16, 185, 129, 0.3);
-  background: #0f172a;
+  background: #000000;
 }
 
 .avatar-popup-grid {
@@ -3435,7 +3579,7 @@ h1, h2, h3, h4, .brand-title {
    ========================================================================== */
 .add-to-home-modal {
   /* Mobile: inherits full-width bottom drawer from .modal-content */
-  background: rgba(15, 23, 42, 0.94);
+  background: #000000;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-color: rgba(255, 255, 255, 0.12);
@@ -3685,7 +3829,7 @@ h1, h2, h3, h4, .brand-title {
    ========================================================================== */
 .start-date-modal {
   /* Mobile: inherits full-width bottom drawer from .modal-content */
-  background: rgba(15, 23, 42, 0.95);
+  background: #000000;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-color: rgba(255, 255, 255, 0.12);

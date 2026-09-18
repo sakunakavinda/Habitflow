@@ -109,6 +109,43 @@ export default function App() {
     return () => { delete window.__openOnboarding; };
   }, []);
 
+  // Lock background scrolling whenever any modal is open
+  const isAnyModalOpen = Boolean(
+    selectedDay ||
+    showWidgetsModal ||
+    showAuthModal ||
+    showHabitsModal ||
+    showAddToHomeModal ||
+    showOnboardingModal
+  );
+
+  useEffect(() => {
+    const syncModalLock = () => {
+      const hasModal = Boolean(document.querySelector('.modal-overlay'));
+      if (hasModal || isAnyModalOpen) {
+        document.body.classList.add('modal-open');
+        document.documentElement.classList.add('modal-open');
+      } else {
+        document.body.classList.remove('modal-open');
+        document.documentElement.classList.remove('modal-open');
+      }
+    };
+
+    syncModalLock();
+
+    const observer = new MutationObserver(() => {
+      syncModalLock();
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
+      document.body.classList.remove('modal-open');
+      document.documentElement.classList.remove('modal-open');
+    };
+  }, [isAnyModalOpen]);
+
   const handleOnboardingComplete = async () => {
     setShowOnboardingModal(false);
 
