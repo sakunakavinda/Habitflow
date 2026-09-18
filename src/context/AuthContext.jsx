@@ -68,11 +68,13 @@ export function AuthProvider({ children }) {
         'User';
 
       if (!userSnap.exists()) {
+        const localGuestAvatar = localStorage.getItem('habitwave_guest_avatar') || '/avatars/avatar1.png';
         const initialData = {
           name: effectiveName,
           joinedAt: serverTimestamp(),
           hasSeenAddToHome: false,
-          hasSeenOnboarding: false
+          hasSeenOnboarding: false,
+          avatar: localGuestAvatar
         };
         await setDoc(userDocRef, initialData);
 
@@ -106,6 +108,10 @@ export function AuthProvider({ children }) {
         data.name = newName;
       }
 
+      const cachedAvatar = localStorage.getItem(`habitwave_avatar_${firebaseUser.uid}`);
+      if (!data.avatar) {
+        data.avatar = cachedAvatar || '/avatars/avatar1.png';
+      }
       return data;
     } catch (err) {
       console.error('Error syncing user profile:', err);
@@ -211,22 +217,22 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const setJourneyStartDate = async (startDateStr) => {
+  const setProfileAvatar = async (avatarUrl) => {
     if (!user) {
-      localStorage.setItem('habitwave_guest_start_date', startDateStr);
-      setUserData(prev => ({ ...(prev || {}), startDate: startDateStr }));
+      localStorage.setItem('habitwave_guest_avatar', avatarUrl);
+      setUserData(prev => ({ ...(prev || {}), avatar: avatarUrl }));
       return;
     }
     try {
-      localStorage.setItem(`habitwave_start_date_${user.uid}`, startDateStr);
+      localStorage.setItem(`habitwave_avatar_${user.uid}`, avatarUrl);
       if (db) {
         const userDocRef = doc(db, 'users', user.uid);
-        await updateDoc(userDocRef, { startDate: startDateStr });
+        await updateDoc(userDocRef, { avatar: avatarUrl });
       }
-      setUserData(prev => prev ? { ...prev, startDate: startDateStr } : { startDate: startDateStr });
+      setUserData(prev => prev ? { ...prev, avatar: avatarUrl } : { avatar: avatarUrl });
     } catch (err) {
-      console.error('Error setting journey start date:', err);
-      setUserData(prev => prev ? { ...prev, startDate: startDateStr } : { startDate: startDateStr });
+      console.error('Error setting profile avatar:', err);
+      setUserData(prev => prev ? { ...prev, avatar: avatarUrl } : { avatar: avatarUrl });
     }
   };
 
@@ -362,6 +368,7 @@ export function AuthProvider({ children }) {
         logout,
         markAddToHomeSeen,
         markOnboardingComplete,
+        setProfileAvatar,
         changePassword,
         sendPasswordReset,
         resetAccountData,

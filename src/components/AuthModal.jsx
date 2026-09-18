@@ -17,10 +17,12 @@ import {
   ChevronUp,
   ShieldCheck,
   Eye,
-  EyeOff
+  EyeOff,
+  Pencil
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { NeonLogo } from './NeonLogo';
+import { AVAILABLE_AVATARS, getAvatarUrl } from '../utils/avatarUtils';
 
 export function AuthModal({ onClose }) {
   const {
@@ -31,6 +33,7 @@ export function AuthModal({ onClose }) {
     signUpWithEmail,
     signInWithGoogle,
     logout,
+    setProfileAvatar,
     changePassword,
     sendPasswordReset,
     resetAccountData,
@@ -51,6 +54,7 @@ export function AuthModal({ onClose }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState(null);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   // If the modal was opened while not logged in, close immediately upon authentication
   // once loading completes, so the profile/account settings modal does not flash for a glance.
@@ -368,12 +372,36 @@ export function AuthModal({ onClose }) {
           <div className="auth-profile-view">
             {/* Profile Info Card */}
             <div className="profile-badge-card">
-              <div className="profile-avatar">
-                {user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
-              </div>
+              <button
+                type="button"
+                className="profile-avatar-wrap profile-avatar-clickable"
+                onClick={() => setShowAvatarModal(true)}
+                title="Click to change profile picture"
+                aria-label="Change profile picture"
+              >
+                <img
+                  src={getAvatarUrl(userData?.avatar)}
+                  alt="Profile Avatar"
+                  className="profile-avatar-img"
+                />
+                <span className="profile-avatar-edit-badge" title="Edit avatar">
+                  <Pencil size={11} color="#ffffff" />
+                </span>
+              </button>
               <div className="profile-info">
-                <div className="profile-name">
-                  {userData?.name || user.displayName || 'HabitWave Member'}
+                <div className="profile-name-row">
+                  <div className="profile-name">
+                    {userData?.name || user.displayName || 'HabitWave Member'}
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-edit-avatar-text"
+                    onClick={() => setShowAvatarModal(true)}
+                    title="Choose profile picture"
+                  >
+                    <Pencil size={12} />
+                    <span>Change Avatar</span>
+                  </button>
                 </div>
                 <div className="profile-email">{user.email}</div>
                 <div className="profile-status">
@@ -1065,6 +1093,74 @@ export function AuthModal({ onClose }) {
           </>
         )}
       </div>
+
+      {/* Avatar Selection Popup Modal */}
+      {showAvatarModal && (
+        <div className="modal-overlay avatar-modal-overlay" onClick={() => setShowAvatarModal(false)}>
+          <div
+            className="modal-content avatar-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <div className="modal-title-wrap">
+                <h3 className="modal-title">Choose Profile Picture</h3>
+                <p className="modal-subtitle">Select an avatar style for your profile</p>
+              </div>
+              <button
+                type="button"
+                className="btn btn-icon"
+                onClick={() => setShowAvatarModal(false)}
+                aria-label="Close avatar picker"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="avatar-popup-grid">
+              {AVAILABLE_AVATARS.map((avatar) => {
+                const currentAvatarUrl = getAvatarUrl(userData?.avatar);
+                const isSelected = currentAvatarUrl === avatar.url;
+
+                return (
+                  <button
+                    key={avatar.id}
+                    type="button"
+                    className={`avatar-popup-card ${isSelected ? 'selected' : ''}`}
+                    onClick={async () => {
+                      await setProfileAvatar(avatar.url);
+                      setShowAvatarModal(false);
+                    }}
+                  >
+                    <div className="avatar-popup-img-wrap">
+                      <img
+                        src={avatar.url}
+                        alt={avatar.label}
+                        className="avatar-popup-img"
+                      />
+                      {isSelected && (
+                        <span className="avatar-popup-check">
+                          <CheckCircle2 size={14} color="#ffffff" />
+                        </span>
+                      )}
+                    </div>
+                    <span className="avatar-popup-name">{avatar.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="avatar-modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary w-full"
+                onClick={() => setShowAvatarModal(false)}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

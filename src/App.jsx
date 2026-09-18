@@ -24,6 +24,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 import AddToHomeModal from './components/AddToHomeModal';
 import OnboardingModal from './components/OnboardingModal';
 import DigitalClock from './components/DigitalClock';
+import { AVAILABLE_AVATARS, getAvatarUrl } from './utils/avatarUtils';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -173,6 +174,25 @@ export default function App() {
     }
   };
 
+  const handleTriggerShortcut = (shortcutType) => {
+    const todayKey = getTodayKey();
+    if (shortcutType === 'workout') {
+      const workoutHabit = habits.find((h) =>
+        h.name.toLowerCase().includes('workout') || h.icon === 'dumbbell'
+      ) || habits[0];
+
+      if (workoutHabit) {
+        toggleHabitForDay(workoutHabit.id, todayKey);
+        setActionToast(`💪 Logged "${workoutHabit.name}" for today!`);
+      }
+    } else if (shortcutType === 'all') {
+      toggleAllForDay(todayKey);
+      setActionToast('✨ Logged all daily habits for today!');
+    }
+    setShowWidgetsModal(false);
+    setTimeout(() => setActionToast(null), 3000);
+  };
+
   const displayName = userData?.name || user?.displayName || user?.email?.split('@')[0];
 
   return (
@@ -205,7 +225,11 @@ export default function App() {
                 {user ? (
                   <>
                     <span className="user-avatar-tiny">
-                      {displayName ? displayName.charAt(0).toUpperCase() : 'U'}
+                      <img
+                        src={getAvatarUrl(userData?.avatar)}
+                        alt={displayName || 'User Avatar'}
+                        className="user-avatar-tiny-img"
+                      />
                     </span>
                     <span className="btn-label">{displayName || 'Profile'}</span>
                     <span className="online-indicator" title="Cloud Synced" />
