@@ -17,33 +17,10 @@ import { getTodayKey, dateToKey } from '../utils/calendarUtils';
 const LOCAL_HABITS_KEY = 'habitwave_local_habits_v5';
 const LOCAL_LOGS_KEY = 'habitwave_local_logs_v5';
 
-export const DEFAULT_HABITS = [
-  { id: 'workout', name: 'Worked Out', frequency: 'daily', color: '#f59e0b', icon: 'dumbbell' }
-];
+export const DEFAULT_HABITS = [];
 
 function generateInitialLocalLogs() {
-  const logs = {};
-  const today = new Date();
-
-  // Populate last 14 days with realistic completions for Worked Out
-  for (let i = 14; i >= 1; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const key = dateToKey(d);
-
-    const isWorkout = (i % 2 === 0) || i === 3;
-    logs[key] = {
-      workout: isWorkout
-    };
-  }
-
-  // Today
-  const todayKey = getTodayKey();
-  logs[todayKey] = {
-    workout: false
-  };
-
-  return logs;
+  return {};
 }
 
 export function useUserHabits() {
@@ -92,15 +69,15 @@ export function useUserHabits() {
         const storedHabits = localStorage.getItem(LOCAL_HABITS_KEY);
         const storedLogs = localStorage.getItem(LOCAL_LOGS_KEY);
 
-        const loadedHabits = storedHabits ? JSON.parse(storedHabits) : DEFAULT_HABITS;
-        const loadedLogs = storedLogs ? JSON.parse(storedLogs) : generateInitialLocalLogs();
+        const loadedHabits = storedHabits ? JSON.parse(storedHabits) : [];
+        const loadedLogs = storedLogs ? JSON.parse(storedLogs) : {};
 
         setHabits(loadedHabits);
         setLogs(loadedLogs);
       } catch (err) {
         console.error('Error loading local habits data:', err);
-        setHabits(DEFAULT_HABITS);
-        setLogs(generateInitialLocalLogs());
+        setHabits([]);
+        setLogs({});
       } finally {
         setLoading(false);
       }
@@ -120,36 +97,11 @@ export function useUserHabits() {
         });
       });
 
-      // If user has no habits yet and has never initialized in this session, seed starter habit
-      const hasSeeded = localStorage.getItem(`habitwave_seeded_habits_${user.uid}`);
-      if (fetchedHabits.length === 0 && !snapshot.metadata.hasPendingWrites && !hasSeeded) {
-        localStorage.setItem(`habitwave_seeded_habits_${user.uid}`, 'true');
-        // Immediately resolve loading with empty array so the app doesn't hang on a black screen.
-        // Firestore's onSnapshot will fire again once the seeded habit write completes.
-        setHabits([]);
-        setLoading(false);
-        DEFAULT_HABITS.forEach(async (h) => {
-          try {
-            await addDoc(habitsColRef, {
-              name: h.name,
-              frequency: h.frequency,
-              color: h.color,
-              icon: h.icon,
-              startDate: getTodayKey(),
-              createdAt: serverTimestamp()
-            });
-          } catch (e) {
-            console.error('Error seeding initial habit:', e);
-          }
-        });
-      } else {
-        localStorage.setItem(`habitwave_seeded_habits_${user.uid}`, 'true');
-        setHabits(fetchedHabits);
-        try {
-          localStorage.setItem(`habitwave_cached_habits_${user.uid}`, JSON.stringify(fetchedHabits));
-        } catch {}
-        setLoading(false);
-      }
+      setHabits(fetchedHabits);
+      try {
+        localStorage.setItem(`habitwave_cached_habits_${user.uid}`, JSON.stringify(fetchedHabits));
+      } catch {}
+      setLoading(false);
     }, (err) => {
       console.error('Error listening to habits:', err);
       setLoading(false);

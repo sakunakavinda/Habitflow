@@ -84,21 +84,6 @@ export function AuthProvider({ children }) {
         };
         await setDoc(userDocRef, initialData);
 
-        // Also initialize default starter habits if this is a brand new user
-        const habitsColRef = collection(db, 'users', firebaseUser.uid, 'habits');
-        const habitsSnap = await getDocs(habitsColRef);
-        if (habitsSnap.empty) {
-          const todayKey = new Date().toISOString().slice(0, 10);
-          const defaultHabits = [
-            { name: 'Worked Out', frequency: 'daily', color: '#f59e0b', icon: 'dumbbell', startDate: todayKey }
-          ];
-          for (const habit of defaultHabits) {
-            await addDoc(habitsColRef, {
-              ...habit,
-              createdAt: serverTimestamp()
-            });
-          }
-        }
         return { ...initialData, isNewRegistration: true };
       }
 
@@ -327,16 +312,7 @@ export function AuthProvider({ children }) {
     ];
     keysToRemove.forEach(k => localStorage.removeItem(k));
 
-    // 4. Re-seed default starter habit ("Worked Out")
-    await addDoc(habitsColRef, {
-      name: 'Worked Out',
-      frequency: 'daily',
-      color: '#f59e0b',
-      icon: 'dumbbell',
-      createdAt: serverTimestamp()
-    });
-
-    // 5. Update local state
+    // 4. Update local state
     setUserData(prev => ({
       ...(prev || {}),
       hasSeenOnboarding: false,
