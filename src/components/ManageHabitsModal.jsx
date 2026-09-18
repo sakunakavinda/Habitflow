@@ -114,99 +114,134 @@ export function ManageHabitsModal({ habits, onAddHabit, onUpdateHabit, onDeleteH
         {/* Existing Habits List */}
         <div className="manage-habits-list">
           {habits.map((habit) => (
-            <div key={habit.id} className="manage-habit-item">
-              <div className="manage-habit-left">
-                <div
-                  className="manage-habit-icon-wrap"
-                  style={{
-                    backgroundColor: `${habit.color}22`,
-                    borderColor: `${habit.color}55`,
-                    color: habit.color
-                  }}
-                >
-                  <HabitIcon name={habit.icon} color={habit.color} size={18} />
-                </div>
-                <div className="manage-habit-details">
-                  <div className="manage-habit-name">{habit.name}</div>
-                  <div className="manage-habit-sub">
-                    <span
-                      className="habit-color-pill"
-                      style={{ backgroundColor: habit.color }}
-                    />
-                    <span>{habit.frequency || 'daily'}</span>
-                    
-                    {editingStartDateId === habit.id ? (
-                      <div className="habit-start-edit-group">
-                        <input
-                          type="date"
-                          className="habit-start-date-inline-input"
-                          defaultValue={habit.startDate || getTodayKey()}
-                          max={getTodayKey()}
-                          onChange={(e) => {
-                            if (e.target.value) {
-                              handleUpdateStartDate(habit.id, e.target.value);
-                            }
-                          }}
-                        />
-                        <button
-                          type="button"
-                          className="btn-icon-xs"
-                          onClick={() => setEditingStartDateId(null)}
-                          title="Done"
-                        >
-                          <Check size={12} />
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        className="habit-starts-badge editable"
-                        onClick={() => setEditingStartDateId(habit.id)}
-                        title="Click to edit start date"
-                      >
-                        <Calendar size={10} />
-                        <span>
-                          {habit.startDate
-                            ? new Date(habit.startDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                            : 'Set start date'}
-                        </span>
-                        <Edit2 size={9} style={{ opacity: 0.65, marginLeft: 2 }} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="manage-habit-actions">
-                {confirmDeleteId === habit.id ? (
-                  <div className="confirm-delete-group">
-                    <button
-                      type="button"
-                      className="btn btn-danger-sm"
-                      onClick={() => handleDelete(habit.id)}
+            <div
+              key={habit.id}
+              className={`manage-habit-item ${confirmDeleteId === habit.id ? 'is-confirming' : ''}`}
+            >
+              {confirmDeleteId === habit.id ? (
+                /* Dedicated Confirmation View Replacing Card Interior */
+                <div className="manage-habit-confirm-view" role="alert">
+                  <div className="confirm-view-top">
+                    <div
+                      className="manage-habit-icon-wrap confirm-icon-wrap"
+                      style={{
+                        backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                        borderColor: 'rgba(239, 68, 68, 0.35)',
+                        color: '#ef4444'
+                      }}
                     >
-                      Confirm
-                    </button>
+                      <Trash2 size={18} />
+                    </div>
+                    <div className="confirm-view-text">
+                      <div className="confirm-view-title">
+                        Delete <strong>&ldquo;{habit.name}&rdquo;</strong>?
+                      </div>
+                      <div className="confirm-view-desc">
+                        All logged days and streaks for this habit will be removed.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="confirm-view-actions">
                     <button
                       type="button"
-                      className="btn btn-secondary-sm"
+                      className="btn btn-secondary-sm confirm-action-btn"
                       onClick={() => setConfirmDeleteId(null)}
                     >
                       Cancel
                     </button>
+                    <button
+                      type="button"
+                      className="btn btn-danger-sm confirm-action-btn"
+                      onClick={() => handleDelete(habit.id)}
+                    >
+                      <Trash2 size={13} />
+                      <span>Delete Habit</span>
+                    </button>
                   </div>
-                ) : (
-                  <button
-                    type="button"
-                    className="btn btn-icon-sm btn-ghost-danger"
-                    onClick={() => setConfirmDeleteId(habit.id)}
-                    title="Delete habit"
-                    aria-label={`Delete habit ${habit.name}`}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
-              </div>
+                </div>
+              ) : (
+                /* Normal Card Row */
+                <div className="manage-habit-main-row">
+                  <div className="manage-habit-left">
+                    <div
+                      className="manage-habit-icon-wrap"
+                      style={{
+                        backgroundColor: `${habit.color}22`,
+                        borderColor: `${habit.color}55`,
+                        color: habit.color
+                      }}
+                    >
+                      <HabitIcon name={habit.icon} color={habit.color} size={18} />
+                    </div>
+                    <div className="manage-habit-details">
+                      <div className="manage-habit-title-row">
+                        <span className="manage-habit-name" title={habit.name}>{habit.name}</span>
+                        <span
+                          className="manage-habit-color-indicator"
+                          style={{ backgroundColor: habit.color }}
+                          title={`Color: ${habit.color}`}
+                        />
+                      </div>
+                      <div className="manage-habit-meta">
+                        <span className="manage-habit-freq-badge">{habit.frequency || 'daily'}</span>
+                        <span className="manage-habit-meta-divider">•</span>
+
+                        {editingStartDateId === habit.id ? (
+                          <div className="habit-start-edit-group">
+                            <input
+                              type="date"
+                              className="habit-start-date-inline-input"
+                              defaultValue={habit.startDate || getTodayKey()}
+                              max={getTodayKey()}
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  handleUpdateStartDate(habit.id, e.target.value);
+                                }
+                              }}
+                            />
+                            <button
+                              type="button"
+                              className="btn-icon-xs"
+                              onClick={() => setEditingStartDateId(null)}
+                              title="Done"
+                            >
+                              <Check size={12} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            className="habit-starts-badge editable"
+                            onClick={() => setEditingStartDateId(habit.id)}
+                            title="Click to edit start date"
+                          >
+                            <Calendar size={10} />
+                            <span>
+                              {habit.startDate
+                                ? new Date(habit.startDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                : 'Set start date'}
+                            </span>
+                            <Edit2 size={9} style={{ opacity: 0.65 }} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="manage-habit-actions">
+                    <button
+                      type="button"
+                      className="btn btn-icon-sm btn-ghost-danger"
+                      onClick={() => setConfirmDeleteId(habit.id)}
+                      title={`Delete ${habit.name}`}
+                      aria-label={`Delete habit ${habit.name}`}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
 
