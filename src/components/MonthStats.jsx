@@ -189,7 +189,7 @@ export function MonthStats({ totals, streaks, habits = [] }) {
           No Active Habits
         </span>
         <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          Tap <strong>⚙️ Manage Habits</strong> to create a new habit or customize your daily routine.
+          Tap <strong> Habits</strong> to create a new habit or customize your daily routine.
         </p>
       </div>
     </div>

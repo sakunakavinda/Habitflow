@@ -121,10 +121,10 @@ function LogHabitsIllustration() {
             <MousePointer size={12} /> Detail View
           </div>
           <div className="ob-ui-mode-btn ob-ui-mode-btn--active">
-            <Dumbbell size={12} color="#f59e0b" /> Worked Out
+            <Sparkles size={12} color="#10b981" /> Daily Habit
           </div>
           <div className="ob-ui-mode-btn">
-            <Sparkles size={12} /> All Habits
+            <Flame size={12} /> All Habits
           </div>
         </div>
         <div className="ob-hint-text">Choose a mode — "Detail View" opens a day panel, habit tabs toggle directly on the calendar.</div>
@@ -152,7 +152,171 @@ function LogHabitsIllustration() {
   );
 }
 
-// ─── Step 3: Manage Habits ────────────────────────────────────────────────────
+// ─── Step 3: Habits Inside Calendar Dates (Done vs Not Done) ──────────────────
+function DateRepresentationIllustration() {
+  return (
+    <div className="ob-illustration ob-date-status">
+      <div className="ob-ui-section">
+        <div className="ob-section-label">① Status of Habits Inside Each Date</div>
+        <div className="ob-date-showcase">
+          {/* Cell 1: All Habits Done */}
+          <div className="ob-date-card">
+            <div
+              className="ob-date-cell-demo ob-date-cell--all-done"
+              style={{
+                background: 'linear-gradient(rgba(18, 24, 38, 0.95), rgba(18, 24, 38, 0.95)) padding-box, conic-gradient(#10b981 100%, rgba(255, 255, 255, 0.08) 0) border-box',
+                border: '2px solid transparent',
+                boxShadow: '0 0 14px rgba(16, 185, 129, 0.45)'
+              }}
+            >
+              <div className="day-header-row">
+                <span className="day-number">14</span>
+              </div>
+              <div className="day-lines-row">
+                <span
+                  className="habit-line completed"
+                  style={{
+                    backgroundColor: '#10b981',
+                    boxShadow: '0 0 7px rgba(16, 185, 129, 0.9)',
+                    opacity: 1
+                  }}
+                  title="Habit 1: Done"
+                />
+                <span
+                  className="habit-line completed"
+                  style={{
+                    backgroundColor: '#3b82f6',
+                    boxShadow: '0 0 7px rgba(59, 130, 246, 0.9)',
+                    opacity: 1
+                  }}
+                  title="Habit 2: Done"
+                />
+              </div>
+            </div>
+            <div className="ob-date-badge ob-date-badge--done">
+              <CheckCircle2 size={11} />
+              <span>All Done</span>
+            </div>
+            <span className="ob-date-subcaption">100% Glowing</span>
+          </div>
+
+          {/* Cell 2: Partial Done */}
+          <div className="ob-date-card">
+            <div
+              className="ob-date-cell-demo ob-date-cell--partial"
+              style={{
+                background: 'linear-gradient(rgba(18, 24, 38, 0.95), rgba(18, 24, 38, 0.95)) padding-box, conic-gradient(#10b981 50%, rgba(255, 255, 255, 0.08) 0) border-box',
+                border: '2px solid transparent'
+              }}
+            >
+              <div className="day-header-row">
+                <span className="day-number">15</span>
+              </div>
+              <div className="day-lines-row">
+                <span
+                  className="habit-line completed"
+                  style={{
+                    backgroundColor: '#10b981',
+                    boxShadow: '0 0 7px rgba(16, 185, 129, 0.9)',
+                    opacity: 1
+                  }}
+                  title="Habit 1: Done"
+                />
+                <span
+                  className="habit-line incomplete"
+                  style={{
+                    backgroundColor: 'rgba(59, 130, 246, 0.18)',
+                    borderColor: '#3b82f6',
+                    opacity: 0.62
+                  }}
+                  title="Habit 2: Pending"
+                />
+              </div>
+            </div>
+            <div className="ob-date-badge ob-date-badge--partial">
+              <span>Half Done</span>
+            </div>
+            <span className="ob-date-subcaption">50% Ring Fill</span>
+          </div>
+
+          {/* Cell 3: None Done */}
+          <div className="ob-date-card">
+            <div
+              className="ob-date-cell-demo ob-date-cell--none"
+              style={{
+                background: 'rgba(255, 255, 255, 0.02)',
+                border: '1px solid rgba(255, 255, 255, 0.08)'
+              }}
+            >
+              <div className="day-header-row">
+                <span className="day-number">16</span>
+              </div>
+              <div className="day-lines-row">
+                <span
+                  className="habit-line incomplete"
+                  style={{
+                    backgroundColor: 'rgba(16, 185, 129, 0.18)',
+                    borderColor: '#10b981',
+                    opacity: 0.62
+                  }}
+                  title="Habit 1: Pending"
+                />
+                <span
+                  className="habit-line incomplete"
+                  style={{
+                    backgroundColor: 'rgba(59, 130, 246, 0.18)',
+                    borderColor: '#3b82f6',
+                    opacity: 0.62
+                  }}
+                  title="Habit 2: Pending"
+                />
+              </div>
+            </div>
+            <div className="ob-date-badge ob-date-badge--empty">
+              <span>None Done</span>
+            </div>
+            <span className="ob-date-subcaption">Unlogged</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="ob-ui-section">
+        <div className="ob-section-label">② Visual Indicator Guide</div>
+        <div className="ob-legend-breakdown">
+          {/* Solid vs Faded */}
+          <div className="ob-legend-row">
+            <div className="ob-legend-pills">
+              <span className="habit-line completed" style={{ backgroundColor: '#10b981', boxShadow: '0 0 7px rgba(16, 185, 129, 0.9)', width: 22, height: 5 }} />
+              <span className="habit-line incomplete" style={{ backgroundColor: 'rgba(16, 185, 129, 0.18)', borderColor: '#10b981', width: 22, height: 5 }} />
+            </div>
+            <div className="ob-legend-text">
+              <div className="ob-legend-title">Solid Glow vs Faded Outline</div>
+              <div className="ob-legend-desc">
+                <strong>Solid vibrant bar:</strong> Habit completed for this date.<br />
+                <strong>Faded outlined bar:</strong> Habit scheduled but not yet completed.
+              </div>
+            </div>
+          </div>
+
+          {/* Progress Ring */}
+          <div className="ob-legend-row">
+            <div className="ob-legend-ring-icon">
+              <div className="ob-mini-ring-preview" />
+            </div>
+            <div className="ob-legend-text">
+              <div className="ob-legend-title">Circular Progress Border</div>
+              <div className="ob-legend-desc">
+                The date's outer border fills clockwise with each completed habit. When <strong>100% of habits</strong> are finished, the entire date glows emerald green!
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Step 4: Manage Habits ────────────────────────────────────────────────────
 function ManageHabitsIllustration() {
   return (
     <div className="ob-illustration ob-habits">
@@ -184,10 +348,10 @@ function ManageHabitsIllustration() {
         <div className="ob-section-label">② Manage habits in the panel</div>
         <div className="ob-ui-habits-panel">
           <div className="ob-ui-habit-item">
-            <div className="ob-ui-habit-dot" style={{ background: '#f59e0b' }}>
-              <Dumbbell size={13} color="#fff" />
+            <div className="ob-ui-habit-dot" style={{ background: '#10b981' }}>
+              <Flame size={13} color="#fff" />
             </div>
-            <span className="ob-ui-habit-name">Worked Out</span>
+            <span className="ob-ui-habit-name">Daily Habit</span>
             <div className="ob-ui-habit-del"><Trash2 size={12} /></div>
           </div>
           <div className="ob-ui-add-habit-btn">
@@ -200,7 +364,7 @@ function ManageHabitsIllustration() {
   );
 }
 
-// ─── Step 4: Track Streaks ────────────────────────────────────────────────────
+// ─── Step 5: Track Streaks ────────────────────────────────────────────────────
 function TrackStreaksIllustration() {
   return (
     <div className="ob-illustration ob-streaks">
@@ -208,23 +372,23 @@ function TrackStreaksIllustration() {
         <div className="ob-section-label">Your stats appear at the top of the app</div>
         {/* Stat card replica — uses real CSS classes */}
         <div className="ob-stat-replica">
-          <div className="glass-card stat-card" style={{ borderLeft: '3px solid #f59e0b', margin: 0 }}>
+          <div className="glass-card stat-card" style={{ borderLeft: '3px solid #10b981', margin: 0 }}>
             <div className="stat-top">
-              <span className="stat-label">Worked Out</span>
-              <div className="stat-icon" style={{ backgroundColor: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
-                <Dumbbell size={16} color="#f59e0b" />
+              <span className="stat-label">Daily Habit</span>
+              <div className="stat-icon" style={{ backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981' }}>
+                <Flame size={16} color="#10b981" />
               </div>
             </div>
             <div className="stat-number-row">
-              <span className="stat-number" style={{ color: '#f59e0b' }}>14</span>
+              <span className="stat-number" style={{ color: '#10b981' }}>14</span>
               <span className="stat-subtext">/ 30 days</span>
             </div>
             <div className="stat-progress-bar">
-              <div className="stat-progress-fill" style={{ width: '47%', backgroundColor: '#f59e0b' }} />
+              <div className="stat-progress-fill" style={{ width: '47%', backgroundColor: '#10b981' }} />
             </div>
             <div className="stat-bottom-row">
               <span className="stat-subtext">47% consistency</span>
-              <span className="stat-streak-badge" style={{ color: '#f59e0b' }}>🔥 14d</span>
+              <span className="stat-streak-badge" style={{ color: '#10b981' }}>🔥 14d</span>
             </div>
           </div>
         </div>
@@ -508,6 +672,7 @@ function AddToHomeStep() {
 const STEPS = [
   { id: 'welcome' },
   { id: 'log' },
+  { id: 'dates' },
   { id: 'habits' },
   { id: 'streaks' },
   { id: 'pwa' },
@@ -516,6 +681,7 @@ const STEPS = [
 const STEP_TITLES = {
   welcome:   'Welcome to HabitWave',
   log:       'Log Habits Daily',
+  dates:     'Habits Inside Dates',
   habits:    'Manage Your Habits',
   streaks:   'Track Your Streaks',
   pwa:       'Add to Home Screen',
@@ -561,6 +727,7 @@ export default function OnboardingModal({ isOpen, userName, onComplete }) {
     switch (currentStep.id) {
       case 'welcome':   return <WelcomeIllustration userName={userName} />;
       case 'log':       return <LogHabitsIllustration />;
+      case 'dates':     return <DateRepresentationIllustration />;
       case 'habits':    return <ManageHabitsIllustration />;
       case 'streaks':   return <TrackStreaksIllustration />;
       case 'pwa':       return <AddToHomeStep />;

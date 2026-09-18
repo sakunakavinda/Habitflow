@@ -5031,6 +5031,154 @@ body.modal-open .app-container {
 .ob-mini-cell:nth-child(2) { animation-delay: 0.1s; }
 .ob-mini-cell:nth-child(3) { animation-delay: 0.15s; }
 
+/* Date Status Showcase in Onboarding */
+.ob-date-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.ob-date-showcase {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.55rem;
+}
+
+.ob-date-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  padding: 0.55rem 0.35rem 0.5rem;
+}
+
+.ob-date-cell-demo {
+  width: 100%;
+  max-width: 66px;
+  height: 60px;
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.35rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.ob-date-cell-demo .day-header-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.ob-date-cell-demo .day-number {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.ob-date-cell-demo .day-lines-row {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  width: 100%;
+}
+
+.ob-date-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0.18rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.ob-date-badge--done {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.ob-date-badge--partial {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.ob-date-badge--empty {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ob-date-subcaption {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.ob-legend-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ob-legend-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 0.5rem 0.65rem;
+}
+
+.ob-legend-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.ob-legend-ring-icon {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.ob-mini-ring-preview {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(#111827, #111827) padding-box,
+              conic-gradient(#10b981 75%, rgba(255, 255, 255, 0.15) 0) border-box;
+  border: 2px solid transparent;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.ob-legend-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ob-legend-title {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.ob-legend-desc {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
 /* Habits panel replica */
 .ob-ui-habits-panel { background: rgba(18,24,38,0.9); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); padding: 0.5rem; display: flex; flex-direction: column; gap: 5px; }
 .ob-ui-habit-item { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 0.45rem 0.6rem; }
