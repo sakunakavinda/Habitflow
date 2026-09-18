@@ -48,7 +48,14 @@ export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState(() => {
+    try {
+      const cached = localStorage.getItem('habitwave_cached_profile');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
   const pendingDisplayNameRef = useRef(null);
   const isConfigured = isFirebaseConfigured();
@@ -128,10 +135,22 @@ export function AuthProvider({ children }) {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
+        try {
+          localStorage.setItem('habitwave_last_known_uid', currentUser.uid);
+        } catch {}
         const pendingName = pendingDisplayNameRef.current;
         const profile = await syncUserProfile(currentUser, pendingName);
+        if (profile) {
+          try {
+            localStorage.setItem('habitwave_cached_profile', JSON.stringify(profile));
+          } catch {}
+        }
         setUserData(profile);
       } else {
+        try {
+          localStorage.removeItem('habitwave_last_known_uid');
+          localStorage.removeItem('habitwave_cached_profile');
+        } catch {}
         setUserData(null);
       }
       setLoading(false);
@@ -180,6 +199,10 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
+    try {
+      localStorage.removeItem('habitwave_last_known_uid');
+      localStorage.removeItem('habitwave_cached_profile');
+    } catch {}
     if (auth) {
       await signOut(auth);
     }
@@ -229,7 +252,13 @@ export function AuthProvider({ children }) {
         const userDocRef = doc(db, 'users', user.uid);
         await updateDoc(userDocRef, { avatar: avatarUrl });
       }
-      setUserData(prev => prev ? { ...prev, avatar: avatarUrl } : { avatar: avatarUrl });
+      setUserData(prev => {
+        const next = prev ? { ...prev, avatar: avatarUrl } : { avatar: avatarUrl };
+        try {
+          localStorage.setItem('habitwave_cached_profile', JSON.stringify(next));
+        } catch {}
+        return next;
+      });
     } catch (err) {
       console.error('Error setting profile avatar:', err);
       setUserData(prev => prev ? { ...prev, avatar: avatarUrl } : { avatar: avatarUrl });
@@ -285,7 +314,9 @@ export function AuthProvider({ children }) {
       `habitwave_onboarding_done_${uid}`,
       `habitwave_seen_pwa_guide_${uid}`,
       `habitwave_logs_${uid}`,
-      `habitwave_custom_habits_${uid}`
+      `habitwave_custom_habits_${uid}`,
+      `habitwave_cached_habits_${uid}`,
+      `habitwave_cached_logs_${uid}`
     ];
     keysToRemove.forEach(k => localStorage.removeItem(k));
 
@@ -344,7 +375,7 @@ export function AuthProvider({ children }) {
 
     // 3. Clear all user local storage
     Object.keys(localStorage).forEach(k => {
-      if (k.includes(uid)) {
+      if (k.includes(uid) || k === 'habitwave_last_known_uid' || k === 'habitwave_cached_profile') {
         localStorage.removeItem(k);
       }
     });

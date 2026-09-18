@@ -39,7 +39,7 @@ export default function App() {
   const [actionToast, setActionToast] = useState(null);
   const calendarRef = useRef(null);
 
-  const { user, userData, markAddToHomeSeen, markOnboardingComplete } = useAuth();
+  const { user, userData, loading: authLoading, markAddToHomeSeen, markOnboardingComplete } = useAuth();
   const {
     habits,
     logs,
@@ -52,6 +52,8 @@ export default function App() {
     deleteHabit,
     restoreSampleData
   } = useUserHabits();
+
+  const isAppReady = !authLoading && !habitsLoading;
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -234,7 +236,12 @@ export default function App() {
 
   return (
     <>
-      {isLoading && <LoadingScreen onFinished={() => setIsLoading(false)} />}
+      {isLoading && (
+        <LoadingScreen
+          isReady={isAppReady}
+          onFinished={() => setIsLoading(false)}
+        />
+      )}
       <div className="app-container">
         {/* App Top Bar */}
         <header className="app-header">
@@ -245,39 +252,51 @@ export default function App() {
             <div>
               <h1 className="brand-title">HabitWave</h1>
               <p className="brand-subtitle">
-                {user ? `${displayName}'s Daily Habits` : 'Multi-Habit Calendar Tracker'}
+                {user ? `${displayName}'s Daily Habits` : authLoading ? '' : 'Multi-Habit Calendar Tracker'}
               </p>
             </div>
           </div>
 
           <div className="header-right-group">
-            <div className={`header-actions ${user ? 'has-user' : 'is-guest'}`}>
+            <div className={`header-actions ${user ? 'has-user' : !authLoading ? 'is-guest' : 'is-loading'}`}>
               {/* User Profile / Auth Button */}
-              <button
-                type="button"
-                className={`btn btn-sm btn-user ${user ? 'logged-in' : ''}`}
-                onClick={() => setShowAuthModal(true)}
-                title={user ? `Signed in as ${user.email}` : 'Sign in or create account'}
-              >
-                {user ? (
-                  <>
-                    <span className="user-avatar-tiny">
-                      <img
-                        src={getAvatarUrl(userData?.avatar)}
-                        alt={displayName || 'User Avatar'}
-                        className="user-avatar-tiny-img"
-                      />
-                    </span>
-                    <span className="btn-label">{displayName || 'Profile'}</span>
-                    <span className="online-indicator" title="Cloud Synced" />
-                  </>
-                ) : (
-                  <>
-                    <LogIn size={13} />
-                    <span className="btn-label">Sign In</span>
-                  </>
-                )}
-              </button>
+              {authLoading ? (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-user"
+                  disabled
+                  style={{ opacity: 0.6, cursor: 'default' }}
+                >
+                  <span className="btn-label">...</span>
+                </button>
+              ) : user ? (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-user logged-in"
+                  onClick={() => setShowAuthModal(true)}
+                  title={user ? `Signed in as ${user.email}` : 'Sign in or create account'}
+                >
+                  <span className="user-avatar-tiny">
+                    <img
+                      src={getAvatarUrl(userData?.avatar)}
+                      alt={displayName || 'User Avatar'}
+                      className="user-avatar-tiny-img"
+                    />
+                  </span>
+                  <span className="btn-label">{displayName || 'Profile'}</span>
+                  <span className="online-indicator" title="Cloud Synced" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-user"
+                  onClick={() => setShowAuthModal(true)}
+                  title="Sign in or create account"
+                >
+                  <LogIn size={13} />
+                  <span className="btn-label">Sign In</span>
+                </button>
+              )}
 
               {/* Manage Custom Habits Button */}
               <button
@@ -302,7 +321,7 @@ export default function App() {
               </button>
 
               {/* Reset Demo button for Guest mode */}
-              {!user && (
+              {!authLoading && !user && (
                 <button
                   type="button"
                   className="btn btn-sm"
@@ -320,8 +339,8 @@ export default function App() {
           </div>
         </header>
 
-        {/* Demo Mode Notice Banner for unauthenticated visitors */}
-        {!user && (
+        {/* Demo Mode Notice Banner for unauthenticated visitors only */}
+        {!authLoading && !user && (
           <div className="demo-mode-notice" role="status">
             <div className="demo-notice-text">
               <span className="demo-notice-badge">Demo</span>

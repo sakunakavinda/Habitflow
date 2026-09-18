@@ -9,31 +9,44 @@ const MOTIVATIONAL_QUOTES = [
   "Your journey, one day at a time."
 ];
 
-export function LoadingScreen({ onFinished, minDuration = 800 }) {
+export function LoadingScreen({ onFinished, minDuration = 600, isReady = true }) {
   const [progress, setProgress] = useState(15);
   const [isExiting, setIsExiting] = useState(false);
+  const [minTimeElapsed, setMinTimeElapsed] = useState(false);
   const [quoteIndex] = useState(() => Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length));
 
   useEffect(() => {
     // Dynamic progress bar progression
-    const p1 = setTimeout(() => setProgress(45), 160);
-    const p2 = setTimeout(() => setProgress(80), 400);
-    const p3 = setTimeout(() => setProgress(100), minDuration - 150);
-
-    const exitTimer = setTimeout(() => {
-      setIsExiting(true);
-      setTimeout(() => {
-        if (onFinished) onFinished();
-      }, 400); // Matches CSS dissolve animation
+    const p1 = setTimeout(() => setProgress(45), 140);
+    const p2 = setTimeout(() => setProgress(75), 320);
+    const minTimer = setTimeout(() => {
+      setMinTimeElapsed(true);
     }, minDuration);
 
     return () => {
       clearTimeout(p1);
       clearTimeout(p2);
-      clearTimeout(p3);
-      clearTimeout(exitTimer);
+      clearTimeout(minTimer);
     };
-  }, [minDuration, onFinished]);
+  }, [minDuration]);
+
+  // Complete and exit once minimum duration has elapsed and app is ready
+  useEffect(() => {
+    if (minTimeElapsed && isReady && !isExiting) {
+      setProgress(100);
+      const exitTimer = setTimeout(() => {
+        setIsExiting(true);
+        const finishTimer = setTimeout(() => {
+          if (onFinished) onFinished();
+        }, 400); // Matches CSS dissolve animation
+        return () => clearTimeout(finishTimer);
+      }, 120);
+      return () => clearTimeout(exitTimer);
+    } else if (minTimeElapsed && !isReady) {
+      // If minDuration passed but data is still resolving, hold smoothly at 90%
+      setProgress(90);
+    }
+  }, [minTimeElapsed, isReady, isExiting, onFinished]);
 
   return (
     <div className={`loading-screen ${isExiting ? 'exit' : ''}`} aria-label="Loading HabitWave">

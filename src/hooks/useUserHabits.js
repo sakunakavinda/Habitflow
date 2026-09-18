@@ -47,9 +47,33 @@ function generateInitialLocalLogs() {
 }
 
 export function useUserHabits() {
-  const { user, isConfigured } = useAuth();
-  const [habits, setHabits] = useState([]);
-  const [logs, setLogs] = useState({});
+  const { user, isConfigured, loading: authLoading } = useAuth();
+  const [habits, setHabits] = useState(() => {
+    try {
+      const lastUid = localStorage.getItem('habitwave_last_known_uid');
+      if (lastUid) {
+        const cached = localStorage.getItem(`habitwave_cached_habits_${lastUid}`);
+        if (cached) return JSON.parse(cached);
+      }
+    } catch (e) {
+      console.warn('Error reading cached habits:', e);
+    }
+    return [];
+  });
+
+  const [logs, setLogs] = useState(() => {
+    try {
+      const lastUid = localStorage.getItem('habitwave_last_known_uid');
+      if (lastUid) {
+        const cached = localStorage.getItem(`habitwave_cached_logs_${lastUid}`);
+        if (cached) return JSON.parse(cached);
+      }
+    } catch (e) {
+      console.warn('Error reading cached logs:', e);
+    }
+    return {};
+  });
+
   const [loading, setLoading] = useState(true);
 
   // Firestore Subscriptions Cleanup ref
@@ -57,8 +81,13 @@ export function useUserHabits() {
 
   // --- FIRESTORE REALTIME SYNC (When Authenticated) ---
   useEffect(() => {
+    // If auth state is still resolving, do NOT touch habits or fall back to guest demo data!
+    if (authLoading) {
+      return;
+    }
+
     if (!isConfigured || !user || !db) {
-      // Load Local Storage Guest Data
+      // Confirmed Guest Mode: Load Local Storage Guest Data
       try {
         const storedHabits = localStorage.getItem(LOCAL_HABITS_KEY);
         const storedLogs = localStorage.getItem(LOCAL_LOGS_KEY);
@@ -112,6 +141,9 @@ export function useUserHabits() {
       } else {
         localStorage.setItem(`habitwave_seeded_habits_${user.uid}`, 'true');
         setHabits(fetchedHabits);
+        try {
+          localStorage.setItem(`habitwave_cached_habits_${user.uid}`, JSON.stringify(fetchedHabits));
+        } catch {}
       }
       setLoading(false);
     }, (err) => {
@@ -122,7 +154,7 @@ export function useUserHabits() {
     return () => {
       habitsUnsub();
     };
-  }, [user, isConfigured]);
+  }, [user, isConfigured, authLoading]);
 
   // 2. Listen to logs subcollections for all habits: /users/{userId}/habits/{habitId}/logs
   useEffect(() => {
@@ -197,9 +229,21 @@ export function useUserHabits() {
     };
   }, [user, isConfigured, habits]);
 
-  // Persist LocalStorage changes in Guest Mode
+  // Persist LocalStorage changes
   useEffect(() => {
-    if (!user || !isConfigured) {
+    if (authLoading) return;
+    if (user) {
+      try {
+        if (habits && habits.length > 0) {
+          localStorage.setItem(`habitwave_cached_habits_${user.uid}`, JSON.stringify(habits));
+        }
+        if (logs && Object.keys(logs).length > 0) {
+          localStorage.setItem(`habitwave_cached_logs_${user.uid}`, JSON.stringify(logs));
+        }
+      } catch (err) {
+        console.error('Failed to sync to user cache:', err);
+      }
+    } else {
       try {
         localStorage.setItem(LOCAL_HABITS_KEY, JSON.stringify(habits));
         localStorage.setItem(LOCAL_LOGS_KEY, JSON.stringify(logs));
@@ -207,7 +251,7 @@ export function useUserHabits() {
         console.error('Failed to sync to local storage:', err);
       }
     }
-  }, [habits, logs, user, isConfigured]);
+  }, [habits, logs, user, isConfigured, authLoading]);
 
   // --- ACTIONS ---
 
