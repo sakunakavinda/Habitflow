@@ -1,8 +1,10 @@
-import React from 'react';
-import { Sparkles, Flame, Trophy } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sparkles, Flame, Trophy, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { HabitIcon } from '../utils/habitIcons';
 
 export function MonthStats({ totals, streaks, habits = [] }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const {
     daysInMonth,
     totalMonthDays = daysInMonth,
@@ -35,10 +37,12 @@ export function MonthStats({ totals, streaks, habits = [] }) {
       }
     });
 
+    const displayedHabits = isExpanded ? habits : habits.slice(0, 2);
+
     return (
       <div className="stats-grid">
         {/* Dynamic Habit Stat Cards */}
-        {habits.map((habit) => {
+        {displayedHabits.map((habit) => {
           const count = habitCounts[habit.id] || 0;
           const rate = habitRates[habit.id] || 0;
           const streak = habitStreaks[habit.id] || 0;
@@ -52,7 +56,15 @@ export function MonthStats({ totals, streaks, habits = [] }) {
               }}
             >
               <div className="stat-top">
-                <span className="stat-label">{habit.name}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-start' }}>
+                  <span className="stat-label">{habit.name}</span>
+                  {habit.startDate && (
+                    <span className="habit-starts-badge">
+                      <Calendar size={10} />
+                      {new Date(habit.startDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                  )}
+                </div>
                 <div
                   className="stat-icon"
                   style={{
@@ -92,6 +104,19 @@ export function MonthStats({ totals, streaks, habits = [] }) {
             </div>
           );
         })}
+
+        {/* Expand / Collapse Toggle Arrow Button */}
+        {habits.length > 2 && (
+          <button
+            type="button"
+            className="stats-expand-btn"
+            onClick={() => setIsExpanded(!isExpanded)}
+            aria-label={isExpanded ? 'Show less habits' : 'Show all habits'}
+          >
+            <span>{isExpanded ? 'Show Less Habits' : `Show All Habits (${habits.length})`}</span>
+            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+        )}
 
         {/* Perfect Days Card */}
         <div className="glass-card stat-card double-win">

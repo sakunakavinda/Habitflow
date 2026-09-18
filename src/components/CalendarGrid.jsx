@@ -345,9 +345,25 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
 
             const isSF = !!(record.smokeFree || record['smoke-free']);
             const isWO = !!record.workout;
-            const hasAllDone =
-              activeHabitsOnDay.length > 0 &&
-              completedHabits.length === activeHabitsOnDay.length;
+            const completionRatio =
+              activeHabitsOnDay.length > 0
+                ? completedHabits.length / activeHabitsOnDay.length
+                : 0;
+
+            const hasAllDone = completionRatio === 1 && activeHabitsOnDay.length > 0;
+            const completionPct = Math.round(completionRatio * 100);
+
+            const cellStyle =
+              completionRatio > 0
+                ? {
+                    background: `linear-gradient(rgba(18, 24, 38, 0.92), rgba(18, 24, 38, 0.92)) padding-box, conic-gradient(#10b981 ${completionPct}%, rgba(255, 255, 255, 0.08) 0) border-box`,
+                    border: '2px solid transparent',
+                    boxShadow:
+                      hasAllDone
+                        ? '0 0 10px rgba(16, 185, 129, 0.4)'
+                        : 'none'
+                  }
+                : {};
 
             const tooltipTitle = day.isBeforeStart
               ? `${day.dateKey} • Prior to Start Date (${startDate})`
@@ -362,6 +378,7 @@ export const CalendarGrid = forwardRef(function CalendarGrid(
                 className={`day-cell ${!day.isCurrentMonth ? 'other-month' : ''} ${
                   day.isToday ? 'today' : ''
                 } ${day.isFuture ? 'is-future' : ''} ${day.isBeforeStart ? 'before-start' : ''} ${hasAllDone ? 'has-both' : ''}`}
+                style={cellStyle}
                 title={tooltipTitle}
               >
                 <div className="day-header-row">

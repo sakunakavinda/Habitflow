@@ -459,6 +459,31 @@ h1, h2, h3, h4, .brand-title {
   }
 }
 
+.stats-expand-btn {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0.1rem 0;
+}
+
+.stats-expand-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
 .stat-card {
   padding: 1.15rem 1.15rem;
   border-radius: var(--radius-lg);
@@ -692,29 +717,12 @@ h1, h2, h3, h4, .brand-title {
 }
 
 .mode-btn.active {
-  color: #ffffff;
+  /* color is set via inline style to the habit's reserved color */
 }
 
-.mode-btn.active.inspect {
-  background: rgba(255, 255, 255, 0.14);
-}
-
-.mode-btn.active.smoke {
-  background: var(--smoke-primary);
-  color: #032a1d;
-  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
-}
-
-.mode-btn.active.workout {
-  background: var(--workout-primary);
-  color: #3b1d03;
-  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.4);
-}
-
-.mode-btn.active.both {
-  background: var(--gold-gradient);
-  color: #0a1f18;
-  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
+/* Hover for non-active buttons — shows a subtle translucent background */
+.mode-btn:not(.active):hover {
+  background: rgba(255, 255, 255, 0.07);
 }
 
 /* Calendar Matrix Section */
@@ -891,8 +899,7 @@ h1, h2, h3, h4, .brand-title {
 }
 
 .day-cell.today {
-  border: 1.5px solid var(--accent-blue);
-  box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.2);
+  /* Blue border removed per user preference */
 }
 
 .day-cell.today .day-number {
@@ -1016,19 +1023,7 @@ h1, h2, h3, h4, .brand-title {
 
 /* Cell Double Win Highlight */
 .day-cell.has-both {
-  background: linear-gradient(145deg, rgba(16, 185, 129, 0.08) 0%, rgba(245, 158, 11, 0.08) 100%);
-  border-color: rgba(245, 158, 11, 0.25);
-}
-
-.day-cell.has-both::after {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: 15%;
-  right: 15%;
-  height: 2px;
-  background: var(--gold-gradient);
-  border-radius: 999px;
+  /* Top gold/green line removed per user request */
 }
 
 /* Swipe overlay gesture hints */
@@ -2403,20 +2398,22 @@ h1, h2, h3, h4, .brand-title {
   display: inline-block;
 }
 
-/* Small pill in the Manage Habits list showing each habit's start date */
+/* Compact text inline showing each habit's start date without box/card container */
 .habit-starts-badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 0.7rem;
+  font-size: 0.67rem;
   color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
-  padding: 1px 6px;
-  line-height: 1.4;
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  line-height: 1.2;
   white-space: nowrap;
   text-transform: none;
+  font-weight: 400;
+  opacity: 0.85;
 }
 
 .confirm-delete-group {

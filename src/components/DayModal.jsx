@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X, Sparkles, Trash2, Check, Lock } from 'lucide-react';
+import { X, Sparkles, Trash2, Check, Lock, Calendar } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { MONTH_NAMES } from '../utils/calendarUtils';
 import { HabitIcon } from '../utils/habitIcons';
@@ -172,7 +172,15 @@ export function DayModal({
                       : <HabitIcon name={habit.icon} color={isCompleted ? '#fff' : habit.color} size={20} />}
                   </div>
                   <div>
-                    <div className="habit-card-title">{habit.name}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className="habit-card-title">{habit.name}</span>
+                      {habit.startDate && (
+                        <span className="habit-starts-badge">
+                          <Calendar size={10} />
+                          {new Date(habit.startDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      )}
+                    </div>
                     <div className="habit-card-desc">
                       {isFuture
                         ? 'Upcoming date (locked)'

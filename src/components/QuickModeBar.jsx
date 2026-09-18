@@ -28,38 +28,60 @@ export function QuickModeBar({ activeMode, setActiveMode, habits = [] }) {
 
   // Active mode hint text
   let activeHint = 'Open day detail dialog';
+  const activeHabit = habits.find((h) => h.id === activeMode);
   if (activeMode === 'all' || activeMode === 'both') {
     activeHint = 'Toggle all habits on tap';
-  } else if (activeMode !== 'modal') {
-    const matchedHabit = habits.find((h) => h.id === activeMode);
-    activeHint = matchedHabit
-      ? `1-Tap to toggle ${matchedHabit.name}`
-      : `Toggle ${activeMode} on tap`;
+  } else if (activeHabit) {
+    activeHint = `1-Tap to toggle ${activeHabit.name}`;
   }
 
   return (
     <div className="glass-card quick-mode-bar">
       <div className="quick-mode-header">
         <span className="quick-mode-label">Tap Action:</span>
-        <span className="quick-mode-hint">{activeHint}</span>
+        <span
+          className="quick-mode-hint"
+          style={activeHabit ? { color: activeHabit.color } : {}}
+        >
+          {activeHint}
+        </span>
       </div>
       <div className="mode-selector">
         {modes.map((mode) => {
           const isActive = activeMode === mode.id;
+
+          // Build button styles
+          let btnStyle = {};
+          if (mode.color) {
+            if (isActive) {
+              // Solid filled pill in habit color
+              btnStyle = {
+                background: mode.color,
+                color: '#0a0a0a',
+                boxShadow: `0 2px 14px ${mode.color}55`,
+                border: `1.5px solid ${mode.color}`
+              };
+            } else {
+              // Subtle tint — colored icon/text at rest
+              btnStyle = {
+                color: mode.color
+              };
+            }
+          }
+
+          // Icon color: contrast white on active (dark bg), habit color when inactive
+          const iconColor = mode.color
+            ? isActive
+              ? '#0a0a0a'
+              : mode.color
+            : undefined;
+
           return (
             <button
               key={mode.id}
               type="button"
               className={`mode-btn ${isActive ? 'active' : ''}`}
-              style={
-                isActive && mode.color
-                  ? {
-                      borderColor: mode.color,
-                      boxShadow: `0 0 12px ${mode.color}40`,
-                      background: `linear-gradient(135deg, ${mode.color}25, rgba(255, 255, 255, 0.05))`
-                    }
-                  : {}
-              }
+              style={btnStyle}
               onClick={() => setActiveMode(mode.id)}
               title={
                 mode.isDefaultModal
@@ -72,7 +94,7 @@ export function QuickModeBar({ activeMode, setActiveMode, habits = [] }) {
               ) : (
                 <HabitIcon
                   name={mode.iconName}
-                  color={isActive && mode.color ? mode.color : undefined}
+                  color={iconColor}
                   size={14}
                   className="mode-icon"
                 />
